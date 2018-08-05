@@ -41,7 +41,7 @@ class DsaNetwork(Network):
             self.inputs = tf.placeholder(tf.float32,
                                          [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
                                          name='inputs')
-            super(self, DsaNetwork).__init__(layers, IMAGE_WIDTH=self.IMAGE_WIDTH, IMAGE_HEIGHT=self.IMAGE_HEIGHT,
+            super(DsaNetwork, self).__init__(layers, IMAGE_WIDTH=self.IMAGE_WIDTH, IMAGE_HEIGHT=self.IMAGE_HEIGHT,
                                              FIT_IMAGE_WIDTH=self.IMAGE_WIDTH,
                                              FIT_IMAGE_HEIGHT=self.IMAGE_HEIGHT, **kwargs)
 
