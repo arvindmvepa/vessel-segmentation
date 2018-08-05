@@ -5,7 +5,6 @@ import time
 
 import matplotlib
 
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -25,23 +24,21 @@ import csv
 
 class DriveJob(Job):
 
-
-    # max op for all metrics
-
     metrics = ("cost","cost unweighted","accuracy","recall","specificity","precision","f1score","kappa","auc",
                "auc10fpr","auc5fpr","auc2.5fpr","class balance","threshold scores")
 
-    def __init__(self, output_dir="."):
-        super(self, DriveJob).__init__(output_dir=output_dir)
+    def __init__(self, OUTPUTS_DIR_PATH="."):
+        super(DriveJob, self).__init__(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
 
     def train(self, gpu_device=None, decision_threshold=.75, tuning_constant=1.0, metrics_epoch_freq=1,
-              viz_layer_epoch_freq=10, end_epoch=100, metrics_log="metrics_log.txt", loss_log="loss_log.txt",
-              batch_size=1, num_image_plots=5, save_model=True, debug_net_output=False, dataset_kwargs={}):
+              viz_layer_epoch_freq=10, n_epochs=100, metrics_log="metrics_log.txt", loss_log="loss_log.txt",
+              batch_size=1, num_image_plots=5, save_model=True, debug_net_output=False, **ds_kwargs):
 
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
-        dataset = DriveDataset(**dataset_kwargs)
-        pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant=tuning_constant)
+        dataset = DriveDataset(**ds_kwargs)
+        pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant=tuning_constant, masks=dataset.test_masks,
+                                                     targets=dataset.train_targets)
 
         # initialize network object
         if gpu_device is not None:
@@ -51,12 +48,12 @@ class DriveJob(Job):
             network = DriveNetwork(wce_pos_weight=pos_weight)
 
         # create summary writer
-        summary_writer = tf.summary.FileWriter('{}/{}/{}-{}'.format(self.output_dir, 'logs', network.description, timestamp),
+        summary_writer = tf.summary.FileWriter('{}/{}/{}-{}'.format(self.OUTPUTS_DIR_PATH, 'logs', network.description, timestamp),
                                                graph=tf.get_default_graph())
 
         # create directories and subdirectories
         if save_model:
-            os.makedirs(os.path.join(self.output_dir, 'save', network.description, timestamp))
+            os.makedirs(os.path.join(self.OUTPUTS_DIR_PATH, 'save', network.description, timestamp))
 
         if viz_layer_epoch_freq is not None:
             viz_layer_outputs_path_train, viz_layer_outputs_path_test = \
@@ -66,56 +63,60 @@ class DriveJob(Job):
         config.gpu_options.allow_growth = True
 
         with tf.Session(config=config) as sess:
-            print(sess.run(tf.global_variables_initializer()))
-            tf.train.Saver(tf.all_variables(), max_to_keep=None)
+            sess.run(tf.global_variables_initializer())
+            tf.train.Saver(tf.global_variables(), max_to_keep=None)
 
-            for epoch_i in range(end_epoch):
+            for epoch_i in range(n_epochs):
                 dataset.reset_batch_pointer()
                 for batch_i in range(dataset.num_batches_in_epoch()):
-                    batch_num = epoch_i* dataset.num_batches_in_epoch() + batch_i + 1
+                    start = time.time()
+                    batch_num = epoch_i* dataset.num_batches_in_epoch() + batch_i
                     batch_inputs, batch_masks, batch_targets = dataset.next_batch()
 
-                    print(batch_inputs.shape)
 
                     if viz_layer_epoch_freq is not None and debug_net_output:
                         plt.imsave(os.path.join(viz_layer_outputs_path_train, "test1.jpeg"), batch_inputs[0])
                         plt.imsave(os.path.join(viz_layer_outputs_path_train, "test1_target.jpeg"),
                                    batch_targets[0])
 
-                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, batch_inputs.shape[0],
-                                                             batch_inputs.shape[1], 1))
-                    batch_masks = np.reshape(batch_masks, (dataset.batch_size, batch_masks.shape[0],
-                                                           batch_masks.shape[1], 1))
-                    batch_targets = np.reshape(batch_targets, (dataset.batch_size, batch_targets.shape[0],
-                                                               batch_targets.shape[1], 1))
+                    # reshape array for tensorflow
+                    batch_inputs = np.reshape(batch_inputs, (dataset.batch_size, batch_inputs.shape[1],
+                                                             batch_inputs.shape[2], 1))
+                    batch_masks = np.reshape(batch_masks, (dataset.batch_size, batch_masks.shape[1],
+                                                           batch_masks.shape[2], 1))
+                    batch_targets = np.reshape(batch_targets, (dataset.batch_size, batch_targets.shape[1],
+                                                               batch_targets.shape[2], 1))
 
                     if viz_layer_epoch_freq is not None and debug_net_output:
                         plt.imsave(os.path.join(viz_layer_outputs_path_train, "test2.jpeg"), batch_inputs[0,:,:,0])
                         plt.imsave(os.path.join(viz_layer_outputs_path_train, "test2_target.jpeg"),
                                    batch_targets[0,:,:,0])
 
-                    cost, cost_unweighted, layer_outputs, debug1, debug2, _ = sess.run([network.cost,
+                    cost, cost_unweighted, layer_outputs, debug1 = sess.run([network.cost,
                                                                                         network.cost_unweighted,
-                                                                           network.layer_outputs, network.debug1,
-                                                                           network.debug2, network.train_op],
+                                                                           network.layer_outputs, network.debug1],
                                        feed_dict={network.inputs: batch_inputs, network.masks: batch_masks,
                                                   network.targets: batch_targets, network.is_training: True})
+                    end = time.time()
+                    print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}'.format(
+                        batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
+                        end - start, pos_weight))
+
                     if viz_layer_epoch_freq is not None and debug_net_output:
                         plt.imsave(os.path.join(viz_layer_outputs_path_train, "test2.jpeg"), batch_inputs[0,:,:,0])
                         plt.imsave(os.path.join(viz_layer_outputs_path_train, "test2_target.jpeg"),
                                    batch_targets[0,:,:,0])
                         debug1 = debug1[0,:,:,0]
-                        debug2 = debug2[0,:,:,0]
                         plt.imsave(os.path.join(viz_layer_outputs_path_train, "debug1.jpeg"), debug1)
-                        plt.imsave(os.path.join(viz_layer_outputs_path_train, "debug2.jpeg"), debug2)
 
-                    if (epoch_i+1) % viz_layer_epoch_freq == 0:
+                    if (epoch_i+1) % viz_layer_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch()-1:
                         self.create_viz_layer_output_train(decision_threshold, layer_outputs,
                                                            viz_layer_outputs_path_train)
 
-                    if ((epoch_i+1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch()-1) or \
-                                    batch_num == end_epoch * dataset.num_batches_in_epoch():
-                        self.evaluate_on_test_set()
+                    if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch() - 1:
+                        self.evaluate_on_test_set(network, dataset, sess, decision_threshold, epoch_i, timestamp,
+                                                  viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots,
+                                                  summary_writer, cost=cost, cost_unweighted=cost_unweighted)
 
     def evaluate_on_test_set(self, network, dataset, sess, decision_threshold, epoch_i, timestamp,
                              viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots, summary_writer,
@@ -155,8 +156,7 @@ class DriveJob(Job):
             test_cost_unweighted += test_cost_unweighted_
 
             _, test_neg_class_frac, test_pos_class_frac = \
-                self.get_inverse_pos_freq(dataset.test_images[i], dataset.test_targets[i],
-                                          dataset.test_masks[i])
+                self.get_inverse_pos_freq(masks=dataset.test_masks[i], targets=dataset.test_targets[i])
 
             # calculate max threshold accuracy per test image
             thresh_max = self.get_max_threshold_accuracy_image(masks, targets, segmentation_result, test_neg_class_frac,
@@ -177,9 +177,9 @@ class DriveJob(Job):
         target_flat =np.round(target_array.flatten())
 
         # save mask and target (if files don't exist)
-        masks_path = os.path.join(self.output_dir, "saved_masks")
-        targets_path = os.path.join(self.output_dir, "saved_targets")
-        preds_path = os.path.join(self.output_dir, "saved_preds")
+        masks_path = os.path.join(self.OUTPUTS_DIR_PATH, "saved_masks")
+        targets_path = os.path.join(self.OUTPUTS_DIR_PATH, "saved_targets")
+        preds_path = os.path.join(self.OUTPUTS_DIR_PATH, "saved_preds")
 
         if not os.path.exists(os.path.join(masks_path, "mask.npy")):
             np.save(os.path.join(masks_path, "mask.npy"), mask_flat)

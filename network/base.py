@@ -13,16 +13,16 @@ class Network(object):
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
         self.wce_pos_weight = wce_pos_weight
         self.layer_outputs = []
-        for layer in layers:
-            self.layer_outputs.append(tf.placeholder(tf.float32, [None, None, None, 1], name=layer.name+'_layer_outputs'))
         self.description = ""
         self.layers = {}
+        self.debug1 = self.inputs
+        net = self.inputs
 
         # ENCODER
-        for i, layer in enumerate(len(layers)):
+        for i, layer in enumerate(layers):
             self.layers[layer.name] = net = layer.create_layer(net)
             self.description += "{}".format(layer.get_description())
-            self.layer_outputs[i]=net
+            self.layer_outputs.append(net)
 
         print("Number of layers: ", len(layers))
         print("Current input shape: ", net.get_shape())
@@ -30,9 +30,9 @@ class Network(object):
         layers.reverse()
 
         # DECODER
-        for i, layer in enumerate(len(layers)):
+        for i, layer in enumerate(layers):
             net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
-            self.layer_outputs[len(layers)+i] = net
+            self.layer_outputs.append(net)
 
         net = tf.image.resize_image_with_crop_or_pad(net, IMAGE_WIDTH, IMAGE_HEIGHT)
         self.process_network_output(net)

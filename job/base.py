@@ -6,19 +6,15 @@ from sklearn.metrics import roc_curve
 
 class Job(object):
 
-    def __init__(self, output_dir="."):
-        self.output_dir = output_dir
+    def __init__(self, OUTPUTS_DIR_PATH="."):
+        if not os.path.exists(OUTPUTS_DIR_PATH):
+            os.makedirs(OUTPUTS_DIR_PATH)
+        self.OUTPUTS_DIR_PATH = OUTPUTS_DIR_PATH
 
-    def train(self):
+    def train(self, **kwargs):
         raise NotImplementedError("Method Not Implemented")
 
-    def run_single_model(self, decision_thresh=.75, wce_tuning_constant=1.0, test_metrics_freq=200,
-                         layer_output_freq=1000, end=2000, job_dir=None, test_metrics_file=None, log_loss_file=None):
-
-        kwargs = {"decision_thresh": decision_thresh, "wce_tuning_constant": wce_tuning_constant,
-                  "test_metrics_freq": test_metrics_freq, "layer_output_freq": layer_output_freq, "end": end,
-                  "job_dir": job_dir, "test_metrics_file": test_metrics_file, "log_loss_file": log_loss_file}
-
+    def run_single_model(self, **kwargs):
         p = multiprocessing.Process(target=self.train, kwargs=kwargs)
         p.start()
         p.join()
@@ -54,7 +50,7 @@ class Job(object):
             p.join()
 
     def create_viz_dirs(self, network, timestamp, debug_net_output=False):
-        viz_layer_outputs_path = os.path.join(self.output_dir,'viz_layer_outputs', network.description, timestamp)
+        viz_layer_outputs_path = os.path.join(self.OUTPUTS_DIR_PATH, 'viz_layer_outputs', network.description, timestamp)
         os.makedirs(viz_layer_outputs_path)
         viz_layer_outputs_path_train = os.path.join(viz_layer_outputs_path, "train")
         os.makedirs(viz_layer_outputs_path_train)

@@ -38,7 +38,7 @@ class DriveNetwork(Network):
                                          name='inputs')
 
             self.masks = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='masks')
-            super(self, DriveNetwork).__init__(layers, IMAGE_WIDTH=self.IMAGE_WIDTH, IMAGE_HEIGHT=self.IMAGE_HEIGHT,
+            super(DriveNetwork, self).__init__(layers=layers, IMAGE_WIDTH=self.IMAGE_WIDTH, IMAGE_HEIGHT=self.IMAGE_HEIGHT,
                                                FIT_IMAGE_WIDTH=self.FIT_IMAGE_WIDTH,
                                                FIT_IMAGE_HEIGHT=self.FIT_IMAGE_HEIGHT, **kwargs)
 
