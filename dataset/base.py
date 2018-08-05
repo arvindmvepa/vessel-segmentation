@@ -2,18 +2,23 @@ import numpy as np
 import math
 from math import ceil
 from utilities.misc import find_class_balance
+import os
 
-class Dataset:
+class Dataset(object):
 
-    images_dir = "images"
+    IMAGES_DIR = "images"
 
-    def __init__(self, batch_size=1, data_dir = ".", train_subdir="train", test_subdir="test", sgd = False):
-        self.data_dir = data_dir
+    def __init__(self, batch_size=1, WRK_DIR_PATH =".", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = False):
+        self.WRK_DIR_PATH = WRK_DIR_PATH
         self.batch_size = batch_size
         self.sgd = sgd
 
-        self.train_data = self.get_images_from_file(train_subdir)
-        self.test_data = self.get_images_from_file(test_subdir)
+
+        self.TRAIN_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TRAIN_SUBDIR)
+        self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TEST_SUBDIR)
+
+        self.train_data = self.get_images_from_file(self.TRAIN_DIR_PATH)
+        self.test_data = self.get_images_from_file(self.TEST_DIR_PATH)
 
         self.pointer = 0
 
@@ -43,8 +48,8 @@ class Dataset:
     def next_batch(self):
         raise NotImplementedError("Method Not Implemented")
 
-    def get_tuned_pos_ce_weight(self, tuning_constant=1.0):
-        return tuning_constant*self.get_inverse_pos_freq()[0]
+    def get_tuned_pos_ce_weight(self, tuning_constant=1.0, **kwargs):
+        return tuning_constant*self.get_inverse_pos_freq(**kwargs)[0]
 
     def get_inverse_pos_freq(self, images, targets, **kwargs):
         raise NotImplementedError("Method Not Implemented")

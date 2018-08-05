@@ -11,19 +11,19 @@ class DsaDataset(Dataset):
     targets1_dir = "targets1"
     targets2_dir = "targets2"
 
-    def __init__(self, batch_size=1, data_dir = "dsa", train_subdir="train", test_subdir="test", sgd = False):
-        super(self, DsaDataset).__init__(batch_size=batch_size, data_dir=data_dir, train_subdir=train_subdir,
-                                         test_subdir=test_subdir, sgd=sgd)
+    def __init__(self, batch_size=1, WRK_DIR_PATH ="./dsa", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = False):
+        super(DsaDataset, self).__init__(batch_size=batch_size, WRK_DIR_PATH=WRK_DIR_PATH, TRAIN_SUBDIR=TRAIN_SUBDIR,
+                                         TEST_SUBDIR=TEST_SUBDIR, sgd=sgd)
 
         self.train_images, self.train_targets = self.train_data
         self.test_images, self.test_targets = self.test_data
 
     def get_images_from_file(self, dir):
-        dir_path = os.path.join(self.data_dir, dir)
+        dir_path = os.path.join(self.WRK_DIR_PATH, dir)
         images = []
         targets = []
 
-        images_dir = os.path.join(dir_path, self.images_folder)
+        images_dir = os.path.join(dir_path, self.IMAGES_DIR)
         image_files = sorted(os.listdir(images_dir))
 
         for file in image_files:
@@ -35,12 +35,12 @@ class DsaDataset(Dataset):
             if os.path.exists(os.path.join(dir_path, self.targets1_dir, file)):
                 target_file = os.path.join(dir_path, self.targets1_dir, file)
                 target_arr = np.array(skio.imread(target_file))
-                target_arr = cv2.threshold(target_arr, 127, 1, cv2.THRESH_BINARY)[1]
+                target_arr = np.where(target_arr > 127,1,0)
                 targets.append(target_arr)
             elif os.path.exists(os.path.join(dir_path, self.targets2_dir, file)):
                 target_file = os.path.join(dir_path, self.targets2_dir, file)
                 target_arr = np.array(skio.imread(target_file))[:, :, 3]
-                target_arr = cv2.threshold(target_arr, 127, 1, cv2.THRESH_BINARY)[1]
+                target_arr = np.where(target_arr > 127,1,0)
                 targets.append(target_arr)
             else:
                 raise ValueError("Path for target file for \'{}\' not defined".format(file))
