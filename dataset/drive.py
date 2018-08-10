@@ -12,7 +12,7 @@ class DriveDataset(Dataset):
     MASKS_DIR = "masks"
     TARGETS_DIR = "targets"
 
-    def __init__(self, batch_size=1, WRK_DIR_PATH='./drive', TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd=False):
+    def __init__(self, batch_size=1, WRK_DIR_PATH='./drive', TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd=True):
         super(DriveDataset, self).__init__(batch_size=batch_size, WRK_DIR_PATH=WRK_DIR_PATH, TRAIN_SUBDIR=TRAIN_SUBDIR,
                                            TEST_SUBDIR=TEST_SUBDIR, sgd=sgd)
 
@@ -65,7 +65,8 @@ class DriveDataset(Dataset):
         targets = []
 
         if self.sgd:
-            samples = np.random.choice(len(self.train_images), self.batch_size)
+            # samples = np.random.choice(len(self.train_images), self.batch_size)
+            samples = [0]
 
         for i in range(self.batch_size):
             if self.sgd:

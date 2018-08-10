@@ -1,4 +1,6 @@
 import numpy as np
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 import cv2
 import os
@@ -33,9 +35,8 @@ def tile_images(list_of_images, new_shape = (4000, 4000), save=True, file_name =
         plt.imsave(file_name, new_image)
     return new_image
 
-def draw_results(test_inputs, test_targets, test_segmentations, test_accuracy, network, batch_num, n_examples_to_plot,
-                 decision_thresh=.5):
-
+def draw_results(test_inputs, test_targets, test_segmentations, test_accuracy, network, epoch_num, n_examples_to_plot,
+                 IMAGE_PLOT_DIR, decision_thresh=.5):
     fig, axs = plt.subplots(4, n_examples_to_plot, figsize=(n_examples_to_plot * 3, 10), squeeze=False)
     fig.suptitle("Accuracy: {}, {}".format(test_accuracy, network.description), fontsize=20)
     for example_i in range(n_examples_to_plot):
@@ -47,7 +48,6 @@ def draw_results(test_inputs, test_targets, test_segmentations, test_accuracy, n
             np.reshape(test_segmentations[example_i,:,:], [network.IMAGE_WIDTH, network.IMAGE_HEIGHT]),
             cmap='gray')
         axs[2][example_i].axis('off')
-
         test_image_thresholded = np.array(
             [0 if x < decision_thresh else 255 for x in test_segmentations[example_i,:,:].flatten()])
         axs[3][example_i].imshow(
@@ -58,9 +58,7 @@ def draw_results(test_inputs, test_targets, test_segmentations, test_accuracy, n
     plt.savefig(buf, format='png')
     buf.seek(0)
 
-    IMAGE_PLOT_DIR = 'image_plots/'
     if not os.path.exists(IMAGE_PLOT_DIR):
         os.makedirs(IMAGE_PLOT_DIR)
-
-    plt.savefig('{}/figure{}.jpg'.format(IMAGE_PLOT_DIR, batch_num))
+    plt.savefig('{}/figure{}.jpg'.format(IMAGE_PLOT_DIR, epoch_num))
     return buf
