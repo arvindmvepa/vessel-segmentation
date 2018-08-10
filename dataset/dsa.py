@@ -11,7 +11,7 @@ class DsaDataset(Dataset):
     targets1_dir = "targets1"
     targets2_dir = "targets2"
 
-    def __init__(self, batch_size=1, WRK_DIR_PATH ="./dsa", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = False):
+    def __init__(self, batch_size=1, WRK_DIR_PATH ="./dsa", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = True):
         super(DsaDataset, self).__init__(batch_size=batch_size, WRK_DIR_PATH=WRK_DIR_PATH, TRAIN_SUBDIR=TRAIN_SUBDIR,
                                          TEST_SUBDIR=TEST_SUBDIR, sgd=sgd)
 

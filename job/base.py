@@ -1,10 +1,15 @@
 import multiprocessing
 import numpy as np
 import os
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from sklearn.metrics import roc_curve
+import csv
 
 class Job(object):
+
+    IMAGE_PLOT_DIR = "image_plots"
 
     def __init__(self, OUTPUTS_DIR_PATH="."):
         if not os.path.exists(OUTPUTS_DIR_PATH):
@@ -49,14 +54,15 @@ class Job(object):
             p.start()
             p.join()
 
-    def create_viz_dirs(self, network, timestamp, debug_net_output=False):
+    def create_viz_dirs(self, network, timestamp):
         viz_layer_outputs_path = os.path.join(self.OUTPUTS_DIR_PATH, 'viz_layer_outputs', network.description, timestamp)
         os.makedirs(viz_layer_outputs_path)
         viz_layer_outputs_path_train = os.path.join(viz_layer_outputs_path, "train")
         os.makedirs(viz_layer_outputs_path_train)
         viz_layer_outputs_path_test = os.path.join(viz_layer_outputs_path, "test")
         os.makedirs(viz_layer_outputs_path_test)
-        for i, _ in enumerate(network.layers):
+        # number of layer directories doubled to account for layers in reverse direction
+        for i in range(2*len(network.layers)):
             viz_layer_output_path_train = os.path.join(viz_layer_outputs_path_train, str(i))
             os.makedirs(viz_layer_output_path_train)
             viz_layer_output_path_test = os.path.join(viz_layer_outputs_path_test, str(i))
@@ -65,18 +71,17 @@ class Job(object):
         os.makedirs(viz_layer_mask1_output_path_train)
         viz_layer_mask2_output_path_train = os.path.join(viz_layer_outputs_path_train, "mask2")
         os.makedirs(viz_layer_mask2_output_path_train)
-        if debug_net_output:
-            viz_layer_debug1_output_path_train = os.path.join(viz_layer_outputs_path_train, "debug1")
-            os.makedirs(viz_layer_debug1_output_path_train)
-            viz_layer_debug2_output_path_train = os.path.join(viz_layer_outputs_path_train, "debug2")
-            os.makedirs(viz_layer_debug2_output_path_train)
+        viz_layer_mask1_output_path_test = os.path.join(viz_layer_outputs_path_test, "mask1")
+        os.makedirs(viz_layer_mask1_output_path_test)
+        viz_layer_mask2_output_path_test = os.path.join(viz_layer_outputs_path_test, "mask2")
+        os.makedirs(viz_layer_mask2_output_path_test)
         return viz_layer_outputs_path_train, viz_layer_outputs_path_test
 
-    def create_viz_layer_output_train(self, threshold, layer_outputs, output_path):
+    def create_viz_layer_output(self, layer_outputs, threshold, output_path):
         for j, layer_output in enumerate(layer_outputs):
             for k in range(layer_output.shape[3]):
                 channel_output = layer_output[0, :, :, k]
-                plt.imsave(os.path.join(os.path.join(output_path, str(j + 1)),
+                plt.imsave(os.path.join(os.path.join(output_path, str(j)),
                                         "channel_" + str(k) + ".jpeg"), channel_output)
                 if j == 0:
                     channel_output[np.where(channel_output > threshold)] = 1
@@ -89,11 +94,8 @@ class Job(object):
                     plt.imsave(os.path.join(os.path.join(output_path, "mask2"),
                                             "channel_" + str(k) + ".jpeg"), channel_output)
 
-    def create_viz_layer_output_test(self, threshold, layer_outputs, output_path, **kwargs):
-        raise NotImplementedError("Method Not Implemented")
-
     @staticmethod
-    def get_max_threshold_accuracy_image(targets, results, masks, neg_class_frac, pos_class_frac):
+    def get_max_threshold_accuracy_image(results, masks, targets, neg_class_frac, pos_class_frac):
         fprs, tprs, thresholds = roc_curve(targets.flatten(), results.flatten(), sample_weight=masks.flatten())
         list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
         interval = 0.0001
@@ -107,6 +109,12 @@ class Job(object):
                 thresh_max = thresh_acc
             i += 1
         return thresh_max
+
+    @staticmethod
+    def write_to_csv(entries, file_path):
+        with open(file_path, "a") as csv_file:
+            writer = csv.writer(csv_file, delimiter=',')
+            writer.writerow(entries)
 
     def __call__(self):
         pass
