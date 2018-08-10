@@ -16,11 +16,13 @@ def get_imgs(target_dir, img_size, dataset):
 
     # load images
     input_imgs = imagefiles2arrs(img_files)
-    vessel_imgs = imagefiles2arrs(vessel_files) / 255
+    vessel_imgs = imagefiles2arrs(vessel_files) // 255
+
     if img_size[0]!=0:
         vessel_imgs = pad_imgs(vessel_imgs, img_size)
     assert (np.min(vessel_imgs) == 0 and np.max(vessel_imgs) == 1)
-    mask_imgs = imagefiles2arrs(mask_files) / 255
+
+    # mask_imgs = imagefiles2arrs(mask_files) // 255
     if img_size[0]!=0:
         mask_imgs = pad_imgs(mask_imgs, img_size)
     assert (np.min(mask_imgs) == 0 and np.max(mask_imgs) == 1)
