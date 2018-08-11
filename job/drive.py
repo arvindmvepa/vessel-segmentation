@@ -22,6 +22,8 @@ from network.drive import DriveNetwork
 from utilities.output_ops import draw_results
 import csv
 
+# debugging
+
 class DriveJob(Job):
 
     metrics = ("test set average weighted log loss","test set average unweighted log loss",
