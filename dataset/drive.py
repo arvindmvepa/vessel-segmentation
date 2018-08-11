@@ -65,8 +65,7 @@ class DriveDataset(Dataset):
         targets = []
 
         if self.sgd:
-            # samples = np.random.choice(len(self.train_images), self.batch_size)
-            samples = [0]
+            samples = np.random.choice(len(self.train_images), self.batch_size)
 
         for i in range(self.batch_size):
             if self.sgd:
