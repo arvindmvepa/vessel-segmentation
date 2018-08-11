@@ -45,7 +45,7 @@ class DsaNetwork(Network):
                                              FIT_IMAGE_WIDTH=self.IMAGE_WIDTH,
                                              FIT_IMAGE_HEIGHT=self.IMAGE_HEIGHT, **kwargs)
 
-    def process_network_output(self, net):
+    def net_output(self, net):
         self.segmentation_result = tf.sigmoid(net)
         print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
                                                                         self.targets.get_shape()))
