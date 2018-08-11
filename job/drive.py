@@ -54,7 +54,8 @@ class DriveJob(Job):
         self.write_to_csv(sorted(DriveJob.metrics),metric_log_file_path)
 
         # create summary writer
-        summary_writer = tf.summary.FileWriter('{}/{}/{}-{}'.format(self.OUTPUTS_DIR_PATH, 'logs', network.description, timestamp),
+        summary_writer = tf.summary.FileWriter('{}/{}/{}-{}'.format(self.OUTPUTS_DIR_PATH, 'logs', network.description,
+                                                                    timestamp),
                                                graph=tf.get_default_graph())
 
 
@@ -101,18 +102,17 @@ class DriveJob(Job):
                         plt.imsave(os.path.join(viz_layer_outputs_path_train, "test2.jpeg"), batch_inputs[0,:,:,0])
                         plt.imsave(os.path.join(viz_layer_outputs_path_train, "test2_target.jpeg"),
                                    batch_targets[0,:,:,0])
-                    cost, cost_unweighted, layer_outputs, debug1, acc = sess.run([network.cost,network.cost_unweighted,
-                                                                                  network.layer_outputs, network.debug1,
-                                                                                  network.accuracy],
-                                                                                 feed_dict={network.inputs: batch_inputs,
-                                                                                            network.masks: batch_masks,
-                                                                                            network.targets: batch_targets,
-                                                                                            network.is_training: True})
+                    cost, cost_unweighted, layer_outputs, debug1, acc, _ = sess.run([network.cost, network.cost_unweighted,
+                                                                                     network.layer_outputs, network.debug1,
+                                                                                     network.accuracy, network.train_op],
+                                                                                    feed_dict={network.inputs: batch_inputs,
+                                                                                               network.masks: batch_masks,
+                                                                                               network.targets: batch_targets,
+                                                                                               network.is_training: True})
                     end = time.time()
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, accuracy: {}'.format(
                         batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
                         end - start, pos_weight, acc))
-                    print(test_results)
 
                     if viz_layer_epoch_freq is not None and debug_net_output:
                         plt.imsave(os.path.join(viz_layer_outputs_path_train, "test2.jpeg"), batch_inputs[0,:,:,0])
@@ -124,11 +124,12 @@ class DriveJob(Job):
                     if (epoch_i+1) % viz_layer_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch()-1:
                         self.create_viz_layer_output(layer_outputs, decision_threshold, viz_layer_outputs_path_train)
 
-                    if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch() - 1:
-                        test_results = self.evaluate_on_test_set(metric_log_file_path, network, dataset, sess,
-                                                        decision_threshold, epoch_i, timestamp,viz_layer_epoch_freq,
-                                                        viz_layer_outputs_path_test, num_image_plots,summary_writer,
-                                                        cost=cost, cost_unweighted=cost_unweighted)
+                    # if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch() - 1:
+                    if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == 0:
+                        self.evaluate_on_test_set(metric_log_file_path, network, dataset, sess,
+                                                  decision_threshold, epoch_i, timestamp,viz_layer_epoch_freq,
+                                                  viz_layer_outputs_path_test, num_image_plots,summary_writer,
+                                                  cost=cost, cost_unweighted=cost_unweighted)
 
     def evaluate_on_test_set(self, metrics_log_file_path, network, dataset, sess, decision_threshold, epoch_i, timestamp,
                              viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots, summary_writer,
@@ -304,4 +305,3 @@ class DriveJob(Job):
         image_summary_op = tf.summary.image("plot", image)
         image_summary = sess.run(image_summary_op)
         summary_writer.add_summary(image_summary)
-        return metric_scores
