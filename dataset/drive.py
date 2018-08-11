@@ -44,16 +44,16 @@ class DriveDataset(Dataset):
             right_pad = (DriveNetwork.FIT_IMAGE_WIDTH - DriveNetwork.IMAGE_WIDTH) - left_pad
 
             image_arr = cv2.copyMakeBorder(image_arr, left_pad, right_pad, top_pad, bot_pad, cv2.BORDER_CONSTANT, 0)
-            image_arr = np.multiply(image_arr, 1.0/255)
+            image_arr = image_arr * 1.0/255.0
             images.append(image_arr)
 
             mask = Image.open(os.path.join(MASKS_DIR_PATH,mask_file))
             mask_arr = np.array(mask)
-            mask_arr = mask_arr / 255
+            mask_arr = mask_arr * 1.0/255.0
             masks.append(mask_arr)
 
             target_arr = np.array(skio.imread(os.path.join(TARGETS_DIR_PATH,target_file)))
-            target_arr = np.where(target_arr > 127,1,0)
+            target_arr = np.where(target_arr > 127,1.0,0.0)
 
             targets.append(target_arr)
         return np.asarray(images), np.asarray(masks), np.asarray(targets)
