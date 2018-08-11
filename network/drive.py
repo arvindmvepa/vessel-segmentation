@@ -39,7 +39,6 @@ class DriveNetwork(Network):
             self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
             super(DriveNetwork, self).__init__(layers=layers, **kwargs)
 
-    @property
     def net_output(self, net):
         net = tf.image.resize_image_with_crop_or_pad(net, self.IMAGE_HEIGHT, self.IMAGE_WIDTH)
         net = tf.multiply(net, self.masks)
