@@ -14,7 +14,9 @@ class DriveNetwork(Network):
 
     IMAGE_CHANNELS = 1
 
-    def __init__(self, layers=None, skip_connections=True, **kwargs):
+    def __init__(self, layers=None, skip_connections=True, wce_pos_weight=1, **kwargs):
+
+        super(DriveNetwork, self).__init__(**kwargs)
 
         if layers == None:
 
@@ -33,16 +35,43 @@ class DriveNetwork(Network):
             layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_4_1'))
             layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_4_2'))
 
-            self.inputs = tf.placeholder(tf.float32,
-                                         [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
-                                         name='inputs')
+        self.inputs = tf.placeholder(tf.float32,
+                                     [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
+                                     name='inputs')
 
-            self.masks = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='masks')
-            super(DriveNetwork, self).__init__(layers=layers, IMAGE_WIDTH=self.IMAGE_WIDTH, IMAGE_HEIGHT=self.IMAGE_HEIGHT,
-                                               FIT_IMAGE_WIDTH=self.FIT_IMAGE_WIDTH,
-                                               FIT_IMAGE_HEIGHT=self.FIT_IMAGE_HEIGHT, **kwargs)
+        self.masks = tf.placeholder(tf.float32, [None, self.IMAGE_WIDTH, self.IMAGE_HEIGHT, 1], name='masks')
 
-    def process_network_output(self, net):
+        self.inputs = tf.placeholder(tf.float32, [None, DriveNetwork.FIT_IMAGE_WIDTH, DriveNetwork.FIT_IMAGE_HEIGHT,
+                                                  DriveNetwork.IMAGE_CHANNELS],
+                                     name='inputs')
+        self.targets = tf.placeholder(tf.float32, [None, DriveNetwork.IMAGE_WIDTH, DriveNetwork.IMAGE_HEIGHT, 1],
+                                      name='targets')
+        self.is_training = tf.placeholder_with_default(False, [], name='is_training')
+        self.wce_pos_weight = wce_pos_weight
+        self.layer_outputs = []
+        self.description = ""
+        self.layers = {}
+        self.debug1 = self.inputs
+        net = self.inputs
+
+        # ENCODER
+        for i, layer in enumerate(layers):
+            self.layers[layer.name] = net = layer.create_layer(net)
+            self.description += "{}".format(layer.get_description())
+            self.layer_outputs.append(net)
+
+        print("Number of layers: ", len(layers))
+        print("Current input shape: ", net.get_shape())
+
+        layers.reverse()
+
+        # DECODER
+        for i, layer in enumerate(layers):
+            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            self.layer_outputs.append(net)
+
+        net = tf.image.resize_image_with_crop_or_pad(net, DriveNetwork.IMAGE_WIDTH, DriveNetwork.IMAGE_HEIGHT)
+
         net = tf.multiply(net, self.masks)
         self.segmentation_result = tf.sigmoid(net)
         self.targets = tf.multiply(self.targets, self.masks)
