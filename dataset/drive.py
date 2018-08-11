@@ -43,7 +43,7 @@ class DriveDataset(Dataset):
             left_pad = int((DriveNetwork.FIT_IMAGE_WIDTH - DriveNetwork.IMAGE_WIDTH) / 2)
             right_pad = (DriveNetwork.FIT_IMAGE_WIDTH - DriveNetwork.IMAGE_WIDTH) - left_pad
 
-            image_arr = cv2.copyMakeBorder(image_arr, left_pad, right_pad, top_pad, bot_pad, cv2.BORDER_CONSTANT, 0)
+            image_arr = cv2.copyMakeBorder(image_arr, top_pad, bot_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, 0)
             image_arr = image_arr * 1.0/255.0
             images.append(image_arr)
 
@@ -109,5 +109,4 @@ class DriveDataset(Dataset):
 
     @property
     def test_set(self):
-        return np.array(self.test_images, dtype=np.uint8), np.array(self.test_masks, dtype=np.uint8), \
-               np.array(self.test_targets, dtype=np.uint8)
+        return np.array(self.test_images), np.array(self.test_masks), np.array(self.test_targets)
