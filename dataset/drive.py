@@ -104,7 +104,8 @@ class DriveDataset(Dataset):
             total_pos += np.count_nonzero(target)
             total_num_pixels += np.count_nonzero(mask)
         total_neg = total_num_pixels - total_pos
-        return total_neg/total_pos, float(total_neg)/float(total_num_pixels), float(total_pos)/float(total_num_pixels)
+        return float(total_neg)/float(total_pos), float(total_neg)/float(total_num_pixels), \
+               float(total_pos)/float(total_num_pixels)
 
     @property
     def test_set(self):
