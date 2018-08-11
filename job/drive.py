@@ -60,8 +60,6 @@ class DriveJob(Job):
                                                                     timestamp),
                                                graph=tf.get_default_graph())
 
-
-
         # create directories and subdirectories
         if save_model:
             os.makedirs(os.path.join(self.OUTPUTS_DIR_PATH, 'save', network.description, timestamp))
@@ -112,6 +110,20 @@ class DriveJob(Job):
                                                                                                network.targets: batch_targets,
                                                                                                network.is_training: True})
                     end = time.time()
+                    print("training:")
+                    print(np.max(batch_inputs))
+                    print(np.min(batch_inputs))
+                    print(np.max(batch_masks))
+                    print(np.min(batch_masks))
+                    print(np.max(batch_targets))
+                    print(np.min(batch_targets))
+                    print("testing:")
+                    print(np.max(dataset.test_images))
+                    print(np.min(dataset.test_images))
+                    print(np.max(dataset.test_masks))
+                    print(np.min(dataset.test_masks))
+                    print(np.max(dataset.test_targets))
+                    print(np.min(dataset.test_targets))
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, accuracy: {}'.format(
                         batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
                         end - start, pos_weight, acc))
