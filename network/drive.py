@@ -55,7 +55,7 @@ class DriveNetwork(Network):
         with tf.name_scope('accuracy'):
             argmax_probs = tf.round(self.segmentation_result)  # 0x1
             correct_pred = tf.cast(tf.equal(argmax_probs, self.targets), tf.float32)
-            self.accuracy = mask_op_and_mask_mean(correct_pred, self.masks, 1, self.IMAGE_WIDTH, self.IMAGE_HEIGHT)
+            self.accuracy = mask_op_and_mask_mean(correct_pred, self.masks, 1, self.IMAGE_HEIGHT, self.IMAGE_WIDTH)
             tf.summary.scalar('accuracy', self.accuracy)
 
         self.summaries = tf.summary.merge_all()
