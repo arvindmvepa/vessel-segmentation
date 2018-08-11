@@ -78,7 +78,7 @@ class DriveDataset(Dataset):
                 targets.append(np.array(self.train_targets[self.pointer + i]))
 
         self.pointer += self.batch_size
-        return np.array(images, dtype=np.uint8), np.array(masks, dtype=np.uint8), np.array(targets, dtype=np.uint8)
+        return np.array(images), np.array(masks), np.array(targets)
 
     def get_data_for_tensorflow(self, dataset="train"):
         if dataset == "train":
