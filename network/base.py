@@ -33,6 +33,5 @@ class Network(object):
 
         self.net_output(net)
 
-    @property
     def net_output(self, net):
         raise NotImplementedError("Not Implemented")
