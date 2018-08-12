@@ -80,23 +80,7 @@ class DriveDataset(Dataset):
         self.pointer += self.batch_size
         return np.array(images), np.array(masks), np.array(targets)
 
-    def get_data_for_tensorflow(self, dataset="train"):
-        if dataset == "train":
-            return np.reshape(self.train_images, (self.train_images.shape[0], self.train_images.shape[1],
-                                                  self.train_images.shape[2], 1)),\
-                   np.reshape(self.train_masks, (self.train_masks.shape[0], self.train_masks.shape[1],
-                                            self.train_masks.shape[2], 1)),\
-                   np.reshape(self.train_targets, (self.train_targets.shape[0], self.train_targets.shape[1],
-                                                   self.train_targets.shape[2], 1))
-        if dataset == "test":
-            return np.reshape(self.test_images, (self.test_images.shape[0], self.test_images.shape[1],
-                                                  self.test_images.shape[2], 1)),\
-                   np.reshape(self.test_masks, (self.test_masks.shape[0], self.test_masks.shape[1],
-                                            self.test_masks.shape[2], 1)),\
-                   np.reshape(self.test_targets, (self.test_targets.shape[0], self.test_targets.shape[1],
-                                                   self.test_targets.shape[2], 1))
-
-    def get_inverse_pos_freq(self, targets, masks):
+    def get_inverse_pos_freq(self, masks, targets):
         total_pos = 0
         total_num_pixels = 0
         for target, mask in zip(targets, masks):

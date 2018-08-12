@@ -1,29 +1,47 @@
 import multiprocessing
-import numpy as np
-import os
 import matplotlib
 matplotlib.use('Agg')
+
+import os
+import time
+
+import matplotlib
+
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve
+import numpy as np
+import tensorflow as tf
+
+import datetime
+from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix, \
+    roc_curve, auc
+
+from random import randint
+
+from utilities.output_ops import draw_results
 import csv
+
 
 class Job(object):
 
     IMAGE_PLOT_DIR = "image_plots"
+
+    metrics = ("test set average weighted log loss","test set average unweighted log loss",
+               "training set batch weighted log loss","training set batch unweighted log loss","auc","aucfpr10",
+               "aucfpr05","aucfpr025","accuracy","precision","recall","specificity","f1_score","kappa","dt accuracy",
+               "dt precision","dt recall","dt specificity","dt f1_score","dt kappa","threshold scores")
 
     def __init__(self, OUTPUTS_DIR_PATH="."):
         if not os.path.exists(OUTPUTS_DIR_PATH):
             os.makedirs(OUTPUTS_DIR_PATH)
         self.OUTPUTS_DIR_PATH = OUTPUTS_DIR_PATH
 
-    def train(self, **kwargs):
-        raise NotImplementedError("Method Not Implemented")
-
     def run_single_model(self, **kwargs):
         p = multiprocessing.Process(target=self.train, kwargs=kwargs)
         p.start()
         p.join()
 
+    # TODO: implement run_ensemble
     def run_ensemble(self, count=10.0, decision_thresh=.75, wce_dist=True, wce_start_tuning_constant=.5,
                      wce_end_tuning_constant=2.0, wce_tuning_constants=None, wce_tuning_constant=1.0,
                      test_metrics_freq=200, layer_output_freq=1000, end=2000, job_dir=None, test_metrics_file=None,
@@ -53,6 +71,241 @@ class Job(object):
             p = multiprocessing.Process(target=self.train, kwargs=kwargs)
             p.start()
             p.join()
+
+    def train(self, gpu_device=None, decision_threshold=.75, tuning_constant=1.0, metrics_epoch_freq=1,
+              viz_layer_epoch_freq=10, n_epochs=100, metrics_log="metrics_log.csv", num_image_plots=5,
+              save_model=True, debug_net_output=True, **ds_kwargs):
+
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+
+        dataset = self.dataset_cls(**ds_kwargs)
+        pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant, *dataset.train_data[1:])
+
+        # initialize network object
+        if gpu_device is not None:
+            with tf.device(gpu_device):
+                network = self.network_cls(wce_pos_weight=pos_weight)
+        else:
+            network = self.network_cls(wce_pos_weight=pos_weight)
+
+        # create metrics log file
+        metric_log_file_path = os.path.join(self.OUTPUTS_DIR_PATH, metrics_log)
+        self.write_to_csv(sorted(self.metrics), metric_log_file_path)
+
+        # create summary writer
+        summary_writer = tf.summary.FileWriter(
+            '{}/{}/{}-{}'.format(self.OUTPUTS_DIR_PATH, 'logs', network.description,
+                                 timestamp),
+            graph=tf.get_default_graph())
+
+        # create directories and subdirectories
+        if save_model:
+            os.makedirs(os.path.join(self.OUTPUTS_DIR_PATH, 'save', network.description, timestamp))
+
+        if viz_layer_epoch_freq is not None:
+            viz_layer_outputs_path_train, viz_layer_outputs_path_test = \
+                self.create_viz_dirs(network, timestamp)
+
+        config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
+        config.gpu_options.allow_growth = True
+
+        with tf.Session(config=config) as sess:
+            sess.run(tf.global_variables_initializer())
+            tf.train.Saver(tf.all_variables(), max_to_keep=None)
+
+            for epoch_i in range(n_epochs):
+                dataset.reset_batch_pointer()
+                for batch_i in range(dataset.num_batches_in_epoch()):
+                    start = time.time()
+                    batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i
+
+                    batch_data = dataset.next_batch()
+
+
+                    if viz_layer_epoch_freq is not None and debug_net_output:
+                        self.save_debug1(batch_data, viz_layer_outputs_path_train)
+
+                    # reshape array for tensorflow
+                    batch_data = dataset.tf_reshape(batch_data)
+
+                    if viz_layer_epoch_freq is not None and debug_net_output:
+                        self.save_debug2(batch_data, viz_layer_outputs_path_train)
+
+                    cost, cost_unweighted, layer_outputs, debug1, acc, _ = sess.run(
+                        [network.cost, network.cost_unweighted,
+                         network.layer_outputs, network.debug1,
+                         network.accuracy, network.train_op],
+                        feed_dict=self.get_network_dict(network, batch_data))
+                    end = time.time()
+
+                    print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
+                          'accuracy: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost,
+                                                cost_unweighted, end - start, pos_weight, acc))
+
+                    if viz_layer_epoch_freq is not None and debug_net_output:
+                        self.save_debug3(batch_data,debug1,viz_layer_outputs_path_train)
+
+                    if (epoch_i + 1) % viz_layer_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch() - 1:
+                        self.create_viz_layer_output(layer_outputs, decision_threshold,
+                                                     viz_layer_outputs_path_train)
+
+                    if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch() - 1:
+                        self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
+                                                     decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
+                                                     viz_layer_outputs_path_test, num_image_plots, summary_writer,
+                                                     cost=cost, cost_unweighted=cost_unweighted)
+
+    def get_results_on_test_set(self, metrics_log_file_path, network, dataset, sess, decision_threshold, epoch_i,
+                                timestamp,
+                                viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots, summary_writer,
+                                **kwargs):
+
+        metric_scores = dict()
+
+        max_thresh_accuracy = 0.0
+        test_cost = 0.0
+        test_cost_unweighted = 0.0
+
+        segmentation_results = np.zeros((dataset.test_targets.shape[0], dataset.test_targets.shape[1],
+                                         dataset.test_targets.shape[2]))
+        sample_test_image = randint(0, len(dataset.test_images) - 1)
+        # get test results per image
+        for i, test_data in enumerate(zip(*dataset.test_data)):
+            test_data = self.tf_reshape(test_data)
+            test_cost_, test_cost_unweighted_, segmentation_result, layer_outputs = \
+                sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
+                          network.layer_outputs],
+                         feed_dict=self.get_network_dict(network, test_data, False))
+
+            # print('test {} : epoch: {}, cost: {}, cost unweighted: {}'.format(i,epoch_i,test_cost,test_cost_unweighted))
+
+            segmentation_result = segmentation_result[0, :, :, 0]
+            segmentation_results[i, :, :] = segmentation_result
+
+            test_cost += test_cost_
+            test_cost_unweighted += test_cost_unweighted_
+
+            _, test_neg_class_frac, test_pos_class_frac = dataset.get_inverse_pos_freq(*test_data[1:])
+
+            # calculate max threshold accuracy per test image
+            thresh_max = self.get_max_threshold_accuracy_image(segmentation_results,test_neg_class_frac,
+                                                               test_pos_class_frac, *test_data[1:])
+            max_thresh_accuracy += thresh_max
+
+            if i == sample_test_image and (epoch_i + 1) % viz_layer_epoch_freq == 0:
+                self.create_viz_layer_output(layer_outputs, decision_threshold, viz_layer_outputs_path_test)
+
+        # combine test results to produce overall metric scores
+        max_thresh_accuracy = max_thresh_accuracy / len(dataset.test_images)
+        test_cost = test_cost / len(dataset.test_images)
+        test_cost_unweighted = test_cost_unweighted / len(dataset.test_images)
+
+        prediction_flat = segmentation_results.flatten()
+        target_flat = np.round(dataset.test_targets.flatten())
+        mask_flat = self.get_test_mask_flat()
+
+        # save target (if files don't exist)
+        self.save_data(prediction_flat, target_flat, mask_flat, timestamp, epoch_i)
+
+        # produce AUCROC score with map
+        auc_score = roc_auc_score(target_flat, prediction_flat, sample_weight=mask_flat)
+
+        # produce auc_score curve thresholded at different FP poinnts
+        fprs, tprs, thresholds = roc_curve(target_flat, prediction_flat, sample_weight=mask_flat)
+        np_fprs, np_tprs, np_thresholds = np.array(fprs).flatten(), np.array(tprs).flatten(), \
+                                          np.array(thresholds).flatten()
+
+        fpr_10 = np_fprs[np.where(np_fprs < .10)]
+        tpr_10 = np_tprs[0:len(fpr_10)]
+
+        fpr_05 = np_fprs[np.where(np_fprs < .05)]
+        tpr_05 = np_tprs[0:len(fpr_05)]
+
+        fpr_025 = np_fprs[np.where(np_fprs < .025)]
+        tpr_025 = np_tprs[0:len(fpr_025)]
+
+        auc_10_fpr = auc(fpr_10, tpr_10)
+        auc_05_fpr = auc(fpr_05, tpr_05)
+        auc_025_fpr = auc(fpr_025, tpr_025)
+
+        # produce accuracy at different decision thresholds
+        list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
+        interval = 0.05
+
+        threshold_scores = [max_thresh_accuracy]
+        for i in np.arange(0, 1.0 + interval, interval):
+            index = int(round((len(thresholds) - 1) * i, 0))
+            fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
+            thresh_acc = (1 - fpr) * test_neg_class_frac + tpr * test_pos_class_frac
+            threshold_scores.append((threshold, thresh_acc, tpr, 1 - fpr))
+
+        # produce metrics based on predictions given by decisions thresholded at .5
+        rounded_prediction_flat = np.round(prediction_flat)
+        (precision, recall, fbeta_score, _) = precision_recall_fscore_support(target_flat,
+                                                                              rounded_prediction_flat,
+                                                                              average='binary',
+                                                                              sample_weight=mask_flat)
+
+        tn, fp, fn, tp = confusion_matrix(target_flat, rounded_prediction_flat).ravel()
+        kappa = cohen_kappa_score(target_flat, rounded_prediction_flat)
+        acc = float(tp + tn) / float(tp + tn + fp + fn)
+        specificity = float(tn) / float(tn + fp)
+
+        # produce metrics based on predictions given by decision_threshold
+        thresh_prediction_flat = (prediction_flat > decision_threshold).astype(int)
+
+        (r_precision, r_recall, r_fbeta_score, _) = precision_recall_fscore_support(target_flat,
+                                                                                    thresh_prediction_flat,
+                                                                                    average='binary',
+                                                                                    sample_weight=mask_flat)
+
+        r_tn, r_fp, r_fn, r_tp = confusion_matrix(target_flat, thresh_prediction_flat, sample_weight=mask_flat).ravel()
+        r_kappa = cohen_kappa_score(target_flat, thresh_prediction_flat, sample_weight=mask_flat)
+        r_acc = float(r_tp + r_tn) / float(r_tp + r_tn + r_fp + r_fn)
+        r_specificity = float(r_tn) / float(r_tn + r_fp)
+
+        metric_scores["test set average weighted log loss"] = test_cost
+        metric_scores["test set average unweighted log loss"] = test_cost_unweighted
+        metric_scores["training set batch weighted log loss"] = kwargs["cost"]
+        metric_scores["training set batch unweighted log loss"] = kwargs["cost_unweighted"]
+
+        metric_scores["auc"] = auc_score
+        metric_scores["aucfpr10"] = auc_10_fpr
+        metric_scores["aucfpr05"] = auc_05_fpr
+        metric_scores["aucfpr025"] = auc_025_fpr
+
+        metric_scores["accuracy"] = acc
+        metric_scores["precision"] = precision
+        metric_scores["recall"] = recall
+        metric_scores["specificity"] = specificity
+        metric_scores["f1_score"] = fbeta_score
+        metric_scores["kappa"] = kappa
+
+        metric_scores["dt accuracy"] = r_acc
+        metric_scores["dt precision"] = r_precision
+        metric_scores["dt recall"] = r_recall
+        metric_scores["dt specificity"] = r_specificity
+        metric_scores["dt f1_score"] = r_fbeta_score
+        metric_scores["dt kappa"] = r_kappa
+
+        metric_scores["threshold scores"] = threshold_scores
+
+        # save metric results to log
+        self.write_to_csv([metric_scores[key] for key in sorted(metric_scores.keys())], metrics_log_file_path)
+
+        # produce image plots
+        test_plot_buf = draw_results(dataset.test_images[:num_image_plots],
+                                     dataset.test_targets[:num_image_plots],
+                                     segmentation_results[:num_image_plots, :, :],
+                                     acc, network, epoch_i, num_image_plots, os.path.join(self.OUTPUTS_DIR_PATH,
+                                                                                          self.IMAGE_PLOT_DIR),
+                                     decision_threshold)
+
+        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
+        image = tf.expand_dims(image, 0)
+        image_summary_op = tf.summary.image("plot", image)
+        image_summary = sess.run(image_summary_op)
+        summary_writer.add_summary(image_summary)
 
     def create_viz_dirs(self, network, timestamp):
         viz_layer_outputs_path = os.path.join(self.OUTPUTS_DIR_PATH, 'viz_layer_outputs', network.description, timestamp)
@@ -99,6 +352,54 @@ class Job(object):
         with open(file_path, "a") as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             writer.writerow(entries)
+
+    def save_data(self, prediction_flat, target_flat, mask_flat, timestamp, epoch_i):
+        targets_path = os.path.join(self.OUTPUTS_DIR_PATH, "saved_targets")
+        preds_path = os.path.join(self.OUTPUTS_DIR_PATH, "saved_preds")
+        if not os.path.exists(targets_path):
+            os.makedirs(targets_path)
+        if not os.path.exists(preds_path):
+            os.makedirs(preds_path)
+        if not os.path.exists(os.path.join(targets_path, "target.npy")):
+            np.save(os.path.join(targets_path,"target.npy"), target_flat)
+
+        # save prediction array e.g. for ensemble processing
+        file_name = timestamp + "_" + str(epoch_i)
+        np.save(os.path.join(preds_path,file_name), prediction_flat)
+
+    @staticmethod
+    def save_debug1(input_data, save_path):
+        plt.imsave(os.path.join(save_path, "test1.jpeg"), input_data[0][0])
+        plt.imsave(os.path.join(save_path, "test1_target.jpeg"), input_data[len(input_data)-1][0])
+
+    @staticmethod
+    def save_debug2(input_data, save_path):
+        plt.imsave(os.path.join(save_path, "test2.jpeg"), input_data[0][0, :, :, 0])
+        plt.imsave(os.path.join(save_path, "test2_target.jpeg"), input_data[len(input_data) - 1][0, :, :, 0])
+
+    @staticmethod
+    def save_debug3(input_data, debug_data, save_path):
+        plt.imsave(os.path.join(save_path, "test2.jpeg"), input_data[0][0, :, :, 0])
+        plt.imsave(os.path.join(save_path, "test2_target.jpeg"), input_data[len(input_data) - 1][0, :, :, 0])
+        debug1 = debug_data[0, :, :, 0]
+        plt.imsave(os.path.join(save_path, "debug1.jpeg"), debug1)
+
+    @property
+    def dataset_cls(self):
+        raise ValueError("Property Not Defined")
+
+    @property
+    def network_cls(self):
+        raise ValueError("Property Not Defined")
+
+    def get_test_mask_flat(self, dataset):
+        return None
+
+    def get_network_dict(self, network, input_data, train=True):
+        if train:
+            return {network.is_training: True}
+        else:
+            return {network.is_training: False}
 
     def __call__(self):
         pass
