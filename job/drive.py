@@ -71,8 +71,6 @@ class DriveJob(Job):
         config = tf.ConfigProto(allow_soft_placement=True, log_device_placement=True)
         config.gpu_options.allow_growth = True
 
-        test_results = None
-
         with tf.Session(config=config) as sess:
             sess.run(tf.global_variables_initializer())
             tf.train.Saver(tf.all_variables(), max_to_keep=None)
@@ -110,27 +108,6 @@ class DriveJob(Job):
                                                                                                network.targets: batch_targets,
                                                                                                network.is_training: True})
                     end = time.time()
-                    print("batch training:")
-                    print(np.amax(batch_inputs))
-                    print(np.amin(batch_inputs))
-                    print(np.amax(batch_masks))
-                    print(np.amin(batch_masks))
-                    print(np.amax(batch_targets))
-                    print(np.amin(batch_targets))
-                    print("training:")
-                    print(np.amax(dataset.test_images, axis=(1,2)))
-                    print(np.amin(dataset.test_images, axis=(1,2)))
-                    print(np.amax(dataset.test_masks, axis=(1,2)))
-                    print(np.amin(dataset.test_masks, axis=(1,2)))
-                    print(np.amax(dataset.test_targets, axis=(1,2)))
-                    print(np.amin(dataset.test_targets, axis=(1,2)))
-                    print("testing:")
-                    print(np.amax(dataset.test_images, axis=(1,2)))
-                    print(np.amin(dataset.test_images, axis=(1,2)))
-                    print(np.amax(dataset.test_masks, axis=(1,2)))
-                    print(np.amin(dataset.test_masks, axis=(1,2)))
-                    print(np.amax(dataset.test_targets, axis=(1,2)))
-                    print(np.amin(dataset.test_targets, axis=(1,2)))
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, accuracy: {}'.format(
                         batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
                         end - start, pos_weight, acc))

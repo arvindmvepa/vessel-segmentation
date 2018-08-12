@@ -4,12 +4,12 @@ from skimage import io as skio
 import cv2
 
 from dataset.base import Dataset
-from network.drive import DriveNetwork
+from network.dsa import DsaNetwork
 
 class DsaDataset(Dataset):
 
-    targets1_dir = "targets1"
-    targets2_dir = "targets2"
+    TARGETS1_DIR = "targets1"
+    TARGETS2_DIR = "targets2"
 
     def __init__(self, batch_size=1, WRK_DIR_PATH ="./dsa", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = True):
         super(DsaDataset, self).__init__(batch_size=batch_size, WRK_DIR_PATH=WRK_DIR_PATH, TRAIN_SUBDIR=TRAIN_SUBDIR,
@@ -18,32 +18,32 @@ class DsaDataset(Dataset):
         self.train_images, self.train_targets = self.train_data
         self.test_images, self.test_targets = self.test_data
 
-    def get_images_from_file(self, dir):
-        dir_path = os.path.join(self.WRK_DIR_PATH, dir)
+    def get_images_from_file(self, DIR_PATH):
         images = []
         targets = []
 
-        images_dir = os.path.join(dir_path, self.IMAGES_DIR)
-        image_files = sorted(os.listdir(images_dir))
+        IMAGES_DIR_PATH = os.path.join(DIR_PATH, self.IMAGES_DIR)
 
-        for file in image_files:
-            image_file = os.path.join(dir_path, file)
-            image_arr = cv2.imread(image_file, 0)
+        image_files = sorted(os.listdir(IMAGES_DIR_PATH))
+
+        for image_file in image_files:
+            image_path = os.path.join(IMAGES_DIR_PATH, image_file)
+            image_arr = cv2.imread(image_path, 0)
             image_arr = np.multiply(image_arr, 1.0 / 255)
             images.append(image_arr)
 
-            if os.path.exists(os.path.join(dir_path, self.targets1_dir, file)):
-                target_file = os.path.join(dir_path, self.targets1_dir, file)
+            if os.path.exists(os.path.join(DIR_PATH, self.TARGETS1_DIR, image_file)):
+                target_file = os.path.join(DIR_PATH, self.TARGETS1_DIR, image_file)
                 target_arr = np.array(skio.imread(target_file))
                 target_arr = np.where(target_arr > 127,1,0)
                 targets.append(target_arr)
-            elif os.path.exists(os.path.join(dir_path, self.targets2_dir, file)):
-                target_file = os.path.join(dir_path, self.targets2_dir, file)
+            elif os.path.exists(os.path.join(DIR_PATH, self.TARGETS2_DIR, image_file)):
+                target_file = os.path.join(DIR_PATH, self.TARGETS2_DIR, image_file)
                 target_arr = np.array(skio.imread(target_file))[:, :, 3]
                 target_arr = np.where(target_arr > 127,1,0)
                 targets.append(target_arr)
             else:
-                raise ValueError("Path for target file for \'{}\' not defined".format(file))
+                raise ValueError("Path for target file for \'{}\' not defined".format(image_file))
 
         return np.asarray(images), np.asarray(targets)
 
@@ -63,7 +63,7 @@ class DsaDataset(Dataset):
                 targets.append(np.array(self.train_targets[self.pointer + i]))
 
         self.pointer += self.batch_size
-        return np.array(images, dtype=np.uint8), np.array(targets, dtype=np.uint8)
+        return np.array(images), np.array(targets)
 
     def get_data_for_tensorflow(self, dataset="train"):
         if dataset == "train":
@@ -77,15 +77,15 @@ class DsaDataset(Dataset):
                    np.reshape(self.test_targets, (self.test_targets.shape[0], self.test_targets.shape[1],
                                                    self.test_targets.shape[2], 1))
 
-    def get_inverse_pos_freq(self):
+    def get_inverse_pos_freq(self, targets):
         total_pos = 0
         total_num_pixels = 0
-        for target in self.train_targets:
+        for target in targets:
             total_pos += np.count_nonzero(target)
-            total_num_pixels += DriveNetwork.IMAGE_WIDTH * DriveNetwork.IMAGE_HEIGHT
+            total_num_pixels += DsaNetwork.IMAGE_WIDTH * DsaNetwork.IMAGE_HEIGHT
         total_neg = total_num_pixels - total_pos
-        return total_neg/total_pos, float(total_neg)/float(total_num_pixels), float(total_pos)/float(total_num_pixels)
+        return float(total_neg)/float(total_pos), float(total_neg)/float(total_num_pixels), float(total_pos)/float(total_num_pixels)
 
     @property
     def test_set(self):
-        return np.array(self.train_images, dtype=np.uint8), np.array(self.test_targets, dtype=np.uint8)
+        return np.array(self.train_images), np.array(self.test_targets)

@@ -3,6 +3,7 @@ from layers.conv2d import Conv2d
 from layers.max_pool_2d import MaxPool2d
 import tensorflow as tf
 
+
 class DsaNetwork(Network):
     IMAGE_WIDTH = 1024
     IMAGE_HEIGHT = 1024
@@ -41,9 +42,8 @@ class DsaNetwork(Network):
             self.inputs = tf.placeholder(tf.float32,
                                          [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
                                          name='inputs')
-            super(DsaNetwork, self).__init__(layers, IMAGE_WIDTH=self.IMAGE_WIDTH, IMAGE_HEIGHT=self.IMAGE_HEIGHT,
-                                             FIT_IMAGE_WIDTH=self.IMAGE_WIDTH,
-                                             FIT_IMAGE_HEIGHT=self.IMAGE_HEIGHT, **kwargs)
+            self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
+        super(DsaNetwork, self).__init__(layers=layers, **kwargs)
 
     def net_output(self, net):
         self.segmentation_result = tf.sigmoid(net)
