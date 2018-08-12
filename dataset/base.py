@@ -38,6 +38,12 @@ class Dataset(object):
             X[int(ceil(N * ratio[0])): int(ceil(N * ratio[0] + N * ratio[1]))],
             X[int(ceil(N * ratio[0] + N * ratio[1])):]
         )
+    @staticmethod
+    def tf_reshape(arrs):
+        reshaped_arrs = []
+        for arr in arrs:
+            reshaped_arrs += [np.reshape(arr, (arr.shape[0], arr.shape[1], arr.shape[2], 1))]
+        return tuple(reshaped_arrs)
 
     def num_batches_in_epoch(self):
         return int(math.floor(len(self.train_data[0]) / self.batch_size))
@@ -48,8 +54,8 @@ class Dataset(object):
     def next_batch(self):
         raise NotImplementedError("Method Not Implemented")
 
-    def get_tuned_pos_ce_weight(self, tuning_constant=1.0, **kwargs):
-        return tuning_constant*self.get_inverse_pos_freq(**kwargs)[0]
+    def get_tuned_pos_ce_weight(self, tuning_constant=1.0, *args):
+        return tuning_constant*self.get_inverse_pos_freq(*args)[0]
 
     def get_inverse_pos_freq(self, images, targets, **kwargs):
         raise NotImplementedError("Method Not Implemented")
