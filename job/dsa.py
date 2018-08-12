@@ -118,7 +118,7 @@ class DsaJob(Job):
                     if (epoch_i+1) % viz_layer_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch()-1:
                         self.create_viz_layer_output(layer_outputs, decision_threshold, viz_layer_outputs_path_train)
 
-                    if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch() - 1:
+                    if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == 0:
                         self.evaluate_on_test_set(metric_log_file_path, network, dataset, sess,
                                                   decision_threshold, epoch_i, timestamp,viz_layer_epoch_freq,
                                                   viz_layer_outputs_path_test, num_image_plots,summary_writer,
@@ -285,3 +285,20 @@ class DsaJob(Job):
         image_summary_op = tf.summary.image("plot", image)
         image_summary = sess.run(image_summary_op)
         summary_writer.add_summary(image_summary)
+
+
+    @staticmethod
+    def get_max_threshold_accuracy_image(results, targets, neg_class_frac, pos_class_frac):
+        fprs, tprs, thresholds = roc_curve(targets.flatten(), results.flatten())
+        list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
+        interval = 0.0001
+        thresh_max = 0.0
+
+        for i in np.arange(0.0, 1.0 + interval, interval):
+            index = int(round((len(thresholds) - 1) * i, 0))
+            fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
+            thresh_acc = (1 - fpr) * neg_class_frac + tpr * pos_class_frac
+            if thresh_acc > thresh_max:
+                thresh_max = thresh_acc
+            i += 1
+        return thresh_max
