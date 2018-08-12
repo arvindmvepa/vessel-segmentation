@@ -41,6 +41,12 @@ class Job(object):
         p.start()
         p.join()
 
+    ###
+    def run_cross_validation(self, **kwargs):
+        p = multiprocessing.Process(target=self.train, kwargs=kwargs)
+        p.start()
+        p.join()
+
     # TODO: implement run_ensemble
     def run_ensemble(self, count=10.0, decision_thresh=.75, wce_dist=True, wce_start_tuning_constant=.5,
                      wce_end_tuning_constant=2.0, wce_tuning_constants=None, wce_tuning_constant=1.0,
@@ -171,7 +177,7 @@ class Job(object):
         sample_test_image = randint(0, len(dataset.test_images) - 1)
         # get test results per image
         for i, test_data in enumerate(zip(*dataset.test_data)):
-            test_data = self.tf_reshape(test_data)
+            test_data = dataset.tf_reshape(test_data)
             test_cost_, test_cost_unweighted_, segmentation_result, layer_outputs = \
                 sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
                           network.layer_outputs],
