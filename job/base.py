@@ -94,8 +94,8 @@ class Job(object):
         metric_folds_results = np.array(metric_folds_results)
 
         # calculate the mean and mof
-        mean_folds_results = np.mean(metric_folds_results, axis=0)
-        mof_folds_results = mof_func(metric_folds_results, axis=0)
+        mean_folds_results = np.mean(metric_folds_results, axis=0).tolist()
+        mof_folds_results = mof_func(metric_folds_results, axis=0).tolist()
 
         # create file name and path for combined results
         combined_metrics_log_fname_lst = list(metrics_log_fname_lst)
@@ -105,7 +105,7 @@ class Job(object):
 
         # create results file with combined results
         self.write_to_csv(sorted(self.metrics), combined_metrics_log_path)
-        for i in range(mean_folds_results.shape[0]):
+        for i in range(len(mean_folds_results)):
             row = [" +/- ".join(entry) for entry in zip(mean_folds_results[i],mof_folds_results[i])]
             self.write_to_csv(row, combined_metrics_log_path)
 
