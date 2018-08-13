@@ -65,7 +65,6 @@ class Job(object):
         folds_metrics_log_fname = []
 
         # run job per cv fold
-        """
         for i, (train_inds, test_inds) in enumerate(k_fold.split(imgs)):
             fold_metrics_log_fname_lst = list(metrics_log_fname_lst)
             fold_suffix = "_fold_"+str(i)
@@ -76,11 +75,10 @@ class Job(object):
             folds_metrics_log_fname += [fold_metrics_log_fname]
             fold_kwargs["cv_train_inds"] = train_inds
             fold_kwargs["cv_test_inds"] = test_inds
+            # p = multiprocessing.Process(target=self.train, kwargs=fold_kwargs)
+            # p.start()
+            # p.join()
 
-            p = multiprocessing.Process(target=self.train, kwargs=fold_kwargs)
-            p.start()
-            p.join()
-        """
         # define func for measure of fit
         if mof_metric == "mad":
             mof_func = robust.mad
@@ -91,7 +89,7 @@ class Job(object):
         metric_folds_results = []
         for fold_metrics_log_fname in folds_metrics_log_fname:
             fold_metrics_log_path = os.path.join(self.OUTPUTS_DIR_PATH, fold_metrics_log_fname)
-            metric_folds_results += [genfromtxt(fold_metrics_log_path, skip_header=1,delimiter=',')]
+            metric_folds_results += [genfromtxt(fold_metrics_log_path,skip_header=1,delimiter=',')]
         metric_folds_results = np.array(metric_folds_results)
         print("metric folds results")
         print(metric_folds_results)
