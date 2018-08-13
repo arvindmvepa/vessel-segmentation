@@ -103,6 +103,12 @@ class Job(object):
         combined_metrics_log_fname = "".join(combined_metrics_log_fname_lst)
         combined_metrics_log_path = os.path.join(self.OUTPUTS_DIR_PATH, combined_metrics_log_fname)
 
+        print("fold results")
+        print(mean_folds_results)
+        print(mean_folds_results[i])
+        print(mof_folds_results)
+        print(mof_folds_results[i])
+
         # create results file with combined results
         self.write_to_csv(sorted(self.metrics), combined_metrics_log_path)
         for i in range(len(mean_folds_results)):
