@@ -41,11 +41,38 @@ class Job(object):
         p.start()
         p.join()
 
-    ###
-    def run_cross_validation(self, **kwargs):
-        p = multiprocessing.Process(target=self.train, kwargs=kwargs)
-        p.start()
-        p.join()
+        # gpu_device=None,
+        # decision_threshold=.75,
+        # tuning_constant=1.0,
+        # metrics_epoch_freq=1,
+        # viz_layer_epoch_freq=10,
+        # n_epochs=100,
+        # metrics_log="metrics_log.csv",
+        # num_image_plots=5,
+        # save_model=True,
+        # debug_net_output=True,
+        # **ds_kwargs
+
+    def run_cross_validation(self, nfolds=3, **kwargs):
+        metrics_log = kwargs.pop("metrics_log","")
+        if metrics_log == "":
+            metrics_log = "metrics_log.csv"
+        metrics_log_fname_lst = os.path.splitext(metrics_log)
+
+        # randomly pick data items
+
+        # produce metrics on the produced
+
+        for i in range(nfolds):
+            fold_metrics_log_name_lst = list(metrics_log_fname_lst)
+            fold_suffix = "folder_"+str(i)
+            fold_metrics_log_name_lst[0] = metrics_log_fname_lst[0] + fold_suffix
+            fold_kwargs = kwargs.copy()
+            fold_kwargs["metrics_log"]= "".join(fold_metrics_log_name_lst)
+
+            p = multiprocessing.Process(target=self.train, kwargs=fold_kwargs)
+            p.start()
+            p.join()
 
     # TODO: implement run_ensemble
     def run_ensemble(self, count=10.0, decision_thresh=.75, wce_dist=True, wce_start_tuning_constant=.5,
@@ -177,7 +204,7 @@ class Job(object):
         sample_test_image = randint(0, len(dataset.test_images) - 1)
         # get test results per image
         for i, test_data in enumerate(zip(*dataset.test_data)):
-            test_data = dataset.tf_reshape(test_data)
+            test_data = dataset.tf_reshape((test_data,))
             test_cost_, test_cost_unweighted_, segmentation_result, layer_outputs = \
                 sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
                           network.layer_outputs],
