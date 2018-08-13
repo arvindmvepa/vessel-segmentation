@@ -11,20 +11,24 @@ class DsaDataset(Dataset):
     TARGETS1_DIR = "targets1"
     TARGETS2_DIR = "targets2"
 
-    def __init__(self, batch_size=1, WRK_DIR_PATH ="./dsa", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = True):
+    def __init__(self, batch_size=1, WRK_DIR_PATH ="./dsa", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = True,
+                 cv_train_inds = None, cv_test_inds = None):
         super(DsaDataset, self).__init__(batch_size=batch_size, WRK_DIR_PATH=WRK_DIR_PATH, TRAIN_SUBDIR=TRAIN_SUBDIR,
-                                         TEST_SUBDIR=TEST_SUBDIR, sgd=sgd)
+                                         TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
+                                         cv_test_inds=cv_test_inds)
 
         self.train_images, self.train_targets = self.train_data
         self.test_images, self.test_targets = self.test_data
 
-    def get_images_from_file(self, DIR_PATH):
+    def get_images_from_file(self, DIR_PATH, file_indices=None):
         images = []
         targets = []
 
         IMAGES_DIR_PATH = os.path.join(DIR_PATH, self.IMAGES_DIR)
 
         image_files = sorted(os.listdir(IMAGES_DIR_PATH))
+        if file_indices is not None:
+            image_files = [image_files[i] for i in file_indices]
 
         for image_file in image_files:
             image_path = os.path.join(IMAGES_DIR_PATH, image_file)

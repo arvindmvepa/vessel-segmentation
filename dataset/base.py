@@ -8,7 +8,8 @@ class Dataset(object):
 
     IMAGES_DIR = "images"
 
-    def __init__(self, batch_size=1, WRK_DIR_PATH =".", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = True):
+    def __init__(self, batch_size=1, WRK_DIR_PATH =".", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = True,
+                 cv_train_inds = None, cv_test_inds = None):
         self.WRK_DIR_PATH = WRK_DIR_PATH
         self.batch_size = batch_size
         self.sgd = sgd
@@ -17,12 +18,12 @@ class Dataset(object):
         self.TRAIN_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TRAIN_SUBDIR)
         self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TEST_SUBDIR)
 
-        self.train_data = self.get_images_from_file(self.TRAIN_DIR_PATH)
-        self.test_data = self.get_images_from_file(self.TEST_DIR_PATH)
+        self.train_data = self.get_images_from_file(self.TRAIN_DIR_PATH, cv_train_inds)
+        self.test_data = self.get_images_from_file(self.TEST_DIR_PATH, cv_test_inds)
 
         self.pointer = 0
 
-    def get_images_from_file(self,dir):
+    def get_images_from_file(self, DIR_PATH, file_indices=None):
         raise NotImplementedError("Method Not Implemented")
 
     def get_data_for_tensorflow(self, dataset="train"):
