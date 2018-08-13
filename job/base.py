@@ -438,6 +438,11 @@ class Job(object):
     def network_cls(self):
         raise ValueError("Property Not Defined")
 
+    @staticmethod
+    def get_max_threshold_accuracy_image(results, neg_class_frac, pos_class_frac, *args):
+        raise NotImplementedError("Not Implemented")
+
+
     def get_test_mask_flat(self, dataset):
         return None
 
