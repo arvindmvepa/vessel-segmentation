@@ -29,7 +29,7 @@ class DsaJob(Job):
         return DsaNetwork
 
     @staticmethod
-    def get_max_threshold_accuracy_image(results, targets, neg_class_frac, pos_class_frac):
+    def get_max_threshold_accuracy_image(results, neg_class_frac, pos_class_frac, targets):
         fprs, tprs, thresholds = roc_curve(targets.flatten(), results.flatten())
         list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
         interval = 0.0001

@@ -31,7 +31,7 @@ class DriveJob(Job):
         return DriveNetwork
 
     @staticmethod
-    def get_max_threshold_accuracy_image(results, masks, targets, neg_class_frac, pos_class_frac):
+    def get_max_threshold_accuracy_image(results, neg_class_frac, pos_class_frac, masks, targets):
         fprs, tprs, thresholds = roc_curve(targets.flatten(), results.flatten(), sample_weight=masks.flatten())
         list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
         interval = 0.0001
