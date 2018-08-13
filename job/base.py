@@ -96,6 +96,7 @@ class Job(object):
         metric_folds_results = np.array(metric_folds_results)
         print("metric folds results")
         print(metric_folds_results)
+        print(metric_folds_results.shape)
         # calculate the mean and mof
         mean_folds_results = np.mean(metric_folds_results, axis=0)
         mof_folds_results = mof_func(metric_folds_results, axis=0)
@@ -108,6 +109,7 @@ class Job(object):
 
         print("fold results")
         print(mean_folds_results)
+        print(mean_folds_results.shape)
         print(mean_folds_results[0])
         print(mof_folds_results)
         print(mof_folds_results[0])
