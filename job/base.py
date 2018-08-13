@@ -90,8 +90,8 @@ class Job(object):
         for fold_metrics_log_fname in folds_metrics_log_fname:
             fold_metrics_log_path = os.path.join(self.OUTPUTS_DIR_PATH, fold_metrics_log_fname)
             metric_fold_results = genfromtxt(fold_metrics_log_path,skip_header=1,delimiter=',')
-            #if len(metric_fold_results.shape) == 1:
-            #metric_fold_results = np.expand_dims(metric_fold_results,axis=0)
+            if len(metric_fold_results.shape) == 1:
+                metric_fold_results = np.expand_dims(metric_fold_results,axis=0)
             metric_folds_results += [metric_fold_results]
         metric_folds_results = np.array(metric_folds_results)
         print("metric folds results")
