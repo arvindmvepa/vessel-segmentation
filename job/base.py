@@ -107,9 +107,9 @@ class Job(object):
 
         print("fold results")
         print(mean_folds_results)
-        print(mean_folds_results[i])
+        print(mean_folds_results[0])
         print(mof_folds_results)
-        print(mof_folds_results[i])
+        print(mof_folds_results[0])
 
         # create results file with combined results
         self.write_to_csv(sorted(self.metrics), combined_metrics_log_path)
