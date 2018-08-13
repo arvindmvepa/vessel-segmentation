@@ -12,14 +12,16 @@ class DriveDataset(Dataset):
     MASKS_DIR = "masks"
     TARGETS_DIR = "targets"
 
-    def __init__(self, batch_size=1, WRK_DIR_PATH='./drive', TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd=True):
+    def __init__(self, batch_size=1, WRK_DIR_PATH='./drive', TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd=True,
+                 cv_train_inds = None, cv_test_inds = None):
         super(DriveDataset, self).__init__(batch_size=batch_size, WRK_DIR_PATH=WRK_DIR_PATH, TRAIN_SUBDIR=TRAIN_SUBDIR,
-                                           TEST_SUBDIR=TEST_SUBDIR, sgd=sgd)
+                                           TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
+                                           cv_test_inds=cv_test_inds)
 
         self.train_images, self.train_masks, self.train_targets = self.train_data
         self.test_images, self.test_masks, self.test_targets = self.test_data
 
-    def get_images_from_file(self, DIR_PATH):
+    def get_images_from_file(self, DIR_PATH, file_indices=None):
 
         images = []
         masks = []
@@ -32,6 +34,11 @@ class DriveDataset(Dataset):
         image_files = sorted(os.listdir(IMAGES_DIR_PATH))
         mask_files = sorted(os.listdir(MASKS_DIR_PATH))
         target_files = sorted(os.listdir(TARGETS_DIR_PATH))
+
+        if file_indices is not None:
+            image_files = [image_files[i] for i in file_indices]
+            mask_files = [mask_files[i] for i in file_indices]
+            target_files = [target_files[i] for i in file_indices]
 
         for image_file,mask_file,target_file in zip(image_files, mask_files, target_files):
 

@@ -15,12 +15,16 @@ import tensorflow as tf
 import datetime
 from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix, \
     roc_curve, auc
+from sklearn.model_selection import KFold
 
 from random import randint
 
 from utilities.output_ops import draw_results
 import csv
 from numpy import genfromtxt
+from statsmodels import robust
+from dataset.base import Dataset
+import random
 
 
 class Job(object):
@@ -42,49 +46,68 @@ class Job(object):
         p.start()
         p.join()
 
-        # gpu_device=None,
-        # decision_threshold=.75,
-        # tuning_constant=1.0,
-        # metrics_epoch_freq=1,
-        # viz_layer_epoch_freq=10,
-        # n_epochs=100,
-        # metrics_log="metrics_log.csv",
-        # num_image_plots=5,
-        # save_model=True,
-        # debug_net_output=True,
-        # **ds_kwargs
+    # only metrics are returned per fold
+    # for most other output, only last is kept
+    def run_cross_validation(self, n_splits=3, mof_metric="mad",**kwargs):
 
-    def run_cross_validation(self, nfolds=3, mof_metric="mad",**kwargs):
+        # produce cv indices
+        k_fold = KFold(n_splits=n_splits, shuffle=True)
+        WRK_DIR_PATH = kwargs.get("WRK_DIR_PATH",".")
+        TRAIN_SUBDIR = kwargs.get("TRAIN_SUBDIR","train")
+        IMAGES_DIR_PATH = os.path.join(WRK_DIR_PATH, TRAIN_SUBDIR, Dataset.IMAGES_DIR)
+        imgs = os.listdir(IMAGES_DIR_PATH)
+
+        # get base file name for logging cv results
         metrics_log = kwargs.pop("metrics_log","")
         if metrics_log == "":
             metrics_log = "metrics_log.csv"
         metrics_log_fname_lst = os.path.splitext(metrics_log)
+        folds_metrics_log_fname = []
 
-        # randomly pick data items
-
-        for i in range(nfolds):
-            fold_metrics_log_name_lst = list(metrics_log_fname_lst)
+        # run job per cv fold
+        for i, (train_inds, test_inds) in enumerate(k_fold.split(imgs)):
+            fold_metrics_log_fname_lst = list(metrics_log_fname_lst)
             fold_suffix = "folder_"+str(i)
-            fold_metrics_log_name_lst[0] = metrics_log_fname_lst[0] + fold_suffix
+            fold_metrics_log_fname_lst[0] = metrics_log_fname_lst[0] + fold_suffix
             fold_kwargs = kwargs.copy()
-            fold_kwargs["metrics_log"]= "".join(fold_metrics_log_name_lst)
+            fold_metrics_log_fname = "".join(fold_metrics_log_fname_lst)
+            fold_kwargs["metrics_log"]= fold_metrics_log_fname
+            folds_metrics_log_fname += [fold_metrics_log_fname]
+            fold_kwargs["cv_train_inds"] = train_inds
+            fold_kwargs["cv_test_inds"] = test_inds
+
             p = multiprocessing.Process(target=self.train, kwargs=fold_kwargs)
             p.start()
             p.join()
 
+        # define func for measure of fit
         if mof_metric == "mad":
-            pass
+            mof_func = robust.mad
         elif mof_metric == "std":
-            pass
+            mof_func = np.std
 
-        files = ["file1", "file2"]
+        # combine results from each cv fold log
+        metric_folds_results = []
+        for fold_metrics_log_fname in folds_metrics_log_fname:
+            fold_metrics_log_path = os.path.join(self.OUTPUTS_DIR_PATH, fold_metrics_log_fname)
+            metric_folds_results += [genfromtxt(fold_metrics_log_path, skip_header=1,delimiter=',')]
+        metric_folds_results = np.array(metric_folds_results)
 
-        data = genfromtxt(files[0], delimiter=',')
-        for f in files[1:]:
-            data += genfromtxt(f, delimiter=',')
+        # calculate the mean and mof
+        mean_folds_results = np.mean(metric_folds_results, axis=0)
+        mof_folds_results = mof_func(metric_folds_results, axis=0)
 
-        data /= len(files)
+        # create file name and path for combined results
+        combined_metrics_log_fname_lst = list(metrics_log_fname_lst)
+        combined_metrics_log_fname_lst[0] = combined_metrics_log_fname_lst[0] + "_combined_mof_"+mof_metric
+        combined_metrics_log_fname = "".join(combined_metrics_log_fname_lst)
+        combined_metrics_log_path = os.path.join(self.OUTPUTS_DIR_PATH, combined_metrics_log_fname)
 
+        # create results file with combined results
+        self.write_to_csv(sorted(self.metrics), combined_metrics_log_path)
+        for i in mean_folds_results.shape[0]:
+            row = [" +/- ".join(entry) for entry in zip(mean_folds_results[i],mof_folds_results[i])]
+            self.write_to_csv(row, combined_metrics_log_path)
 
     # TODO: implement run_ensemble
     def run_ensemble(self, count=10.0, decision_thresh=.75, wce_dist=True, wce_start_tuning_constant=.5,
