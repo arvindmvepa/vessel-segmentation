@@ -67,7 +67,7 @@ class Job(object):
         # run job per cv fold
         for i, (train_inds, test_inds) in enumerate(k_fold.split(imgs)):
             fold_metrics_log_fname_lst = list(metrics_log_fname_lst)
-            fold_suffix = "folder_"+str(i)
+            fold_suffix = "_fold_"+str(i)
             fold_metrics_log_fname_lst[0] = metrics_log_fname_lst[0] + fold_suffix
             fold_kwargs = kwargs.copy()
             fold_metrics_log_fname = "".join(fold_metrics_log_fname_lst)
