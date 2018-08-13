@@ -218,15 +218,15 @@ class Job(object):
         # get test results per image
         for i, test_data in enumerate(zip(*dataset.test_data)):
             test_data = dataset.tf_reshape(test_data)
-            test_cost_, test_cost_unweighted_, segmentation_result, layer_outputs = \
+            test_cost_, test_cost_unweighted_, segmentation_test_result, layer_outputs = \
                 sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
                           network.layer_outputs],
                          feed_dict=self.get_network_dict(network, test_data, False))
 
             # print('test {} : epoch: {}, cost: {}, cost unweighted: {}'.format(i,epoch_i,test_cost,test_cost_unweighted))
 
-            segmentation_result = segmentation_result[0, :, :, 0]
-            segmentation_results[i, :, :] = segmentation_result
+            segmentation_test_result = segmentation_test_result[0, :, :, 0]
+            segmentation_results[i, :, :] = segmentation_test_result
 
             test_cost += test_cost_
             test_cost_unweighted += test_cost_unweighted_
@@ -234,7 +234,7 @@ class Job(object):
             _, test_neg_class_frac, test_pos_class_frac = dataset.get_inverse_pos_freq(*test_data[1:])
 
             # calculate max threshold accuracy per test image
-            thresh_max = self.get_max_threshold_accuracy_image(segmentation_results,test_neg_class_frac,
+            thresh_max = self.get_max_threshold_accuracy_image(segmentation_test_result, test_neg_class_frac,
                                                                test_pos_class_frac, *test_data[1:])
             max_thresh_accuracy += thresh_max
 
