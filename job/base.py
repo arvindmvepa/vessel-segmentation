@@ -216,8 +216,8 @@ class Job(object):
                                          dataset.test_targets.shape[2]))
         sample_test_image = randint(0, len(dataset.test_images) - 1)
         # get test results per image
-        reshaped_test_data = dataset.tf_reshape(dataset.test_data)
-        for i, test_data in enumerate(zip(*reshaped_test_data)):
+        for i, test_data in enumerate(zip(*dataset.test_data)):
+            test_data = dataset.tf_reshape(test_data)
             test_cost_, test_cost_unweighted_, segmentation_result, layer_outputs = \
                 sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
                           network.layer_outputs],

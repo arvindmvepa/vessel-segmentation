@@ -42,7 +42,10 @@ class Dataset(object):
     def tf_reshape(arrs):
         reshaped_arrs = []
         for arr in arrs:
-            reshaped_arrs += [np.reshape(arr, (arr.shape[0], arr.shape[1], arr.shape[2], 1))]
+            if len(arr.shape) == 2:
+                reshaped_arrs += [np.reshape(arr, (1, arr.shape[0], arr.shape[1], 1))]
+            if len(arr.shape) == 3:
+                reshaped_arrs += [np.reshape(arr, (arr.shape[0], arr.shape[1], arr.shape[2], 1))]
         return tuple(reshaped_arrs)
 
     def num_batches_in_epoch(self):
