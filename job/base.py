@@ -53,15 +53,13 @@ class Job(object):
         # debug_net_output=True,
         # **ds_kwargs
 
-    def run_cross_validation(self, nfolds=3, **kwargs):
+    def run_cross_validation(self, nfolds=3, mof_metric="mad",**kwargs):
         metrics_log = kwargs.pop("metrics_log","")
         if metrics_log == "":
             metrics_log = "metrics_log.csv"
         metrics_log_fname_lst = os.path.splitext(metrics_log)
 
         # randomly pick data items
-
-        # produce metrics on the produced
 
         for i in range(nfolds):
             fold_metrics_log_name_lst = list(metrics_log_fname_lst)
@@ -73,6 +71,14 @@ class Job(object):
             p = multiprocessing.Process(target=self.train, kwargs=fold_kwargs)
             p.start()
             p.join()
+
+        # produce metrics on the produced
+
+        if mof_metric == "mad":
+            pass
+        elif mof_metric == "std":
+            pass
+
 
     # TODO: implement run_ensemble
     def run_ensemble(self, count=10.0, decision_thresh=.75, wce_dist=True, wce_start_tuning_constant=.5,
@@ -182,7 +188,7 @@ class Job(object):
                         self.create_viz_layer_output(layer_outputs, decision_threshold,
                                                      viz_layer_outputs_path_train)
 
-                    if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch() - 1:
+                    if (epoch_i + 1) % metrics_epoch_freq == 0 and 0:
                         self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
                                                      decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
                                                      viz_layer_outputs_path_test, num_image_plots, summary_writer,
@@ -203,8 +209,8 @@ class Job(object):
                                          dataset.test_targets.shape[2]))
         sample_test_image = randint(0, len(dataset.test_images) - 1)
         # get test results per image
-        for i, test_data in enumerate(zip(*dataset.test_data)):
-            test_data = dataset.tf_reshape((test_data,))
+        reshaped_test_data = dataset.tf_reshape(dataset.test_data)
+        for i, test_data in enumerate(zip(*reshaped_test_data)):
             test_cost_, test_cost_unweighted_, segmentation_result, layer_outputs = \
                 sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
                           network.layer_outputs],
