@@ -20,6 +20,7 @@ from random import randint
 
 from utilities.output_ops import draw_results
 import csv
+from numpy import genfromtxt
 
 
 class Job(object):
@@ -67,17 +68,23 @@ class Job(object):
             fold_metrics_log_name_lst[0] = metrics_log_fname_lst[0] + fold_suffix
             fold_kwargs = kwargs.copy()
             fold_kwargs["metrics_log"]= "".join(fold_metrics_log_name_lst)
-
             p = multiprocessing.Process(target=self.train, kwargs=fold_kwargs)
             p.start()
             p.join()
 
-        # produce metrics on the produced
 
         if mof_metric == "mad":
             pass
         elif mof_metric == "std":
             pass
+
+        files = ["file1", "file2"]
+
+        data = genfromtxt(files[0], delimiter=',')
+        for f in files[1:]:
+            data += genfromtxt(f, delimiter=',')
+
+        data /= len(files)
 
 
     # TODO: implement run_ensemble
@@ -188,7 +195,7 @@ class Job(object):
                         self.create_viz_layer_output(layer_outputs, decision_threshold,
                                                      viz_layer_outputs_path_train)
 
-                    if (epoch_i + 1) % metrics_epoch_freq == 0 and 0:
+                    if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == 0:
                         self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
                                                      decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
                                                      viz_layer_outputs_path_test, num_image_plots, summary_writer,
