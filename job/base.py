@@ -356,7 +356,7 @@ class Job(object):
         metric_scores["dt f1_score"] = r_fbeta_score
         metric_scores["dt kappa"] = r_kappa
 
-        metric_scores["threshold scores"] = threshold_scores
+        metric_scores["threshold scores"] = str(threshold_scores).replace(","," ")
 
         # save metric results to log
         self.write_to_csv([metric_scores[key] for key in sorted(metric_scores.keys())], metrics_log_file_path)
