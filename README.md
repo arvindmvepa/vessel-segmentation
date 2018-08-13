@@ -1,49 +1,17 @@
-# Retina blood vessel segmentation with a convolution neural network (U-net)
+# FCN Vessel Segmentation Network
 
-![](test/test_Original_GroundTruth_Prediction3.png)
+## Setup
 
-This repository contains the implementation of a convolutional neural network used to segment blood vessels in retina fundus images. This is a binary classification task: the neural network predicts if each pixel in the fundus image is either a vessel or not.
-The neural network structure is derived from the *U-Net* architecture, described in this [paper](https://arxiv.org/pdf/1505.04597.pdf).
-The performance of this neural network is tested on the DRIVE database, and it achieves the best score in terms of area under the ROC curve in comparison to the other methods published so far. Also on the STARE datasets, this method reports one of the best performances.
+I used python 2.7 for development and the network only has been tested for python 2.7.
 
+## Installation
 
-## Methods
-Before training, the 20 images of the DRIVE training datasets are pre-processed with the following transformations:
-- Gray-scale conversion
-- Standardization
-- Contrast-limited adaptive histogram equalization (CLAHE)
-- Gamma adjustment
+Please install `cv2`, tensorflow 1.2, scikit-image, and statsmodels.
 
-The training of the neural network is performed on sub-images (patches) of the pre-processed full images. Each patch, of dimension 48x48, is obtained by randomly selecting its center inside the full image. Also the patches partially or completely outside the Field Of View (FOV) are selected, in this way the neural network learns how to discriminate the FOV border from blood vessels.
-A set of 190000 patches is obtained by randomly extracting 9500 patches in each of the 20 DRIVE training images. Although the patches overlap, i.e. different patches may contain same part of the original images, no further data augmentation is performed. The first 90% of the dataset is used for training (171000 patches), while the last 10% is used for validation (19000 patches).
+### Data organization
 
-The neural network architecture is derived from the *U-net* architecture (see the [paper](https://arxiv.org/pdf/1505.04597.pdf)).
-The loss function is the cross-entropy and the stochastic gradient descent is employed for optimization. The activation function after each convolutional layer is the Rectifier Linear Unit (ReLU), and a dropout of 0.2 is used between two consecutive convolutional layers.
-Training is performed for 150 epochs, with a mini-batch size of 32 patches. Using a GeForce GTX TITAN GPU the training lasts for about 20 hours.
+Please organize your
 
-## Running the experiment on DRIVE
-The code is written in Python, it is possible to replicate the experiment on the DRIVE database by following the guidelines below.
-
-
-### Prerequisities
-The neural network is developed with the Keras library, we refer to the [Keras repository](https://github.com/fchollet/keras) for the installation.
-
-This code has been tested with Keras 1.1.0, using either Theano or TensorFlow as backend. In order to avoid dimensions mismatch, it is important to set `"image_dim_ordering": "th"` in the `~/.keras/keras.json` configuration file. If this file isn't there, you can create it. See the Keras documentation for more details.
-
-The following dependencies are needed:
-- numpy >= 1.11.1
-- PIL >=1.1.7
-- opencv >=2.4.10
-- h5py >=2.6.0
-- ConfigParser >=3.5.0b2
-- scikit-learn >= 0.17.1
-
-
-Also, you will need the DRIVE database, which can be freely downloaded as explained in the next section.
-
-### Training
-
-First of all, you need the DRIVE database. We are not allowed to provide the data here, but you can download the DRIVE database at the official [website](http://www.isi.uu.nl/Research/Databases/DRIVE/). Extract the images to a folder, and call it "DRIVE", for example. This folder should have the following tree:
 ```
 DRIVE
 │
@@ -57,6 +25,13 @@ DRIVE
     ├───1st_manual
     └───images
     └───mask
+
+## Run
+Before training, the 20 images of the DRIVE training datasets are pre-processed with the following transformations:
+- Gray-scale conversion
+- Standardization
+- Contrast-limited adaptive histogram equalization (CLAHE)
+- Gamma adjustment
 ```
 We refer to the DRIVE website for the description of the data.
 
