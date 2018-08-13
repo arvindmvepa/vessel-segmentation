@@ -75,9 +75,9 @@ class Job(object):
             folds_metrics_log_fname += [fold_metrics_log_fname]
             fold_kwargs["cv_train_inds"] = train_inds
             fold_kwargs["cv_test_inds"] = test_inds
-            # p = multiprocessing.Process(target=self.train, kwargs=fold_kwargs)
-            # p.start()
-            # p.join()
+            p = multiprocessing.Process(target=self.train, kwargs=fold_kwargs)
+            p.start()
+            p.join()
 
         # define func for measure of fit
         if mof_metric == "mad":
@@ -94,9 +94,7 @@ class Job(object):
                 metric_fold_results = np.expand_dims(metric_fold_results,axis=0)
             metric_folds_results += [metric_fold_results]
         metric_folds_results = np.array(metric_folds_results)
-        print("metric folds results")
-        print(metric_folds_results)
-        print(metric_folds_results.shape)
+
         # calculate the mean and mof
         mean_folds_results = np.mean(metric_folds_results, axis=0)
         mof_folds_results = mof_func(metric_folds_results, axis=0)
@@ -107,17 +105,11 @@ class Job(object):
         combined_metrics_log_fname = "".join(combined_metrics_log_fname_lst)
         combined_metrics_log_path = os.path.join(self.OUTPUTS_DIR_PATH, combined_metrics_log_fname)
 
-        print("fold results")
-        print(mean_folds_results)
-        print(mean_folds_results.shape)
-        print(mean_folds_results[0])
-        print(mof_folds_results)
-        print(mof_folds_results[0])
-
         # create results file with combined results
         self.write_to_csv(sorted(self.metrics), combined_metrics_log_path)
         for i in range(len(mean_folds_results)):
-            row = [" +/- ".join([str(entry[0]),str(entry[1])]) for entry in zip(mean_folds_results[i],mof_folds_results[i])]
+            row = [" +/- ".join([str(entry[0]),str(entry[1])]) for entry in zip(mean_folds_results[i],
+                                                                                mof_folds_results[i])]
             self.write_to_csv(row, combined_metrics_log_path)
 
     # TODO: implement run_ensemble
