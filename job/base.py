@@ -72,7 +72,6 @@ class Job(object):
             p.start()
             p.join()
 
-
         if mof_metric == "mad":
             pass
         elif mof_metric == "std":
@@ -248,7 +247,7 @@ class Job(object):
 
         prediction_flat = segmentation_results.flatten()
         target_flat = np.round(dataset.test_targets.flatten())
-        mask_flat = self.get_test_mask_flat()
+        mask_flat = self.get_test_mask_flat(dataset)
 
         # save target (if files don't exist)
         self.save_data(prediction_flat, target_flat, mask_flat, timestamp, epoch_i)
