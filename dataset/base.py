@@ -14,9 +14,11 @@ class Dataset(object):
         self.batch_size = batch_size
         self.sgd = sgd
 
-
         self.TRAIN_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TRAIN_SUBDIR)
-        self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TEST_SUBDIR)
+        if cv_test_inds is not None:
+            self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TRAIN_SUBDIR)
+        else:
+            self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TEST_SUBDIR)
 
         self.train_data = self.get_images_from_file(self.TRAIN_DIR_PATH, cv_train_inds)
         self.test_data = self.get_images_from_file(self.TEST_DIR_PATH, cv_test_inds)
