@@ -105,7 +105,7 @@ class Job(object):
 
         # create results file with combined results
         self.write_to_csv(sorted(self.metrics), combined_metrics_log_path)
-        for i in mean_folds_results.shape[0]:
+        for i in range(mean_folds_results.shape[0]):
             row = [" +/- ".join(entry) for entry in zip(mean_folds_results[i],mof_folds_results[i])]
             self.write_to_csv(row, combined_metrics_log_path)
 
