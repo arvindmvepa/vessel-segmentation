@@ -34,7 +34,6 @@ class HRFDataset(Dataset):
         image_files = sorted(os.listdir(IMAGES_DIR_PATH))
         mask_files = sorted(os.listdir(MASKS_DIR_PATH))
         target_files = sorted(os.listdir(TARGETS_DIR_PATH))
-        print(image_files)
 
 
 
