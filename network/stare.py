@@ -8,8 +8,8 @@ class StareNetwork(Network):
     IMAGE_WIDTH = 700
     IMAGE_HEIGHT = 605
 
-    FIT_IMAGE_HEIGHT = 700
-    FIT_IMAGE_WIDTH = 700
+    FIT_IMAGE_HEIGHT = 704
+    FIT_IMAGE_WIDTH = 704
 
     IMAGE_CHANNELS = 1
 
@@ -42,12 +42,13 @@ class StareNetwork(Network):
             layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_6_1'))
             layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2'))
             self.inputs = tf.placeholder(tf.float32,
-                                         [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
+                                         [None, self.FIT_IMAGE_HEIGHT, self.FIT_IMAGE_WIDTH, self.IMAGE_CHANNELS],
                                          name='inputs')
             self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         super(StareNetwork, self).__init__(layers=layers, **kwargs)
 
     def net_output(self, net):
+        net = tf.image.resize_image_with_crop_or_pad(net, self.IMAGE_HEIGHT, self.IMAGE_WIDTH)
         self.segmentation_result = tf.sigmoid(net)
         print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
                                                                         self.targets.get_shape()))
