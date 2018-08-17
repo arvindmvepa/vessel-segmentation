@@ -1,14 +1,16 @@
+import tensorflow as tf
+
 from network.base import Network
 from layers.conv2d import Conv2d
 from layers.max_pool_2d import MaxPool2d
-import tensorflow as tf
+from utilities.mask_ops import mask_op_and_mask_mean
 
-class ChaseNetwork(Network):
-    IMAGE_WIDTH = 960
-    IMAGE_HEIGHT = 999
+class HRFNetwork(Network):
+    IMAGE_HEIGHT = 2336
+    IMAGE_WIDTH = 3504
 
-    FIT_IMAGE_WIDTH = 999
-    FIT_IMAGE_HEIGHT = 999
+    FIT_IMAGE_HEIGHT = 3504
+    FIT_IMAGE_WIDTH = 3504
 
     IMAGE_CHANNELS = 1
 
@@ -27,25 +29,29 @@ class ChaseNetwork(Network):
             layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_4_1'))
             layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_4_2'))
 
-            self.inputs = tf.placeholder(tf.float32,
-                                         [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
-                                         name='inputs')
-            super(DsaNetwork, self).__init__(layers, IMAGE_WIDTH=self.IMAGE_WIDTH, IMAGE_HEIGHT=self.IMAGE_HEIGHT,
-                                             FIT_IMAGE_WIDTH=self.IMAGE_WIDTH,
-                                             FIT_IMAGE_HEIGHT=self.IMAGE_HEIGHT, **kwargs)
-    def process_network_output(self, net):
+            self.inputs = tf.placeholder(tf.float32, [None, self.FIT_IMAGE_HEIGHT, self.FIT_IMAGE_WIDTH,
+                                                      self.IMAGE_CHANNELS], name='inputs')
+            self.masks = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='masks')
+            self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
+        super(HRFNetwork, self).__init__(layers=layers, **kwargs)
+
+    def net_output(self, net):
+        net = tf.image.resize_image_with_crop_or_pad(net, self.IMAGE_HEIGHT, self.IMAGE_WIDTH)
+        net = tf.multiply(net, self.masks)
         self.segmentation_result = tf.sigmoid(net)
+        self.targets = tf.multiply(self.targets, self.masks)
         print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
                                                                         self.targets.get_shape()))
-        self.cost_unweighted = tf.reduce_mean(
-            tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=1))
-        self.cost = tf.reduce_mean(
-            tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=self.wce_pos_weight))
+
+        self.cost_unweighted = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net, pos_weight=1))
+        self.cost = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(self.targets, net,
+                                                                            pos_weight=self.wce_pos_weight))
         print('net.shape: {}'.format(net.get_shape()))
         self.train_op = tf.train.AdamOptimizer().minimize(self.cost)
         with tf.name_scope('accuracy'):
             argmax_probs = tf.round(self.segmentation_result)  # 0x1
             correct_pred = tf.cast(tf.equal(argmax_probs, self.targets), tf.float32)
-            self.accuracy = tf.reduce_mean(correct_pred)
+            self.accuracy = mask_op_and_mask_mean(correct_pred, self.masks, 1, self.IMAGE_HEIGHT, self.IMAGE_WIDTH)
             tf.summary.scalar('accuracy', self.accuracy)
+
         self.summaries = tf.summary.merge_all()
