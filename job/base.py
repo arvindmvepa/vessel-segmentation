@@ -467,8 +467,8 @@ class Job(object):
     def save_debug2(input_data, save_path):
         test2 = np.array(np.round(input_data[0][0]*255), dtype=np.uint8)
         test2_target = np.array(np.round(input_data[len(input_data)-1][0]*255), dtype=np.uint8)
-        plt.imsave(os.path.join(save_path, "test2.jpeg"), test2)
-        plt.imsave(os.path.join(save_path, "test2_target.jpeg"), test2_target)
+        imsave(os.path.join(save_path, "test2.jpeg"), test2)
+        imsave(os.path.join(save_path, "test2_target.jpeg"), test2_target)
 
     @staticmethod
     def save_debug3(input_data, debug_data, save_path):
