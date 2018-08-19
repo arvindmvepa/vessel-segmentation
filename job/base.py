@@ -6,9 +6,7 @@ matplotlib.use('Agg')
 import os
 import time
 
-import matplotlib
-
-matplotlib.use('Agg')
+from scipy.misc import imsave
 import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
@@ -36,7 +34,8 @@ class Job(object):
     metrics = ("test set average weighted log loss","test set average unweighted log loss",
                "training set batch weighted log loss","training set batch unweighted log loss","auc","aucfpr10",
                "aucfpr05","aucfpr025","accuracy","precision","recall","specificity","f1_score","kappa","dt accuracy",
-               "dt precision","dt recall","dt specificity","dt f1_score","dt kappa","threshold scores")
+               "dt precision","dt recall","dt specificity","dt f1_score","dt kappa","max acc threshold",
+               "threshold scores")
 
     def __init__(self, OUTPUTS_DIR_PATH="."):
         if not os.path.exists(OUTPUTS_DIR_PATH):
@@ -146,7 +145,7 @@ class Job(object):
             p.start()
             p.join()
 
-    def train(self, gpu_device=None, decision_threshold=.75, tuning_constant=1.0, metrics_epoch_freq=1,
+    def train(self, gpu_device=None, decision_threshold=.75, num_thresh_scores=10, tuning_constant=1.0, metrics_epoch_freq=1,
               viz_layer_epoch_freq=10, n_epochs=100, metrics_log="metrics_log.csv", num_image_plots=5,
               save_model=True, debug_net_output=True, **ds_kwargs):
 
@@ -234,14 +233,13 @@ class Job(object):
                     # calculate results on test set
                     if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch() - 1:
                         self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
-                                                     decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
-                                                     viz_layer_outputs_path_test, num_image_plots, summary_writer,
-                                                     cost=cost, cost_unweighted=cost_unweighted)
+                                                     decision_threshold, num_thresh_scores, epoch_i, timestamp,
+                                                     viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots,
+                                                     summary_writer, cost=cost, cost_unweighted=cost_unweighted)
 
-    def get_results_on_test_set(self, metrics_log_file_path, network, dataset, sess, decision_threshold, epoch_i,
-                                timestamp,
-                                viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots, summary_writer,
-                                **kwargs):
+    def get_results_on_test_set(self, metrics_log_file_path, network, dataset, sess, decision_threshold,
+                                num_thresh_scores, epoch_i, timestamp, viz_layer_epoch_freq, viz_layer_outputs_path_test,
+                                num_image_plots, summary_writer, **kwargs):
 
         metric_scores = dict()
 
@@ -314,7 +312,9 @@ class Job(object):
 
         # produce accuracy at different decision thresholds
         list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
-        interval = 0.05
+
+
+        interval = 1.0 / num_thresh_scores
 
         threshold_scores = [max_thresh_accuracy]
         for i in np.arange(0, 1.0 + interval, interval):
@@ -372,7 +372,14 @@ class Job(object):
         metric_scores["dt f1_score"] = r_fbeta_score
         metric_scores["dt kappa"] = r_kappa
 
-        metric_scores["threshold scores"] = str(threshold_scores).replace(","," ")
+        metric_scores["max acc threshold"] = max_thresh_accuracy
+
+        if "threshold scores" in self.metrics:
+            for i, threshold_score in enumerate(threshold_scores):
+                metric_scores["threshold scores"+str(i)+" threshold"] = threshold_score[0]
+                metric_scores["threshold scores"+str(i)+" acc"] = threshold_score[1]
+                metric_scores["threshold scores"+str(i)+" recall"] = threshold_score[2]
+                metric_scores["threshold scores"+str(i) + " spec"] = threshold_score[3]
 
         # save metric results to log
         self.write_to_csv([metric_scores[key] for key in sorted(metric_scores.keys())], metrics_log_file_path)
@@ -415,21 +422,19 @@ class Job(object):
         return viz_layer_outputs_path_train, viz_layer_outputs_path_test
 
     def create_viz_layer_output(self, layer_outputs, threshold, output_path):
+        thresh_pix_val = np.round(threshold*255)
         for j, layer_output in enumerate(layer_outputs):
             for k in range(layer_output.shape[3]):
-                channel_output = layer_output[0, :, :, k]
-                plt.imsave(os.path.join(os.path.join(output_path, str(j)),
-                                        "channel_" + str(k) + ".jpeg"), channel_output)
+                channel_output = np.array(np.round(layer_output[0,:,:,k]*255), dtype=np.uint8)
+                imsave(os.path.join(os.path.join(output_path, str(j)),"channel_"+str(k)+".jpeg"),channel_output)
                 if j == 0:
-                    channel_output[np.where(channel_output > threshold)] = 1
-                    channel_output[np.where(channel_output <= threshold)] = 0
-                    plt.imsave(os.path.join(os.path.join(output_path, "mask1"),
-                                            "channel_" + str(k) + ".jpeg"), channel_output)
+                    channel_output[np.where(channel_output > thresh_pix_val)] = 255
+                    channel_output[np.where(channel_output <= thresh_pix_val)] = 0
+                    imsave(os.path.join(os.path.join(output_path,"mask1"),"channel_"+str(k)+".jpeg"),channel_output)
                 if j == len(layer_outputs) - 1:
-                    channel_output[np.where(channel_output > threshold)] = 1
-                    channel_output[np.where(channel_output <= threshold)] = 0
-                    plt.imsave(os.path.join(os.path.join(output_path, "mask2"),
-                                            "channel_" + str(k) + ".jpeg"), channel_output)
+                    channel_output[np.where(channel_output > thresh_pix_val)] = 255
+                    channel_output[np.where(channel_output <= thresh_pix_val)] = 0
+                    imsave(os.path.join(os.path.join(output_path, "mask2"),"channel_"+str(k)+".jpeg"),channel_output)
 
     @staticmethod
     def write_to_csv(entries, file_path):
@@ -453,20 +458,27 @@ class Job(object):
 
     @staticmethod
     def save_debug1(input_data, save_path):
-        plt.imsave(os.path.join(save_path, "test1.jpeg"), input_data[0][0])
-        plt.imsave(os.path.join(save_path, "test1_target.jpeg"), input_data[len(input_data)-1][0])
+        test1 = np.array(np.round(input_data[0][0]*255), dtype=np.uint8)
+        test1_target = np.array(np.round(input_data[len(input_data)-1][0]*255), dtype=np.uint8)
+        imsave(os.path.join(save_path, "test1.jpeg"), test1)
+        imsave(os.path.join(save_path, "test1_target.jpeg"), test1_target)
 
     @staticmethod
     def save_debug2(input_data, save_path):
-        plt.imsave(os.path.join(save_path, "test2.jpeg"), input_data[0][0, :, :, 0])
-        plt.imsave(os.path.join(save_path, "test2_target.jpeg"), input_data[len(input_data) - 1][0, :, :, 0])
+        test2 = np.array(np.round(input_data[0][0]*255), dtype=np.uint8)
+        test2_target = np.array(np.round(input_data[len(input_data)-1][0]*255), dtype=np.uint8)
+        plt.imsave(os.path.join(save_path, "test2.jpeg"), test2)
+        plt.imsave(os.path.join(save_path, "test2_target.jpeg"), test2_target)
 
     @staticmethod
     def save_debug3(input_data, debug_data, save_path):
-        plt.imsave(os.path.join(save_path, "test2.jpeg"), input_data[0][0, :, :, 0])
-        plt.imsave(os.path.join(save_path, "test2_target.jpeg"), input_data[len(input_data) - 1][0, :, :, 0])
+        test3 = np.array(np.round(input_data[0][0]*255), dtype=np.uint8)
+        test3_target = np.array(np.round(input_data[len(input_data)-1][0]*255), dtype=np.uint8)
+        imsave(os.path.join(save_path, "test2.jpeg"), test3)
+        imsave(os.path.join(save_path, "test2_target.jpeg"), test3_target)
         debug1 = debug_data[0, :, :, 0]
-        plt.imsave(os.path.join(save_path, "debug1.jpeg"), debug1)
+        debug1 = np.array(np.round(debug1 * 255), dtype=np.uint8)
+        imsave(os.path.join(save_path, "debug1.jpeg"), debug1)
 
     @property
     def dataset_cls(self):
