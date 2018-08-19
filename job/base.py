@@ -226,12 +226,12 @@ class Job(object):
                         self.save_debug3(batch_data,debug1,viz_layer_outputs_path_train)
 
                     # create network visualization output
-                    if (epoch_i + 1) % viz_layer_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch() - 1:
+                    if (epoch_i + 1) % viz_layer_epoch_freq == 0 and batch_i == 0:
                         self.create_viz_layer_output(layer_outputs, decision_threshold,
                                                      viz_layer_outputs_path_train)
 
                     # calculate results on test set
-                    if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch() - 1:
+                    if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == 0:
                         self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
                                                      decision_threshold, num_thresh_scores, epoch_i, timestamp,
                                                      viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots,
@@ -316,7 +316,7 @@ class Job(object):
 
         interval = 1.0 / num_thresh_scores
 
-        threshold_scores = [max_thresh_accuracy]
+        threshold_scores = []
         for i in np.arange(0, 1.0 + interval, interval):
             index = int(round((len(thresholds) - 1) * i, 0))
             fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
