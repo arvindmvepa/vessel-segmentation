@@ -1,3 +1,4 @@
+"""This is the file for the DSA network subclass"""
 from network.base import Network
 from layers.conv2d import Conv2d
 from layers.max_pool_2d import MaxPool2d
@@ -5,6 +6,7 @@ import tensorflow as tf
 
 
 class DsaNetwork(Network):
+    # actual image dimensions
     IMAGE_WIDTH = 1024
     IMAGE_HEIGHT = 1024
 

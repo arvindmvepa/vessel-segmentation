@@ -1,8 +1,3 @@
-import numpy as np
-import glob
-import os
-from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix, roc_curve, auc as auc_
-
 metric_filename = 'ensemble_results.txt'
 
 f1 = open(metric_filename, 'w')
