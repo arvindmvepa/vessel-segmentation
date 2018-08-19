@@ -458,26 +458,26 @@ class Job(object):
 
     @staticmethod
     def save_debug1(input_data, save_path):
-        test1 = np.array(np.round(input_data[0][0]*255), dtype=np.uint8)
-        test1_target = np.array(np.round(input_data[len(input_data)-1][0]*255), dtype=np.uint8)
+        test1 = np.array(np.round(input_data[0][0,:,:,0]*255), dtype=np.uint8)
+        test1_target = np.array(np.round(input_data[len(input_data)-1][0,:,:,0]*255), dtype=np.uint8)
         imsave(os.path.join(save_path, "test1.jpeg"), test1)
         imsave(os.path.join(save_path, "test1_target.jpeg"), test1_target)
 
     @staticmethod
     def save_debug2(input_data, save_path):
-        test2 = np.array(np.round(input_data[0][0]*255), dtype=np.uint8)
-        test2_target = np.array(np.round(input_data[len(input_data)-1][0]*255), dtype=np.uint8)
+        test2 = np.array(np.round(input_data[0][0,:,:,0]*255), dtype=np.uint8)
+        test2_target = np.array(np.round(input_data[len(input_data)-1][0,:,:,0]*255), dtype=np.uint8)
         imsave(os.path.join(save_path, "test2.jpeg"), test2)
         imsave(os.path.join(save_path, "test2_target.jpeg"), test2_target)
 
     @staticmethod
     def save_debug3(input_data, debug_data, save_path):
-        test3 = np.array(np.round(input_data[0][0]*255), dtype=np.uint8)
-        test3_target = np.array(np.round(input_data[len(input_data)-1][0]*255), dtype=np.uint8)
+        test3 = np.array(np.round(input_data[0][0,:,:,0]*255), dtype=np.uint8)
+        test3_target = np.array(np.round(input_data[len(input_data)-1][0,:,:,0]*255), dtype=np.uint8)
         imsave(os.path.join(save_path, "test2.jpeg"), test3)
         imsave(os.path.join(save_path, "test2_target.jpeg"), test3_target)
-        debug1 = debug_data[0, :, :, 0]
-        debug1 = np.array(np.round(debug1 * 255), dtype=np.uint8)
+        debug1 = debug_data[0,:,:,0]
+        debug1 = np.array(np.round(debug1*255), dtype=np.uint8)
         imsave(os.path.join(save_path, "debug1.jpeg"), debug1)
 
     @property
