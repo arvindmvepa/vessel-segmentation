@@ -44,7 +44,7 @@ class HRFJob(Job):
         return thresh_max
 
     def save_data(self, prediction_flat, target_flat, mask_flat, timestamp, epoch_i):
-        super(DriveJob, self).save_data(prediction_flat, target_flat, mask_flat, timestamp, epoch_i)
+        super(HRFJob, self).save_data(prediction_flat, target_flat, mask_flat, timestamp, epoch_i)
         masks_path = os.path.join(self.OUTPUTS_DIR_PATH, "saved_masks")
 
         if not os.path.exists(masks_path):

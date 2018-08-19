@@ -45,7 +45,6 @@ class HRFDataset(Dataset):
         for image_file,mask_file,target_file in zip(image_files, mask_files, target_files):
 
             image_arr = cv2.imread(os.path.join(IMAGES_DIR_PATH,image_file), 1)
-            print(type(image_arr))
             image_arr = image_arr[:, :, 1]
 
             top_pad = int((HRFNetwork.FIT_IMAGE_HEIGHT - HRFNetwork.IMAGE_HEIGHT) / 2)
@@ -59,6 +58,7 @@ class HRFDataset(Dataset):
 
             mask = Image.open(os.path.join(MASKS_DIR_PATH,mask_file))
             mask_arr = np.array(mask)
+            mask_arr = mask_arr[:,:,0]
             mask_arr = mask_arr * 1.0/255.0
             masks.append(mask_arr)
 
