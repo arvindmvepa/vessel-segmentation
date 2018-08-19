@@ -1,6 +1,5 @@
 import numpy as np
 
-
 def find_closest_pos(positions, start_pos=(0,0)):
     min = np.inf
     min_index = -1

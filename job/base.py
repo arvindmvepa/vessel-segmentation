@@ -1,3 +1,4 @@
+"""This is the file for the base Job class"""
 import multiprocessing
 import matplotlib
 matplotlib.use('Agg')
@@ -31,6 +32,7 @@ class Job(object):
 
     IMAGE_PLOT_DIR = "image_plots"
 
+    # metrics to obtain on test set
     metrics = ("test set average weighted log loss","test set average unweighted log loss",
                "training set batch weighted log loss","training set batch unweighted log loss","auc","aucfpr10",
                "aucfpr05","aucfpr025","accuracy","precision","recall","specificity","f1_score","kappa","dt accuracy",
@@ -42,6 +44,7 @@ class Job(object):
         self.OUTPUTS_DIR_PATH = OUTPUTS_DIR_PATH
 
     def run_single_model(self, **kwargs):
+        # kwargs are applied to train method
         p = multiprocessing.Process(target=self.train, kwargs=kwargs)
         p.start()
         p.join()
@@ -49,7 +52,6 @@ class Job(object):
     # only metrics are returned per fold
     # for most other output, only last is kept
     def run_cross_validation(self, n_splits=3, mof_metric="mad",**kwargs):
-
         # produce cv indices
         k_fold = KFold(n_splits=n_splits, shuffle=True)
         WRK_DIR_PATH = kwargs.get("WRK_DIR_PATH",".")
@@ -75,6 +77,7 @@ class Job(object):
             folds_metrics_log_fname += [fold_metrics_log_fname]
             fold_kwargs["cv_train_inds"] = train_inds
             fold_kwargs["cv_test_inds"] = test_inds
+            # fold_kwargs are applied to train method
             p = multiprocessing.Process(target=self.train, kwargs=fold_kwargs)
             p.start()
             p.join()
@@ -149,6 +152,7 @@ class Job(object):
 
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
+        # kwargs are applied to dataset class
         dataset = self.dataset_cls(**ds_kwargs)
         pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant, *dataset.train_data[1:])
 
@@ -184,24 +188,28 @@ class Job(object):
             sess.run(tf.global_variables_initializer())
             tf.train.Saver(tf.all_variables(), max_to_keep=None)
 
+            # loop over epochs
             for epoch_i in range(n_epochs):
                 dataset.reset_batch_pointer()
+                # loop over batches in epoch
                 for batch_i in range(dataset.num_batches_in_epoch()):
                     start = time.time()
                     batch_num = epoch_i * dataset.num_batches_in_epoch() + batch_i
 
                     batch_data = dataset.next_batch()
 
-
+                    # produce debug image 1
                     if viz_layer_epoch_freq is not None and debug_net_output:
                         self.save_debug1(batch_data, viz_layer_outputs_path_train)
 
                     # reshape array for tensorflow
                     batch_data = dataset.tf_reshape(batch_data)
 
+                    # produce debug image 2
                     if viz_layer_epoch_freq is not None and debug_net_output:
                         self.save_debug2(batch_data, viz_layer_outputs_path_train)
 
+                    # train on batch
                     cost, cost_unweighted, layer_outputs, debug1, acc, _ = sess.run(
                         [network.cost, network.cost_unweighted,
                          network.layer_outputs, network.debug1,
@@ -209,17 +217,21 @@ class Job(object):
                         feed_dict=self.get_network_dict(network, batch_data))
                     end = time.time()
 
+                    # print training information
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
                           'accuracy: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost,
                                                 cost_unweighted, end - start, pos_weight, acc))
 
+                    # produce debug image 3
                     if viz_layer_epoch_freq is not None and debug_net_output:
                         self.save_debug3(batch_data,debug1,viz_layer_outputs_path_train)
 
+                    # create network visualization output
                     if (epoch_i + 1) % viz_layer_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch() - 1:
                         self.create_viz_layer_output(layer_outputs, decision_threshold,
                                                      viz_layer_outputs_path_train)
 
+                    # calculate results on test set
                     if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch() - 1:
                         self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
                                                      decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
@@ -243,6 +255,7 @@ class Job(object):
         # get test results per image
         for i, test_data in enumerate(zip(*dataset.test_data)):
             test_data = dataset.tf_reshape(test_data)
+            # get network results on test image
             test_cost_, test_cost_unweighted_, segmentation_test_result, layer_outputs = \
                 sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
                           network.layer_outputs],
