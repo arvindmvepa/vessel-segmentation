@@ -487,7 +487,7 @@ class Job(object):
 
     @staticmethod
     def get_metric_names(num_thresh_scores):
-        return Job.metrics+Job.get_thresh_scores_strs(num_thresh_scores)
+        return list(Job.metrics)+Job.get_thresh_scores_strs(num_thresh_scores)
 
     @staticmethod
     def get_thresh_scores_strs(num_thresh_scores):
