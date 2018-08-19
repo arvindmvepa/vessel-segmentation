@@ -34,8 +34,10 @@ class Job(object):
     metrics = ("test set average weighted log loss","test set average unweighted log loss",
                "training set batch weighted log loss","training set batch unweighted log loss","auc","aucfpr10",
                "aucfpr05","aucfpr025","accuracy","precision","recall","specificity","f1_score","kappa","dt accuracy",
-               "dt precision","dt recall","dt specificity","dt f1_score","dt kappa","max acc threshold",
-               "threshold scores")
+               "dt precision","dt recall","dt specificity","dt f1_score","dt kappa","max acc from threshold")
+
+    num_thresh_scores = 10
+
 
     def __init__(self, OUTPUTS_DIR_PATH="."):
         if not os.path.exists(OUTPUTS_DIR_PATH):
@@ -107,8 +109,10 @@ class Job(object):
         combined_metrics_log_fname = "".join(combined_metrics_log_fname_lst)
         combined_metrics_log_path = os.path.join(self.OUTPUTS_DIR_PATH, combined_metrics_log_fname)
 
+        num_thresh_scores = kwargs.get("num_thresh_scores", Job.num_thresh_scores)
+
         # create results file with combined results
-        self.write_to_csv(sorted(self.metrics), combined_metrics_log_path)
+        self.write_to_csv(sorted(Job.get_metric_names(num_thresh_scores)), combined_metrics_log_path)
         for i in range(len(mean_folds_results)):
             row = [" +/- ".join([str(entry[0]),str(entry[1])]) for entry in zip(mean_folds_results[i],
                                                                                 mof_folds_results[i])]
@@ -150,6 +154,7 @@ class Job(object):
               save_model=True, debug_net_output=True, **ds_kwargs):
 
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
+        self.num_thresh_scores = num_thresh_scores
 
         # kwargs are applied to dataset class
         dataset = self.dataset_cls(**ds_kwargs)
@@ -164,7 +169,7 @@ class Job(object):
 
         # create metrics log file
         metric_log_file_path = os.path.join(self.OUTPUTS_DIR_PATH, metrics_log)
-        self.write_to_csv(sorted(self.metrics), metric_log_file_path)
+        self.write_to_csv(sorted(self.get_metric_names(self.num_thresh_scores)), metric_log_file_path)
 
         # create summary writer
         summary_writer = tf.summary.FileWriter(
@@ -233,13 +238,13 @@ class Job(object):
                     # calculate results on test set
                     if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == 0:
                         self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
-                                                     decision_threshold, num_thresh_scores, epoch_i, timestamp,
-                                                     viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots,
-                                                     summary_writer, cost=cost, cost_unweighted=cost_unweighted)
+                                                     decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
+                                                     viz_layer_outputs_path_test, num_image_plots, summary_writer,
+                                                     cost=cost, cost_unweighted=cost_unweighted)
 
-    def get_results_on_test_set(self, metrics_log_file_path, network, dataset, sess, decision_threshold,
-                                num_thresh_scores, epoch_i, timestamp, viz_layer_epoch_freq, viz_layer_outputs_path_test,
-                                num_image_plots, summary_writer, **kwargs):
+    def get_results_on_test_set(self, metrics_log_file_path, network, dataset, sess, decision_threshold, epoch_i,
+                                timestamp, viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots,
+                                summary_writer, **kwargs):
 
         metric_scores = dict()
 
@@ -314,7 +319,7 @@ class Job(object):
         list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
 
 
-        interval = 1.0 / num_thresh_scores
+        interval = 1.0 / self.num_thresh_scores
 
         threshold_scores = []
         for i in np.arange(0, 1.0 + interval, interval):
@@ -372,14 +377,14 @@ class Job(object):
         metric_scores["dt f1_score"] = r_fbeta_score
         metric_scores["dt kappa"] = r_kappa
 
-        metric_scores["max acc threshold"] = max_thresh_accuracy
+        metric_scores["max acc from threshold"] = max_thresh_accuracy
 
-        if "threshold scores" in self.metrics:
-            for i, threshold_score in enumerate(threshold_scores):
-                metric_scores["threshold scores"+str(i)+" threshold"] = threshold_score[0]
-                metric_scores["threshold scores"+str(i)+" acc"] = threshold_score[1]
-                metric_scores["threshold scores"+str(i)+" recall"] = threshold_score[2]
-                metric_scores["threshold scores"+str(i) + " spec"] = threshold_score[3]
+        for threshold_score, threshold_str in \
+                zip(threshold_scores, self.get_thresh_scores_strs(self.num_thresh_scores)):
+            metric_scores[threshold_str[0]] = threshold_score[0]
+            metric_scores[threshold_str[1]] = threshold_score[1]
+            metric_scores[threshold_str[2]] = threshold_score[2]
+            metric_scores[threshold_str[3]] = threshold_score[3]
 
         # save metric results to log
         self.write_to_csv([metric_scores[key] for key in sorted(metric_scores.keys())], metrics_log_file_path)
@@ -479,6 +484,23 @@ class Job(object):
         debug1 = debug_data[0,:,:,0]
         debug1 = np.array(np.round(debug1*255), dtype=np.uint8)
         imsave(os.path.join(save_path, "debug1.jpeg"), debug1)
+
+    @staticmethod
+    def get_metric_names(num_thresh_scores):
+        return Job.metrics+Job.get_thresh_scores_strs(num_thresh_scores)
+
+    @staticmethod
+    def get_thresh_scores_strs(num_thresh_scores):
+        thresh_strs = []
+        for i in range(num_thresh_scores):
+            thresh_str_base = "threshold scores" + str(i)
+            thresh_str_thresh = thresh_str_base + " threshold"
+            thresh_str_acc = thresh_str_base + " acc"
+            thresh_str_recall = thresh_str_base + " recall"
+            thresh_str_spec = thresh_str_base + " spec"
+            thresh_strs += [[thresh_str_thresh,thresh_str_acc,thresh_str_recall,thresh_str_spec]]
+        return thresh_strs
+
 
     @property
     def dataset_cls(self):
