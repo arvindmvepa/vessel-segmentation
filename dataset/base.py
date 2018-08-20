@@ -10,7 +10,7 @@ class Dataset(object):
     IMAGES_DIR = "images"
 
     def __init__(self, batch_size=1, WRK_DIR_PATH =".", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = True,
-                 cv_train_inds = None, cv_test_inds = None):
+                 cv_train_inds = None, cv_test_inds = None, **kwargs):
         self.WRK_DIR_PATH = WRK_DIR_PATH
         self.batch_size = batch_size
         self.sgd = sgd

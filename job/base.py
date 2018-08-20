@@ -5,6 +5,7 @@ matplotlib.use('Agg')
 
 import os
 import time
+import glob
 
 from scipy.misc import imsave
 import matplotlib.pyplot as plt
@@ -37,7 +38,9 @@ class Job(object):
                "dt precision","dt recall","dt specificity","dt f1_score","dt kappa","max acc from threshold")
 
     num_thresh_scores = 10
+    decision_threshold = .75
 
+    n_epochs = 100
 
     def __init__(self, OUTPUTS_DIR_PATH="."):
         if not os.path.exists(OUTPUTS_DIR_PATH):
@@ -109,7 +112,7 @@ class Job(object):
         combined_metrics_log_fname = "".join(combined_metrics_log_fname_lst)
         combined_metrics_log_path = os.path.join(self.OUTPUTS_DIR_PATH, combined_metrics_log_fname)
 
-        num_thresh_scores = kwargs.get("num_thresh_scores", Job.num_thresh_scores)
+        num_thresh_scores = kwargs.get("num_thresh_scores", self.num_thresh_scores)
 
         # create results file with combined results
         self.write_to_csv(sorted(Job.get_metric_names(num_thresh_scores)), combined_metrics_log_path)
@@ -118,47 +121,79 @@ class Job(object):
                                                                                 mof_folds_results[i])]
             self.write_to_csv(row, combined_metrics_log_path)
 
-    # TODO: implement run_ensemble
-    def run_ensemble(self, count=10.0, decision_thresh=.75, wce_dist=True, wce_start_tuning_constant=.5,
-                     wce_end_tuning_constant=2.0, wce_tuning_constants=None, wce_tuning_constant=1.0,
-                     test_metrics_freq=200, layer_output_freq=1000, end=2000, job_dir=None, test_metrics_file=None,
-                     log_loss_file=None):
+    def run_ensemble(self, ensemble_count=10.0, combining_metric="mean", wce_start_tuning_constant=.5,
+                     wce_end_tuning_constant=2.0, wce_tuning_constants=None, **kwargs):
 
-        if wce_dist and wce_tuning_constants is not None:
-            assert len(wce_tuning_constants) == count
-
-        # uniformly distribute tuning constants used for ensemble if wce_tuning_constants not provided
-        elif wce_dist:
-            if count == 1:
+        if wce_tuning_constants is not None:
+            assert len(wce_tuning_constants) == ensemble_count
+        elif wce_start_tuning_constant is not None and wce_end_tuning_constant is not None:
+            if ensemble_count == 1:
                 wce_tuning_constants = [wce_start_tuning_constant]
+            # uniformly distribute tuning constants used for ensemble if wce_tuning_constants not provided
             else:
-                interval = (wce_end_tuning_constant - wce_start_tuning_constant) / float(count - 1)
+                interval = (wce_end_tuning_constant - wce_start_tuning_constant) / float(ensemble_count - 1)
                 wce_tuning_constants = list(
                     np.arange(wce_start_tuning_constant, wce_end_tuning_constant + interval, interval))
+        else:
+            wce_tuning_constant = wce_start_tuning_constant
 
-        for i in range(count):
-            # select from tuning constants if provided, else use default value
-            if wce_dist:
+        metrics_log = kwargs.pop("metrics_log","")
+        if metrics_log == "":
+            metrics_log = "ensemble_metrics_log.csv"
+        metrics_log_fname_lst = os.path.splitext(metrics_log)
+
+        # kwargs are applied to dataset class to obtain `test_neg_class_frac` and `test_pos_class_frac`
+        dataset = self.dataset_cls(**kwargs)
+        kwargs["dataset"] = dataset
+
+        for i in range(ensemble_count):
+            model_kwargs = kwargs.copy()
+            model_metrics_log_fname_lst = list(metrics_log_fname_lst)
+            model_suffix = "_model_"+str(i)
+            model_metrics_log_fname_lst[0] = metrics_log_fname_lst[0] + model_suffix
+            model_metrics_log_fname = "".join(model_metrics_log_fname_lst)
+            model_kwargs["metrics_log"] = model_metrics_log_fname
+
+            # select from tuning constants if provided
+            if wce_tuning_constants is not None:
                 wce_tuning_constant = wce_tuning_constants[i]
 
-            kwargs = {"decision_thresh": decision_thresh, "wce_tuning_constant": wce_tuning_constant,
-                      "test_metrics_freq": test_metrics_freq, "layer_output_freq": layer_output_freq, "end": end,
-                      "job_dir": job_dir, "test_metrics_file": test_metrics_file, "log_loss_file": log_loss_file}
+            model_kwargs["tuning_constant"] = wce_tuning_constant
 
-            p = multiprocessing.Process(target=self.train, kwargs=kwargs)
+            p = multiprocessing.Process(target=self.train, kwargs=model_kwargs)
             p.start()
             p.join()
 
-    def train(self, gpu_device=None, decision_threshold=.75, num_thresh_scores=10, tuning_constant=1.0, metrics_epoch_freq=1,
-              viz_layer_epoch_freq=10, n_epochs=100, metrics_log="metrics_log.csv", num_image_plots=5,
-              save_model=True, debug_net_output=True, **ds_kwargs):
+        n_epochs = kwargs.get("n_epochs", self.n_epochs)
+        num_thresh_scores = kwargs.get("num_thresh_scores", self.num_thresh_scores)
+        decision_threshold = kwargs.get("decision_threshold", self.decision_threshold)
+
+        # obtain `test_neg_class_frac` and `test_pos_class_frac`
+        _, test_neg_class_frac, test_pos_class_frac = dataset.get_inverse_pos_freq(*dataset.test_data[1:])
+
+        self.get_ensemble_results(n_epochs, decision_threshold, num_thresh_scores, test_neg_class_frac,
+                                  test_pos_class_frac, metrics_log=metrics_log, combining_metric=combining_metric,
+                                  **kwargs)
+
+    def train(self, dataset=None, gpu_device=None, tuning_constant=1.0, metrics_epoch_freq=1, viz_layer_epoch_freq=10,
+              metrics_log="metrics_log.csv", num_image_plots=5, save_model=True, debug_net_output=True, **kwargs):
 
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
-        self.num_thresh_scores = num_thresh_scores
+
+        # get `n_epochs` values from kwargs if exists
+        if "n_epochs" in kwargs:
+            self.n_epochs = kwargs.pop("n_epochs")
+        # get `num_thresh_scores` values from kwargs if exists
+        if "num_thresh_scores" in kwargs:
+            self.num_thresh_scores = kwargs.pop("num_thresh_scores")
+        # get `decision_threshold` values from kwargs if exists
+        if "decision_threshold" in kwargs:
+            self.decision_threshold = kwargs.pop("decision_threshold")
 
         # kwargs are applied to dataset class
-        dataset = self.dataset_cls(**ds_kwargs)
-        pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant, *dataset.train_data[1:])
+        if dataset is None:
+            dataset = self.dataset_cls(**kwargs)
+            pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant, *dataset.train_data[1:])
 
         # initialize network object
         if gpu_device is not None:
@@ -166,6 +201,7 @@ class Job(object):
                 network = self.network_cls(wce_pos_weight=pos_weight)
         else:
             network = self.network_cls(wce_pos_weight=pos_weight)
+
 
         # create metrics log file
         metric_log_file_path = os.path.join(self.OUTPUTS_DIR_PATH, metrics_log)
@@ -193,7 +229,7 @@ class Job(object):
             tf.train.Saver(tf.all_variables(), max_to_keep=None)
 
             # loop over epochs
-            for epoch_i in range(n_epochs):
+            for epoch_i in range(self.n_epochs):
                 dataset.reset_batch_pointer()
                 # loop over batches in epoch
                 for batch_i in range(dataset.num_batches_in_epoch()):
@@ -223,7 +259,7 @@ class Job(object):
 
                     # print training information
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
-                          'accuracy: {}'.format(batch_num, n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost,
+                          'accuracy: {}'.format(batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost,
                                                 cost_unweighted, end - start, pos_weight, acc))
 
                     # produce debug image 3
@@ -232,21 +268,19 @@ class Job(object):
 
                     # create network visualization output
                     if (epoch_i + 1) % viz_layer_epoch_freq == 0 and batch_i == 0:
-                        self.create_viz_layer_output(layer_outputs, decision_threshold,
+                        self.create_viz_layer_output(layer_outputs, self.decision_threshold,
                                                      viz_layer_outputs_path_train)
 
                     # calculate results on test set
                     if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == 0:
                         self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
-                                                     decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
+                                                     self.decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
                                                      viz_layer_outputs_path_test, num_image_plots, summary_writer,
                                                      cost=cost, cost_unweighted=cost_unweighted)
 
     def get_results_on_test_set(self, metrics_log_file_path, network, dataset, sess, decision_threshold, epoch_i,
                                 timestamp, viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots,
                                 summary_writer, **kwargs):
-
-        metric_scores = dict()
 
         max_thresh_accuracy = 0.0
         test_cost = 0.0
@@ -294,6 +328,35 @@ class Job(object):
         # save target (if files don't exist)
         self.save_data(prediction_flat, target_flat, mask_flat, timestamp, epoch_i)
 
+        # get class proportion on test set
+        _, test_neg_class_frac, test_pos_class_frac = dataset.get_inverse_pos_freq(*dataset.test_data[1:])
+
+        acc = self.get_metrics_on_test_set(metrics_log_file_path, prediction_flat, target_flat, mask_flat,
+                                           self.num_thresh_scores, decision_threshold, test_neg_class_frac,
+                                           test_pos_class_frac, max_thresh_accuracy=max_thresh_accuracy,
+                                           cost=kwargs['cost'], cost_unweighted=kwargs['cost_unweighted'],
+                                           test_cost=test_cost, test_cost_unweighted=test_cost_unweighted)
+
+        # produce image plots
+        test_plot_buf = draw_results(dataset.test_images[:num_image_plots],
+                                     dataset.test_targets[:num_image_plots],
+                                     segmentation_results[:num_image_plots, :, :],
+                                     acc, network, epoch_i, num_image_plots, os.path.join(self.OUTPUTS_DIR_PATH,
+                                                                                          self.IMAGE_PLOT_DIR),
+                                     decision_threshold)
+
+        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
+        image = tf.expand_dims(image, 0)
+        image_summary_op = tf.summary.image("plot", image)
+        image_summary = sess.run(image_summary_op)
+        summary_writer.add_summary(image_summary)
+
+    @classmethod
+    def get_metrics_on_test_set(cls, metrics_log_file_path, prediction_flat, target_flat, mask_flat, decision_threshold,
+                                num_thresh_scores, test_neg_class_frac, test_pos_class_frac, **kwargs):
+
+        metric_scores = dict()
+
         # produce AUCROC score with map
         auc_score = roc_auc_score(target_flat, prediction_flat, sample_weight=mask_flat)
 
@@ -319,7 +382,7 @@ class Job(object):
         list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
 
 
-        interval = 1.0 / self.num_thresh_scores
+        interval = 1.0 / num_thresh_scores
 
         threshold_scores = []
         for i in np.arange(0, 1.0 + interval, interval):
@@ -353,8 +416,8 @@ class Job(object):
         r_acc = float(r_tp + r_tn) / float(r_tp + r_tn + r_fp + r_fn)
         r_specificity = float(r_tn) / float(r_tn + r_fp)
 
-        metric_scores["test set average weighted log loss"] = test_cost
-        metric_scores["test set average unweighted log loss"] = test_cost_unweighted
+        metric_scores["test set average weighted log loss"] = kwargs["test_cost"]
+        metric_scores["test set average unweighted log loss"] = kwargs["test_cost_unweighted"]
         metric_scores["training set batch weighted log loss"] = kwargs["cost"]
         metric_scores["training set batch unweighted log loss"] = kwargs["cost_unweighted"]
 
@@ -377,31 +440,58 @@ class Job(object):
         metric_scores["dt f1_score"] = r_fbeta_score
         metric_scores["dt kappa"] = r_kappa
 
-        metric_scores["max acc from threshold"] = max_thresh_accuracy
+        metric_scores["max acc from threshold"] = kwargs["max_thresh_accuracy"]
 
         for threshold_score, threshold_str in \
-                zip(threshold_scores, self.get_thresh_scores_strs(self.num_thresh_scores)):
+                zip(threshold_scores, cls.get_thresh_scores_strs(num_thresh_scores)):
             metric_scores[threshold_str[0]] = threshold_score[0]
             metric_scores[threshold_str[1]] = threshold_score[1]
             metric_scores[threshold_str[2]] = threshold_score[2]
             metric_scores[threshold_str[3]] = threshold_score[3]
 
         # save metric results to log
-        self.write_to_csv([metric_scores[key] for key in sorted(metric_scores.keys())], metrics_log_file_path)
+        cls.write_to_csv([metric_scores[key] for key in sorted(metric_scores.keys())], metrics_log_file_path, **kwargs)
 
-        # produce image plots
-        test_plot_buf = draw_results(dataset.test_images[:num_image_plots],
-                                     dataset.test_targets[:num_image_plots],
-                                     segmentation_results[:num_image_plots, :, :],
-                                     acc, network, epoch_i, num_image_plots, os.path.join(self.OUTPUTS_DIR_PATH,
-                                                                                          self.IMAGE_PLOT_DIR),
-                                     decision_threshold)
+        return acc
 
-        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
-        image = tf.expand_dims(image, 0)
-        image_summary_op = tf.summary.image("plot", image)
-        image_summary = sess.run(image_summary_op)
-        summary_writer.add_summary(image_summary)
+    def get_ensemble_results(self, n_epochs, decision_threshold, num_thresh_scores, test_neg_class_frac, test_pos_class_frac,
+                             metrics_log='ensemble_results.txt', combining_metric="mean", **kwargs):
+
+        metric_log_file_path = os.path.join(self.OUTPUTS_DIR_PATH, metrics_log)
+
+        ## load targets and masks once for test set
+        targets_path = os.path.join(self.OUTPUTS_DIR_PATH, "saved_targets", "target.npy")
+        masks_path = os.path.join(self.OUTPUTS_DIR_PATH, "saved_masks", "mask.npy")
+        preds_dir_path = os.path.join(self.OUTPUTS_DIR_PATH, "saved_preds")
+
+        mask_flat = np.load(masks_path) if os.path.exists(masks_path) else None
+        target_flat = np.load(targets_path)
+
+        ## for all iterations
+        for epoch_i in range(n_epochs):
+
+            suffix = "_" + str(epoch_i) + ".npy"
+            ## load all the files for an iteration
+            search_string = preds_dir_path +"/*" + suffix
+            model_results_files = glob.glob(search_string)
+
+            net_results_list = []
+
+            print(model_results_files)
+            if len(model_results_files) == 0:
+                continue
+
+            for result_file in model_results_files:
+                prediction_flat = np.load(result_file)
+                net_results_list += [prediction_flat]
+
+            if combining_metric == "mean":
+                prediction_flat = np.array(net_results_list).mean(0)
+            if combining_metric == "median":
+                prediction_flat = np.median(np.array(net_results_list),0)
+
+            self.get_metrics_on_test_set(metric_log_file_path,prediction_flat,target_flat,mask_flat, decision_threshold,
+                                         num_thresh_scores, test_neg_class_frac, test_pos_class_frac, **kwargs)
 
     def create_viz_dirs(self, network, timestamp):
         viz_layer_outputs_path = os.path.join(self.OUTPUTS_DIR_PATH, 'viz_layer_outputs', network.description, timestamp)
