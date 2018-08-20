@@ -333,7 +333,7 @@ class Job(object):
         _, test_neg_class_frac, test_pos_class_frac = dataset.get_inverse_pos_freq(*dataset.test_data[1:])
 
         acc = self.get_metrics_on_test_set(metrics_log_file_path, prediction_flat, target_flat, mask_flat,
-                                           self.num_thresh_scores, decision_threshold, test_neg_class_frac,
+                                           decision_threshold, self.num_thresh_scores, test_neg_class_frac,
                                            test_pos_class_frac, max_thresh_accuracy=max_thresh_accuracy,
                                            cost=kwargs['cost'], cost_unweighted=kwargs['cost_unweighted'],
                                            test_cost=test_cost, test_cost_unweighted=test_cost_unweighted)
@@ -387,10 +387,7 @@ class Job(object):
 
         threshold_scores = []
         for i in np.arange(0, 1.0 + interval, interval):
-            index = int((len(list_fprs_tprs_thresholds) - 1) * i)
-            print(index)
-            print(i)
-            print(len(list_fprs_tprs_thresholds))
+            index = int(round((len(list_fprs_tprs_thresholds) - 1) * i, 0))
             fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
             thresh_acc = (1 - fpr) * test_neg_class_frac + tpr * test_pos_class_frac
             threshold_scores.append((threshold, thresh_acc, tpr, 1 - fpr))
@@ -538,7 +535,7 @@ class Job(object):
                     imsave(os.path.join(os.path.join(output_path, "mask2"),"channel_"+str(k)+".jpeg"),channel_output)
 
     @staticmethod
-    def write_to_csv(entries, file_path):
+    def write_to_csv(entries, file_path, **kwargs):
         with open(file_path, "a") as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             writer.writerow(entries)
