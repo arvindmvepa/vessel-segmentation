@@ -115,7 +115,7 @@ class Job(object):
         num_thresh_scores = kwargs.get("num_thresh_scores", self.num_thresh_scores)
 
         # create results file with combined results
-        self.write_to_csv(sorted(Job.get_metric_names(num_thresh_scores)), combined_metrics_log_path)
+        self.write_to_csv(sorted(self.get_metric_names(num_thresh_scores)), combined_metrics_log_path)
         for i in range(len(mean_folds_results)):
             row = [" +/- ".join([str(entry[0]),str(entry[1])]) for entry in zip(mean_folds_results[i],
                                                                                 mof_folds_results[i])]
@@ -170,6 +170,10 @@ class Job(object):
 
         # obtain `test_neg_class_frac` and `test_pos_class_frac`
         _, test_neg_class_frac, test_pos_class_frac = dataset.get_inverse_pos_freq(*dataset.test_data[1:])
+
+        # add metric names to ensemble metrics log
+        self.write_to_csv(sorted(self.get_metric_names(num_thresh_scores)), os.path.join(self.OUTPUTS_DIR_PATH,
+                                                                                         metrics_log))
 
         self.get_ensemble_results(n_epochs, decision_threshold, num_thresh_scores, test_neg_class_frac,
                                   test_pos_class_frac, metrics_log=metrics_log, combining_metric=combining_metric,
