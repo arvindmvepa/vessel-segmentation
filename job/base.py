@@ -272,12 +272,12 @@ class Job(object):
                         self.save_debug3(batch_data,debug1,viz_layer_outputs_path_train)
 
                     # create network visualization output
-                    if (epoch_i + 1) % viz_layer_epoch_freq == 0 and batch_i == 0:
+                    if (epoch_i + 1) % viz_layer_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch()-1:
                         self.create_viz_layer_output(layer_outputs, self.decision_threshold,
                                                      viz_layer_outputs_path_train)
 
                     # calculate results on test set
-                    if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == 0:
+                    if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch()-1:
                         self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
                                                      self.decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
                                                      viz_layer_outputs_path_test, num_image_plots, summary_writer,
@@ -495,7 +495,7 @@ class Job(object):
             if combining_metric == "median":
                 prediction_flat = np.median(np.array(net_results_list),0)
 
-            self.get_metrics_on_test_set(metric_log_file_path,prediction_flat,target_flat,mask_flat, decision_threshold,
+            self.get_metrics_on_test_set(metric_log_file_path, prediction_flat,target_flat,mask_flat, decision_threshold,
                                          num_thresh_scores, test_neg_class_frac, test_pos_class_frac,
                                          max_thresh_accuracy=np.nan, cost=np.nan, cost_unweighted=np.nan,
                                          test_cost=np.nan, test_cost_unweighted=np.nan, **kwargs)
