@@ -387,7 +387,7 @@ class Job(object):
 
         threshold_scores = []
         for i in np.arange(0, 1.0 + interval, interval):
-            index = int(round((len(list_fprs_tprs_thresholds) - 1) * i, 0))
+            index = int((len(list_fprs_tprs_thresholds) - 1) * i)
             fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
             thresh_acc = (1 - fpr) * test_neg_class_frac + tpr * test_pos_class_frac
             threshold_scores.append((threshold, thresh_acc, tpr, 1 - fpr))
