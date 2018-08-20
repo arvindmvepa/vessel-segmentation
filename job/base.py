@@ -387,7 +387,7 @@ class Job(object):
 
         threshold_scores = []
         for i in np.arange(0, 1.0 + interval, interval):
-            index = int(round((len(thresholds) - 1) * i, 0))
+            index = int(round((len(list_fprs_tprs_thresholds) - 1) * i, 0))
             fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
             thresh_acc = (1 - fpr) * test_neg_class_frac + tpr * test_pos_class_frac
             threshold_scores.append((threshold, thresh_acc, tpr, 1 - fpr))
@@ -492,7 +492,9 @@ class Job(object):
                 prediction_flat = np.median(np.array(net_results_list),0)
 
             self.get_metrics_on_test_set(metric_log_file_path,prediction_flat,target_flat,mask_flat, decision_threshold,
-                                         num_thresh_scores, test_neg_class_frac, test_pos_class_frac, **kwargs)
+                                         num_thresh_scores, test_neg_class_frac, test_pos_class_frac, cost=np.nan,
+                                         cost_unweighted=np.nan, test_cost=np.nan, test_cost_unweighted=np.nan,
+                                         **kwargs)
 
     def create_viz_dirs(self, network, timestamp):
         viz_layer_outputs_path = os.path.join(self.OUTPUTS_DIR_PATH, 'viz_layer_outputs', network.description, timestamp)
