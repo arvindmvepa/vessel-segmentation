@@ -121,7 +121,7 @@ class Job(object):
                                                                                 mof_folds_results[i])]
             self.write_to_csv(row, combined_metrics_log_path)
 
-    def run_ensemble(self, ensemble_count=10.0, combining_metric="mean", wce_start_tuning_constant=.5,
+    def run_ensemble(self, ensemble_count=10, combining_metric="mean", wce_start_tuning_constant=.5,
                      wce_end_tuning_constant=2.0, wce_tuning_constants=None, **kwargs):
 
         if wce_tuning_constants is not None:
