@@ -164,9 +164,9 @@ class Job(object):
             p.start()
             p.join()
 
-        n_epochs = kwargs.get("n_epochs", self.n_epochs)
-        num_thresh_scores = kwargs.get("num_thresh_scores", self.num_thresh_scores)
-        decision_threshold = kwargs.get("decision_threshold", self.decision_threshold)
+        n_epochs = kwargs.pop("n_epochs", self.n_epochs)
+        num_thresh_scores = kwargs.pop("num_thresh_scores", self.num_thresh_scores)
+        decision_threshold = kwargs.pop("decision_threshold", self.decision_threshold)
 
         # obtain `test_neg_class_frac` and `test_pos_class_frac`
         _, test_neg_class_frac, test_pos_class_frac = dataset.get_inverse_pos_freq(*dataset.test_data[1:])
