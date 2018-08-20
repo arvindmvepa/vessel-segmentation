@@ -4,8 +4,8 @@ from layers.max_pool_2d import MaxPool2d
 import tensorflow as tf
 
 class ChaseNetwork(Network):
-    IMAGE_WIDTH = 960
-    IMAGE_HEIGHT = 999
+    IMAGE_WIDTH = 999
+    IMAGE_HEIGHT = 960
 
     FIT_IMAGE_WIDTH = 1024
     FIT_IMAGE_HEIGHT = 1024
