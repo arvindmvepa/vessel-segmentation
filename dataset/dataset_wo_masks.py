@@ -5,21 +5,20 @@ import cv2
 from scipy.misc import imsave
 
 from dataset.base import Dataset
+from utilities.image_preprocessing import preprocessing
 
 class DatasetWoMasks(Dataset):
 
     TARGETS_DIR = "targets"
 
-    def __init__(self, WRK_DIR_PATH, batch_size=1, TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = True,
-                 cv_train_inds = None, cv_test_inds = None):
-        super(DatasetWoMasks, self).__init__(batch_size=batch_size, WRK_DIR_PATH=WRK_DIR_PATH, TRAIN_SUBDIR=TRAIN_SUBDIR,
-                                         TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
-                                         cv_test_inds=cv_test_inds)
+    def __init__(self, **kwargs):
+        super(DatasetWoMasks, self).__init__(**kwargs)
 
         self.train_images, self.train_targets = self.train_data
         self.test_images, self.test_targets = self.test_data
 
-    def get_images_from_file(self, DIR_PATH, file_indices=None):
+    def get_images_from_file(self, DIR_PATH, file_indices=None, hist_eq=None, clahe_kwargs=None,
+                             per_image_normalization=False, gamma=None):
 
         images = []
         targets = []
@@ -37,6 +36,7 @@ class DatasetWoMasks(Dataset):
         for image_file, target_file in zip(image_files, target_files):
 
             image_arr = cv2.imread(os.path.join(IMAGES_DIR_PATH,image_file), 1)
+            # for retinal images, extract green channel
             image_arr = image_arr[:, :, 1]
 
             top_pad = int((self.network_cls.FIT_IMAGE_HEIGHT - self.network_cls.IMAGE_HEIGHT) / 2)
@@ -45,20 +45,16 @@ class DatasetWoMasks(Dataset):
             right_pad = (self.network_cls.FIT_IMAGE_WIDTH - self.network_cls.IMAGE_WIDTH) - left_pad
 
             image_arr = cv2.copyMakeBorder(image_arr, top_pad, bot_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, 0)
-            image_arr = image_arr * 1.0/255.0
+            # apply image pre-processing
+            image_arr = preprocessing(image_arr, histo_eq=hist_eq, clahe_kwargs=clahe_kwargs,
+                                         per_image_normalization=per_image_normalization, gamma=gamma)
+            image_arr = image_arr * 1.0 / 255.0
             images.append(image_arr)
 
             target_arr = np.array(skio.imread(os.path.join(TARGETS_DIR_PATH,target_file)))
             target_arr = np.where(target_arr > 127,1.0,0.0)
 
             targets.append(target_arr)
-
-            orig_img = image_file
-            orig_pth = os.path.join(self.WRK_DIR_PATH, orig_img)
-            imsave(orig_pth, image_arr * 255.0)
-            target_img = "target_" + image_file
-            target_pth = os.path.join(self.WRK_DIR_PATH, target_img)
-            imsave(target_pth, target_arr * 255.0)
 
         return np.asarray(images), np.asarray(targets)
 
@@ -76,7 +72,8 @@ class DatasetWoMasks(Dataset):
             else:
                 images.append(np.array(self.train_images[self.pointer + i]))
                 targets.append(np.array(self.train_targets[self.pointer + i]))
-
+        if self.seq is not None:
+            images = self.apply_image_aug(images)
         self.pointer += self.batch_size
         return np.array(images), np.array(targets)
 

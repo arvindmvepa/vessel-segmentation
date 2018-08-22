@@ -4,13 +4,16 @@ import math
 from math import ceil
 from utilities.misc import find_class_balance
 import os
+from sklearn.model_selection import train_test_split
 
 class Dataset(object):
 
     IMAGES_DIR = "images"
 
     def __init__(self, batch_size=1, WRK_DIR_PATH =".", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = True,
-                 cv_train_inds = None, cv_test_inds = None, **kwargs):
+                 cv_train_inds = None, cv_test_inds = None, seq = None, hist_eq=None, clahe_kwargs=None,
+                 per_image_normalization=False, gamma=None, **kwargs):
+
         self.WRK_DIR_PATH = WRK_DIR_PATH
         self.batch_size = batch_size
         self.sgd = sgd
@@ -20,13 +23,20 @@ class Dataset(object):
             self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TRAIN_SUBDIR)
         else:
             self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TEST_SUBDIR)
+        self.seq = seq
 
-        self.train_data = self.get_images_from_file(self.TRAIN_DIR_PATH, cv_train_inds)
-        self.test_data = self.get_images_from_file(self.TEST_DIR_PATH, cv_test_inds)
+        self.train_data = self.get_images_from_file(self.TRAIN_DIR_PATH, cv_train_inds, hist_eq=hist_eq,
+                                                    clahe_kwargs=clahe_kwargs,
+                                                    per_image_normalization=per_image_normalization, gamma=gamma)
+        self.test_data = self.get_images_from_file(self.TEST_DIR_PATH, cv_test_inds, hist_eq=hist_eq,
+                                                   clahe_kwargs=clahe_kwargs,
+                                                   per_image_normalization=per_image_normalization, gamma=gamma)
+
 
         self.pointer = 0
 
-    def get_images_from_file(self, DIR_PATH, file_indices=None):
+    def get_images_from_file(self, DIR_PATH, file_indices=None, hist_eq=None, clahe_kwargs=None,
+                             per_image_normalization=False, gamma=None):
         raise NotImplementedError("Method Not Implemented")
 
     def get_data_for_tensorflow(self, dataset="train"):
@@ -51,6 +61,14 @@ class Dataset(object):
             if len(arr.shape) == 3:
                 reshaped_arrs += [np.reshape(arr, (arr.shape[0], arr.shape[1], arr.shape[2], 1))]
         return tuple(reshaped_arrs)
+
+    def apply_img_normalization(self, images):
+        return np.array([image*1.0/(np.max(image)-np.min(image)) for image in images])
+
+    def apply_image_aug(self, images):
+        images = [np.expand_dims(np.round(image*255.0).astype(np.uint8),axis=2) for image in images]
+        images = self.seq.augment_images(images)
+        return [np.squeeze(image,axis=2)*1.0/255.0 for image in images]
 
     def num_batches_in_epoch(self):
         return int(math.floor(len(self.train_data[0]) / self.batch_size))

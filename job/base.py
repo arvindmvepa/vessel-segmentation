@@ -57,7 +57,7 @@ class Job(object):
         # produce cv indices
         k_fold = KFold(n_splits=n_splits, shuffle=True)
         WRK_DIR_PATH = kwargs.get("WRK_DIR_PATH",".")
-        TRAIN_SUBDIR = kwargs.get("TRAIN_SUBDIR","train")
+        TRAIN_SUBDIR = kwargs.get("TRAIN_SUBDIR","train/")
         IMAGES_DIR_PATH = os.path.join(WRK_DIR_PATH, TRAIN_SUBDIR, Dataset.IMAGES_DIR)
         imgs = os.listdir(IMAGES_DIR_PATH)
 
@@ -79,7 +79,9 @@ class Job(object):
             folds_metrics_log_fname += [fold_metrics_log_fname]
             fold_kwargs["cv_train_inds"] = train_inds
             fold_kwargs["cv_test_inds"] = test_inds
+
             # fold_kwargs are applied to train method
+
             p = multiprocessing.Process(target=self.train, kwargs=fold_kwargs)
             p.start()
             p.join()
@@ -162,6 +164,7 @@ class Job(object):
             p.start()
             p.join()
 
+
         n_epochs = kwargs.pop("n_epochs", self.n_epochs)
         num_thresh_scores = kwargs.pop("num_thresh_scores", self.num_thresh_scores)
         decision_threshold = kwargs.pop("decision_threshold", self.decision_threshold)
@@ -177,8 +180,12 @@ class Job(object):
                                   test_pos_class_frac, metrics_log=metrics_log, combining_metric=combining_metric,
                                   **kwargs)
 
+    
     def train(self, dataset=None, gpu_device=None, tuning_constant=1.0, metrics_epoch_freq=1, viz_layer_epoch_freq=10,
-              metrics_log="metrics_log.csv", num_image_plots=5, save_model=True, debug_net_output=True, **kwargs):
+              metrics_log="metrics_log.csv", num_image_plots=5, save_model=True, debug_net_output=True,
+              objective_fn="wce", weight_map=None, type_weight='Custom', ss_r=.05, regularizer_args=None,
+              learning_rate_and_kwargs=(.001, {}), op_fun_and_kwargs=("adam", {}), weight_init=None, act_fn="lrelu",
+              act_leak_prob=.2, layer_params=None, **kwargs):
 
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
@@ -201,10 +208,19 @@ class Job(object):
         # initialize network object
         if gpu_device is not None:
             with tf.device(gpu_device):
-                network = self.network_cls(wce_pos_weight=pos_weight)
+                network = self.network_cls(pos_weight=pos_weight, objective_fn=objective_fn, weight_map=weight_map,
+                                           type_weight=type_weight, r=ss_r, weight_init=weight_init,
+                                           regularizer_args=regularizer_args, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                                           learning_rate_and_kwargs=learning_rate_and_kwargs,
+                                           op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params,
+                                           num_batches_in_epoch = dataset.num_batches_in_epoch())
         else:
-            network = self.network_cls(wce_pos_weight=pos_weight)
-
+            network = self.network_cls(pos_weight=pos_weight, objective_fn=objective_fn, weight_map=weight_map,
+                                       type_weight=type_weight, r=ss_r, weight_init=weight_init,
+                                       regularizer_args=regularizer_args, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                                       learning_rate_and_kwargs=learning_rate_and_kwargs,
+                                       op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params,
+                                       num_batches_in_epoch=dataset.num_batches_in_epoch())
 
         # create metrics log file
         metric_log_file_path = os.path.join(self.OUTPUTS_DIR_PATH, metrics_log)
@@ -253,17 +269,15 @@ class Job(object):
                         self.save_debug2(batch_data, viz_layer_outputs_path_train)
 
                     # train on batch
-                    cost, cost_unweighted, layer_outputs, debug1, acc, _ = sess.run(
-                        [network.cost, network.cost_unweighted,
-                         network.layer_outputs, network.debug1,
-                         network.accuracy, network.train_op],
+                    cost, cost_unweighted, layer_outputs, debug1, _, cur_learning_rate = sess.run(
+                        [network.cost, network.cost_unweighted, network.layer_outputs, network.debug1,
+                         network.train_op, network.cur_learning_rate],
                         feed_dict=self.get_network_dict(network, batch_data))
                     end = time.time()
-
                     # print training information
-                    print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
-                          'accuracy: {}'.format(batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost,
-                                                cost_unweighted, end - start, pos_weight, acc))
+                    print(network.objective_fn)
+                    print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, learning rate {}'.format(
+                        batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted, end-start, pos_weight, cur_learning_rate))
 
                     # produce debug image 3
                     if viz_layer_epoch_freq is not None and debug_net_output:
@@ -300,8 +314,6 @@ class Job(object):
                 sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
                           network.layer_outputs],
                          feed_dict=self.get_network_dict(network, test_data, False))
-
-            # print('test {} : epoch: {}, cost: {}, cost unweighted: {}'.format(i,epoch_i,test_cost,test_cost_unweighted))
 
             segmentation_test_result = segmentation_test_result[0, :, :, 0]
             segmentation_results[i, :, :] = segmentation_test_result
@@ -376,10 +388,18 @@ class Job(object):
 
         fpr_025 = np_fprs[np.where(np_fprs < .025)]
         tpr_025 = np_tprs[0:len(fpr_025)]
-
-        auc_10_fpr = auc(fpr_10, tpr_10)
-        auc_05_fpr = auc(fpr_05, tpr_05)
-        auc_025_fpr = auc(fpr_025, tpr_025)
+        if len(fpr_10) > 1 and len(tpr_10)> 1:
+            auc_10_fpr = auc(fpr_10, tpr_10)
+        else:
+            auc_10_fpr = np.nan
+        if len(fpr_05) > 1 and len(tpr_05) > 1:
+            auc_05_fpr = auc(fpr_05, tpr_05)
+        else:
+            auc_05_fpr = np.nan
+        if len(fpr_025) > 1 and len(tpr_025) > 1:
+            auc_025_fpr = auc(fpr_025, tpr_025)
+        else:
+            auc_025_fpr = np.nan
 
         # produce accuracy at different decision thresholds
         list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
