@@ -14,7 +14,7 @@ class Network(object):
         self.layers = {}
         self.debug1 = self.inputs
         net = self.inputs
-
+        Weight_norm_sum=0
         # ENCODER
         for i, layer in enumerate(layers):
             self.layers[layer.name] = net = layer.create_layer(net)
@@ -28,7 +28,7 @@ class Network(object):
 
         # DECODER
         for i, layer in enumerate(layers):
-            net = layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            net=layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
             self.layer_outputs.append(net)
 
         self.net_output(net)

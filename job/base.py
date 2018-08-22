@@ -53,7 +53,7 @@ class Job(object):
         # produce cv indices
         k_fold = KFold(n_splits=n_splits, shuffle=True)
         WRK_DIR_PATH = kwargs.get("WRK_DIR_PATH",".")
-        TRAIN_SUBDIR = kwargs.get("TRAIN_SUBDIR","train")
+        TRAIN_SUBDIR = kwargs.get("TRAIN_SUBDIR","train/")
         IMAGES_DIR_PATH = os.path.join(WRK_DIR_PATH, TRAIN_SUBDIR, Dataset.IMAGES_DIR)
         imgs = os.listdir(IMAGES_DIR_PATH)
 
@@ -75,6 +75,7 @@ class Job(object):
             folds_metrics_log_fname += [fold_metrics_log_fname]
             fold_kwargs["cv_train_inds"] = train_inds
             fold_kwargs["cv_test_inds"] = test_inds
+           # tf.reset_default_graph()
             p = multiprocessing.Process(target=self.train, kwargs=fold_kwargs)
             p.start()
             p.join()
@@ -145,7 +146,8 @@ class Job(object):
 
     def train(self, gpu_device=None, decision_threshold=.75, tuning_constant=1.0, metrics_epoch_freq=1,
               viz_layer_epoch_freq=10, n_epochs=100, metrics_log="metrics_log.csv", num_image_plots=5,
-              save_model=True, debug_net_output=True, **ds_kwargs):
+              save_model=True, debug_net_output=True, weight_init=None, regularizer=None, Relu=False,
+              learningrate=0.001,Beta1=0.9,Beta2=0.999,epsilon=10**-8,**ds_kwargs):
 
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
@@ -155,9 +157,9 @@ class Job(object):
         # initialize network object
         if gpu_device is not None:
             with tf.device(gpu_device):
-                network = self.network_cls(wce_pos_weight=pos_weight)
+                network = self.network_cls(wce_pos_weight=pos_weight,weight_init=weight_init,regularizer=regularizer,Relu=Relu,learningrate=learningrate,Beta1=Beta1,Beta2=Beta2,epsilon=epsilon)
         else:
-            network = self.network_cls(wce_pos_weight=pos_weight)
+            network = self.network_cls(wce_pos_weight=pos_weight,weight_init=weight_init,regularizer=regularizer,Relu=Relu,learningrate=learningrate,Beta1=Beta1,Beta2=Beta2,epsilon=epsilon)
 
         # create metrics log file
         metric_log_file_path = os.path.join(self.OUTPUTS_DIR_PATH, metrics_log)

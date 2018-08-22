@@ -14,8 +14,9 @@ from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, 
 
 class DriveJob(Job):
 
-    def __init__(self, OUTPUTS_DIR_PATH="."):
+    def __init__(self,OUTPUTS_DIR_PATH="."):
         super(DriveJob, self).__init__(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
+        
 
     def get_network_dict(self, network, input_data, train=True):
         net_dict = super(DriveJob, self).get_network_dict(network, input_data, train=True)
