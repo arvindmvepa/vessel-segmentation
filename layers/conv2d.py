@@ -9,12 +9,13 @@ class Conv2d(Layer):
     # global things...
     layer_index = 0
 
-    def __init__(self, kernel_size, output_channels, name,Relu=False,weight_i=None, dilation = 1):
+    def __init__(self, kernel_size, output_channels, name,Relu=False,weight_i=None,keep_prob=None, dilation = 1):
         self.kernel_size = kernel_size
         self.dilation = dilation
         self.output_channels = output_channels
         self.name = name
         self.weight= weight_i
+        self.keep_prob=keep_prob
         self.Relu=Relu
         
     @staticmethod
@@ -40,6 +41,7 @@ class Conv2d(Layer):
         Conv2d.layer_index += 1
 
         output = tf.nn.atrous_conv2d(input, W, rate=self.dilation, padding='SAME')
+        output = tf.nn.dropout(output, self.keep_prob)
         if self.Relu:
             output=tf.nn.relu(output)
         else:

@@ -3,23 +3,30 @@ import numpy as np
 from skimage import io as skio
 import cv2
 from PIL import Image
+from utilities.image_preprocessing import preprocessing
 
 from dataset.base import Dataset
 from network.drive import DriveNetwork
+
 
 class DriveDataset(Dataset):
 
     MASKS_DIR = "masks"
     TARGETS_DIR = "targets"
 
-    def __init__(self, batch_size=1, WRK_DIR_PATH='./drive', TRAIN_SUBDIR="train/", TEST_SUBDIR="test/", sgd=True,
-                 cv_train_inds = None, cv_test_inds = None):
+    def __init__(self, batch_size=1, WRK_DIR_PATH='./drive', TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd=True,
+                 cv_train_inds = None, cv_test_inds = None, he_flag=False,clahe_flag=False,normalized_flag=False,gamma_flag=False):
+        self.he_flag=he_flag
+        self.clahe_flag=clahe_flag
+        self.normalized_flag=normalized_flag
+        self.gamma_flag=gamma_flag
         super(DriveDataset, self).__init__(batch_size=batch_size, WRK_DIR_PATH=WRK_DIR_PATH, TRAIN_SUBDIR=TRAIN_SUBDIR,
                                            TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
                                            cv_test_inds=cv_test_inds)
 
         self.train_images, self.train_masks, self.train_targets = self.train_data
         self.test_images, self.test_masks, self.test_targets = self.test_data
+        
 
     def get_images_from_file(self, DIR_PATH, file_indices=None):
 
@@ -44,6 +51,7 @@ class DriveDataset(Dataset):
 
             image_arr = cv2.imread(os.path.join(IMAGES_DIR_PATH,image_file), 1)
             image_arr = image_arr[:, :, 1]
+            image_arr = preprocessing(image_arr,he_flag=self.he_flag, clahe_flag=self.clahe_flag, normalized_flag=self.normalized_flag, gamma_flag=self.gamma_flag)
 
             top_pad = int((DriveNetwork.FIT_IMAGE_HEIGHT - DriveNetwork.IMAGE_HEIGHT) / 2)
             bot_pad = (DriveNetwork.FIT_IMAGE_HEIGHT - DriveNetwork.IMAGE_HEIGHT) - top_pad
