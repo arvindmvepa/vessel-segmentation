@@ -1,3 +1,4 @@
+"""This is the file for the base network class"""
 import tensorflow as tf
 
 class Network(object):
@@ -34,4 +35,5 @@ class Network(object):
         self.net_output(net)
 
     def net_output(self, net):
+        """This method produces the network output"""
         raise NotImplementedError("Not Implemented")

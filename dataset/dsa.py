@@ -1,3 +1,4 @@
+"""This is the file for the DsaDataset subclass"""
 import os
 import numpy as np
 from skimage import io as skio
@@ -12,10 +13,10 @@ class DsaDataset(Dataset):
     TARGETS2_DIR = "targets2"
 
     def __init__(self, batch_size=1, WRK_DIR_PATH ="./dsa", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = True,
-                 cv_train_inds = None, cv_test_inds = None):
+                 cv_train_inds = None, cv_test_inds = None, **kwargs):
         super(DsaDataset, self).__init__(batch_size=batch_size, WRK_DIR_PATH=WRK_DIR_PATH, TRAIN_SUBDIR=TRAIN_SUBDIR,
                                          TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
-                                         cv_test_inds=cv_test_inds)
+                                         cv_test_inds=cv_test_inds, **kwargs)
 
         self.train_images, self.train_targets = self.train_data
         self.test_images, self.test_targets = self.test_data
