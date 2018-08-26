@@ -8,7 +8,6 @@ import time
 import glob
 
 from scipy.misc import imsave
-import matplotlib.pyplot as plt
 import numpy as np
 import tensorflow as tf
 
@@ -24,7 +23,6 @@ import csv
 from numpy import genfromtxt
 from statsmodels import robust
 from dataset.base import Dataset
-import random
 
 
 class Job(object):

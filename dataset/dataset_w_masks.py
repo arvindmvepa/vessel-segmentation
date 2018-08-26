@@ -5,21 +5,21 @@ import cv2
 from PIL import Image
 
 from dataset.base import Dataset
-from network.hrf import HRFNetwork
 
-class HRFDataset(Dataset):
+class DatasetWMasks(Dataset):
 
     MASKS_DIR = "masks"
     TARGETS_DIR = "targets"
 
-    def __init__(self, batch_size=1, WRK_DIR_PATH='./hrf', TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd=True,
+    def __init__(self, WRK_DIR_PATH, batch_size=1, TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd=True,
                  cv_train_inds = None, cv_test_inds = None):
-        super(HRFDataset, self).__init__(batch_size=batch_size, WRK_DIR_PATH=WRK_DIR_PATH, TRAIN_SUBDIR=TRAIN_SUBDIR,
+        super(DatasetWMasks, self).__init__(WRK_DIR_PATH=WRK_DIR_PATH, batch_size=batch_size, TRAIN_SUBDIR=TRAIN_SUBDIR,
                                            TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
                                            cv_test_inds=cv_test_inds)
 
         self.train_images, self.train_masks, self.train_targets = self.train_data
         self.test_images, self.test_masks, self.test_targets = self.test_data
+
 
     def get_images_from_file(self, DIR_PATH, file_indices=None):
 
@@ -35,8 +35,6 @@ class HRFDataset(Dataset):
         mask_files = sorted(os.listdir(MASKS_DIR_PATH))
         target_files = sorted(os.listdir(TARGETS_DIR_PATH))
 
-
-
         if file_indices is not None:
             image_files = [image_files[i] for i in file_indices]
             mask_files = [mask_files[i] for i in file_indices]
@@ -47,10 +45,10 @@ class HRFDataset(Dataset):
             image_arr = cv2.imread(os.path.join(IMAGES_DIR_PATH,image_file), 1)
             image_arr = image_arr[:, :, 1]
 
-            top_pad = int((HRFNetwork.FIT_IMAGE_HEIGHT - HRFNetwork.IMAGE_HEIGHT) / 2)
-            bot_pad = (HRFNetwork.FIT_IMAGE_HEIGHT - HRFNetwork.IMAGE_HEIGHT) - top_pad
-            left_pad = int((HRFNetwork.FIT_IMAGE_WIDTH - HRFNetwork.IMAGE_WIDTH) / 2)
-            right_pad = (HRFNetwork.FIT_IMAGE_WIDTH - HRFNetwork.IMAGE_WIDTH) - left_pad
+            top_pad = int((self.network_cls.FIT_IMAGE_HEIGHT - self.network_cls.IMAGE_HEIGHT) / 2)
+            bot_pad = (self.network_cls.FIT_IMAGE_HEIGHT - self.network_cls.IMAGE_HEIGHT) - top_pad
+            left_pad = int((self.network_cls.FIT_IMAGE_WIDTH - self.network_cls.IMAGE_WIDTH) / 2)
+            right_pad = (self.network_cls.FIT_IMAGE_WIDTH - self.network_cls.IMAGE_WIDTH) - left_pad
 
             image_arr = cv2.copyMakeBorder(image_arr, top_pad, bot_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, 0)
             image_arr = image_arr * 1.0/255.0
@@ -58,7 +56,6 @@ class HRFDataset(Dataset):
 
             mask = Image.open(os.path.join(MASKS_DIR_PATH,mask_file))
             mask_arr = np.array(mask)
-            mask_arr = mask_arr[:,:,0]
             mask_arr = mask_arr * 1.0/255.0
             masks.append(mask_arr)
 

@@ -1,4 +1,4 @@
-from job.base import Job
+from job.job_wo_masks import JobWoMasks
 
 import matplotlib
 matplotlib.use('Agg')
@@ -10,15 +10,10 @@ from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, 
 from dataset.stare import StareDataset
 from network.stare import StareNetwork
 
-class StareJob(Job):
+class StareJob(JobWoMasks):
 
     def __init__(self, OUTPUTS_DIR_PATH="."):
         super(StareJob, self).__init__(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
-
-    def get_network_dict(self, network, input_data, train=True):
-        net_dict = super(StareJob, self).get_network_dict(network, input_data, train=True)
-        net_dict.update({network.inputs: input_data[0], network.targets: input_data[1]})
-        return net_dict
 
     @property
     def dataset_cls(self):
@@ -27,19 +22,3 @@ class StareJob(Job):
     @property
     def network_cls(self):
         return StareNetwork
-
-    @staticmethod
-    def get_max_threshold_accuracy_image(results, neg_class_frac, pos_class_frac, targets):
-        fprs, tprs, thresholds = roc_curve(targets.flatten(), results.flatten())
-        list_fprs_tprs_thresholds = list(zip(fprs, tprs, thresholds))
-        interval = 0.0001
-        thresh_max = 0.0
-
-        for i in np.arange(0.0, 1.0 + interval, interval):
-            index = int(round((len(thresholds) - 1) * i, 0))
-            fpr, tpr, threshold = list_fprs_tprs_thresholds[index]
-            thresh_acc = (1 - fpr) * neg_class_frac + tpr * pos_class_frac
-            if thresh_acc > thresh_max:
-                thresh_max = thresh_acc
-            i += 1
-        return thresh_max
