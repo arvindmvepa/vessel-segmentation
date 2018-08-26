@@ -70,5 +70,9 @@ class Dataset(object):
         raise NotImplementedError("Method Not Implemented")
 
     @property
+    def network_cls(self):
+        raise ValueError("Property Not Defined")
+
+    @property
     def test_set(self):
-        raise ValueError("Property Not Definned")
+        raise ValueError("Property Not Defined")

@@ -39,10 +39,10 @@ class DsaNetwork(Network):
 
             layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_6_1'))
             layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2'))
-            self.inputs = tf.placeholder(tf.float32,
-                                         [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
-                                         name='inputs')
-            self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
+        self.inputs = tf.placeholder(tf.float32,
+                                     [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, self.IMAGE_CHANNELS],
+                                     name='inputs')
+        self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         super(DsaNetwork, self).__init__(layers=layers, **kwargs)
 
     def net_output(self, net):

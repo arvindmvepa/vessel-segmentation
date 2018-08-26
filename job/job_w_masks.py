@@ -1,31 +1,25 @@
-from job.base import Job
 import matplotlib
 matplotlib.use('Agg')
+
+import matplotlib
+
+matplotlib.use('Agg')
 import numpy as np
-import os
-from network.hrf import HRFNetwork
-from dataset.hrf import HRFDataset
 from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix, \
     roc_curve, auc
+import os
+from job.base import Job
 
 
-class HRFJob(Job):
+class JobWMasks(Job):
 
     def __init__(self, OUTPUTS_DIR_PATH="."):
-        super(HRFJob, self).__init__(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
+        super(JobWMasks, self).__init__(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
 
     def get_network_dict(self, network, input_data, train=True):
-        net_dict = super(HRFJob, self).get_network_dict(network, input_data, train=True)
+        net_dict = super(JobWMasks, self).get_network_dict(network, input_data, train=True)
         net_dict.update({network.inputs: input_data[0], network.masks: input_data[1], network.targets: input_data[2]})
         return net_dict
-
-    @property
-    def dataset_cls(self):
-        return HRFDataset
-
-    @property
-    def network_cls(self):
-        return HRFNetwork
 
     @staticmethod
     def get_max_threshold_accuracy_image(results, neg_class_frac, pos_class_frac, masks, targets):
@@ -44,7 +38,7 @@ class HRFJob(Job):
         return thresh_max
 
     def save_data(self, prediction_flat, target_flat, mask_flat, timestamp, epoch_i):
-        super(HRFJob, self).save_data(prediction_flat, target_flat, mask_flat, timestamp, epoch_i)
+        super(JobWMasks, self).save_data(prediction_flat, target_flat, mask_flat, timestamp, epoch_i)
         masks_path = os.path.join(self.OUTPUTS_DIR_PATH, "saved_masks")
 
         if not os.path.exists(masks_path):
