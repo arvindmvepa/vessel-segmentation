@@ -14,4 +14,3 @@ class DriveDataset(DatasetWMasks):
     @property
     def network_cls(self):
         return DriveNetwork
-

@@ -1,4 +1,5 @@
 """This is the file for the DsaJob subclass"""
+
 from job.job_wo_masks import JobWoMasks
 
 import matplotlib

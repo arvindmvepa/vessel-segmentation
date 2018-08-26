@@ -1,7 +1,10 @@
 """This is the file for the DRIVE network subclass"""
 
+from network.retinal_w_masks import RetinalWMasksNetwork
+
 class DriveNetwork(RetinalWMasksNetwork):
-    # actual image dimensions
+
+    # actual image dimensions 
     IMAGE_HEIGHT = 584
     IMAGE_WIDTH = 565
 
