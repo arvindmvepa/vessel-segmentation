@@ -63,10 +63,7 @@ class DatasetWMasks(Dataset):
             target_arr = np.where(target_arr > 127,1.0,0.0)
 
             targets.append(target_arr)
-        print('dataset')
-        print(np.asarray(images).shape)
-        print(np.asarray(masks).shape)
-        print(np.asarray(targets).shape)
+
         return np.asarray(images), np.asarray(masks), np.asarray(targets)
 
 
