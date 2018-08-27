@@ -12,10 +12,12 @@ class DatasetWMasks(Dataset):
     TARGETS_DIR = "targets"
 
     def __init__(self, WRK_DIR_PATH, batch_size=1, TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd=True,
-                 cv_train_inds = None, cv_test_inds = None):
+                 masks_provided=True, mask_threshold = None, cv_train_inds = None, cv_test_inds = None):
+        self.masks_provided = masks_provided
+        self.masks_threshold = mask_threshold
         super(DatasetWMasks, self).__init__(WRK_DIR_PATH=WRK_DIR_PATH, batch_size=batch_size, TRAIN_SUBDIR=TRAIN_SUBDIR,
                                            TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
-                                           cv_test_inds=cv_test_inds)
+                                            cv_test_inds=cv_test_inds)
 
         self.train_images, self.train_masks, self.train_targets = self.train_data
         self.test_images, self.test_masks, self.test_targets = self.test_data
@@ -32,30 +34,39 @@ class DatasetWMasks(Dataset):
         TARGETS_DIR_PATH = os.path.join(DIR_PATH, self.TARGETS_DIR)
 
         image_files = sorted(os.listdir(IMAGES_DIR_PATH))
-        mask_files = sorted(os.listdir(MASKS_DIR_PATH))
         target_files = sorted(os.listdir(TARGETS_DIR_PATH))
 
         if file_indices is not None:
             image_files = [image_files[i] for i in file_indices]
-            mask_files = [mask_files[i] for i in file_indices]
             target_files = [target_files[i] for i in file_indices]
 
-        for image_file,mask_file,target_file in zip(image_files, mask_files, target_files):
+        if self.masks_provided:
+            mask_files = sorted(os.listdir(MASKS_DIR_PATH))
+            if file_indices is not None:
+                mask_files = [mask_files[i] for i in file_indices]
+
+        for i, (image_file,target_file) in enumerate(zip(image_files, target_files)):
 
             image_arr = cv2.imread(os.path.join(IMAGES_DIR_PATH,image_file), 1)
-            image_arr = image_arr[:, :, 1]
+            grn_image_arr = image_arr[:, :, 1]
 
             top_pad = int((self.network_cls.FIT_IMAGE_HEIGHT - self.network_cls.IMAGE_HEIGHT) / 2)
             bot_pad = (self.network_cls.FIT_IMAGE_HEIGHT - self.network_cls.IMAGE_HEIGHT) - top_pad
             left_pad = int((self.network_cls.FIT_IMAGE_WIDTH - self.network_cls.IMAGE_WIDTH) / 2)
             right_pad = (self.network_cls.FIT_IMAGE_WIDTH - self.network_cls.IMAGE_WIDTH) - left_pad
 
-            image_arr = cv2.copyMakeBorder(image_arr, top_pad, bot_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, 0)
-            image_arr = image_arr * 1.0/255.0
-            images.append(image_arr)
+            grn_image_arr = cv2.copyMakeBorder(grn_image_arr, top_pad, bot_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, 0)
+            grn_image_arr = grn_image_arr * 1.0/255.0
+            images.append(grn_image_arr)
 
-            mask = Image.open(os.path.join(MASKS_DIR_PATH,mask_file))
-            mask_arr = np.array(mask)
+            if self.masks_provided:
+                mask_file = mask_files[i]
+                mask = Image.open(os.path.join(MASKS_DIR_PATH,mask_file))
+                mask_arr = np.array(mask)
+            else:
+                l_image_arr = cv2.cvtColor(image_arr, cv2.cv2.COLOR_BGR2LAB)[0,:,:]*(100.0/255.0)
+                mask_arr = l_image_arr > self.mask_threshold
+
             mask_arr = mask_arr * 1.0/255.0
             masks.append(mask_arr)
 

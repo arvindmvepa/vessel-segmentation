@@ -1,6 +1,6 @@
-from network.retinal_wo_masks import RetinalWoMasksNetwork
+from network.retinal_w_masks import RetinalWMasksNetwork
 
-class ChaseNetwork(RetinalWoMasksNetwork):
+class ChaseNetwork(RetinalWMasksNetwork):
     IMAGE_WIDTH = 999
     IMAGE_HEIGHT = 960
 
