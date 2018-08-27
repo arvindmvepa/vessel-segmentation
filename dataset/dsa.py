@@ -3,6 +3,7 @@ import os
 import numpy as np
 from skimage import io as skio
 import cv2
+from scipy.misc import imsave
 
 from dataset.dataset_wo_masks import DatasetWoMasks
 from network.dsa import DsaNetwork
@@ -46,6 +47,13 @@ class DsaDataset(DatasetWoMasks):
                 targets.append(target_arr)
             else:
                 raise ValueError("Path for target file for \'{}\' not defined".format(image_file))
+
+            orig_img = image_file
+            orig_pth = os.path.join(self.WRK_DIR_PATH, orig_img)
+            imsave(orig_pth, image_arr * 255.0)
+            target_img = "target_" + image_file
+            target_pth = os.path.join(self.WRK_DIR_PATH, target_img)
+            imsave(target_pth, target_arr * 255.0)
 
         return np.asarray(images), np.asarray(targets)
 
