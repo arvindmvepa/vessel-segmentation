@@ -1,8 +1,8 @@
 from network.retinal_w_masks import RetinalWMasksNetwork
 
 class ChaseNetwork(RetinalWMasksNetwork):
-    IMAGE_WIDTH = 999
     IMAGE_HEIGHT = 960
+    IMAGE_WIDTH = 999
 
     FIT_IMAGE_WIDTH = 1024
     FIT_IMAGE_HEIGHT = 1024
