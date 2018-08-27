@@ -65,7 +65,8 @@ class DatasetWMasks(Dataset):
                 mask_arr = np.array(mask)
             else:
                 print("debug")
-                l_image_arr = cv2.cvtColor(image_arr, cv2.cv2.COLOR_BGR2LAB)[0,:,:]*(100.0/255.0)
+                l_image_arr = cv2.cvtColor(image_arr, cv2.cv2.COLOR_BGR2LAB)
+                #[0,:,:]*(100.0/255.0)
                 print(l_image_arr.shape)
                 mask_arr = l_image_arr > self.mask_threshold
 
