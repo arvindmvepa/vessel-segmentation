@@ -1,10 +1,15 @@
 import numpy as np
 import cv2
 
-def preprocessing(img, **kwargs):
-    img = dataset_normalized(img)
-    img = clahe_equalized(img)
-    img = adjust_gamma(img, 1.2)
+def preprocessing(img, he_flag=False, clahe_flag=False, normalized_flag=False, gamma_flag=False, gamma = 1.2, **kwargs):
+    if he_flag:
+        img = histo_equalized(img)
+    if clahe_flag:
+        img = clahe_equalized(img)
+    if normalized_flag:
+        img = dataset_normalized(img)
+    if gamma_flag:
+        img = adjust_gamma(img, gamma)
     return img
 
 def histo_equalized(img):
