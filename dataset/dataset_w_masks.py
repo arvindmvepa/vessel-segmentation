@@ -66,7 +66,7 @@ class DatasetWMasks(Dataset):
                 mask_arr = np.array(mask)
                 mask_arr = mask_arr * 1.0 / 255.0
             else:
-                l_image_arr = cv2.cvtColor(image_arr, cv2.cv2.COLOR_BGR2LAB)[:,:,0]*(100.0/255.0)
+                l_image_arr = cv2.cvtColor(image_arr, cv2.COLOR_BGR2LAB)[:,:,0]*(100.0/255.0)
                 mask_arr = np.where(l_image_arr > self.mask_threshold,1.0,0.0)
             masks.append(mask_arr)
 
