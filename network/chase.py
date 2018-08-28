@@ -1,6 +1,6 @@
-from network.large_network_w_masks import LargeNetworkWMasks
+from network.small_network_w_masks import SmallNetworkWMasks
 
-class ChaseNetwork(LargeNetworkWMasks):
+class ChaseNetwork(SmallNetworkWMasks):
 
     IMAGE_HEIGHT = 960
     IMAGE_WIDTH = 999
