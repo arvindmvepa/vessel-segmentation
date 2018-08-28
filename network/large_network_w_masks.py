@@ -1,13 +1,14 @@
+"""This is the file for the DSA network subclass"""
+from network.large_network import LargeNetwork
+from utilities.mask_ops import mask_op_and_mask_mean
 import tensorflow as tf
 
-from network.retinal import RetinalNetwork
-from utilities.mask_ops import mask_op_and_mask_mean
 
-class RetinalWMasksNetwork(RetinalNetwork):
+class LargeNetworkWMasks(LargeNetwork):
 
     def __init__(self, layers=None, skip_connections=True, **kwargs):
         self.masks = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='masks')
-        super(RetinalWMasksNetwork, self).__init__(layers=layers, skip_connections=skip_connections,**kwargs)
+        super(LargeNetworkWMasks, self).__init__(layers=layers, skip_connections=skip_connections, **kwargs)
 
     def net_output(self, net):
         net = tf.image.resize_image_with_crop_or_pad(net, self.IMAGE_HEIGHT, self.IMAGE_WIDTH)

@@ -1,6 +1,6 @@
-from network.retinal_w_masks import RetinalWMasksNetwork
+from network.small_network_w_masks import SmallNetworkWMasks
 
-class StareNetwork(RetinalWMasksNetwork):
+class StareNetwork(SmallNetworkWMasks):
     IMAGE_WIDTH = 700
     IMAGE_HEIGHT = 605
 
