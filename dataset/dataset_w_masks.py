@@ -3,6 +3,7 @@ import numpy as np
 from skimage import io as skio
 import cv2
 from PIL import Image
+from scipy.misc import imsave
 
 from dataset.base import Dataset
 
@@ -73,6 +74,17 @@ class DatasetWMasks(Dataset):
             target_arr = np.where(target_arr > 127,1.0,0.0)
 
             targets.append(target_arr)
+
+            orig_img = image_file
+            orig_pth = os.path.join(self.WRK_DIR_PATH, orig_img)
+            imsave(orig_pth, grn_image_arr * 255.0)
+            target_img = "target_" + image_file
+            target_pth = os.path.join(self.WRK_DIR_PATH, target_img)
+            imsave(target_pth, target_arr * 255.0)
+
+            mask_img = "mask_" + image_file
+            mask_pth = os.path.join(self.WRK_DIR_PATH, mask_img)
+            imsave(mask_pth, mask_arr * 255.0)
 
         return np.asarray(images), np.asarray(masks), np.asarray(targets)
 
