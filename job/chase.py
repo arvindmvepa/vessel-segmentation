@@ -1,4 +1,4 @@
-from job.job_wo_masks import JobWoMasks
+from job.job_w_masks import JobWMasks
 
 import matplotlib
 matplotlib.use('Agg')
@@ -6,7 +6,7 @@ matplotlib.use('Agg')
 from dataset.chase import ChaseDataset
 from network.chase import ChaseNetwork
 
-class ChaseJob(JobWoMasks):
+class ChaseJob(JobWMasks):
 
     def __init__(self, OUTPUTS_DIR_PATH="."):
         super(ChaseJob, self).__init__(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)

@@ -1,13 +1,17 @@
-import tensorflow as tf
-
+"""This is the file for the DSA network subclass"""
 from network.base import Network
 from layers.conv2d import Conv2d
 from layers.max_pool_2d import MaxPool2d
+import tensorflow as tf
 
-class RetinalNetwork(Network):
+
+class LargeNetwork(Network):
+
+    # actual image dimensions
     IMAGE_HEIGHT = None
     IMAGE_WIDTH = None
 
+    # transformed input dimensions for network input
     FIT_IMAGE_HEIGHT = None
     FIT_IMAGE_WIDTH = None
 
@@ -15,7 +19,7 @@ class RetinalNetwork(Network):
 
     def __init__(self, layers=None, skip_connections=True, **kwargs):
 
-        if layers == None:
+        if layers == None :
 
             layers = []
             layers.append(Conv2d(kernel_size=3, output_channels=64, name='conv_1_1'))
@@ -24,15 +28,26 @@ class RetinalNetwork(Network):
             layers.append(Conv2d(kernel_size=3, output_channels=128, name='conv_2_1'))
 
             layers.append(MaxPool2d(kernel_size=2, name='max_2', skip_connection=True and skip_connections))
+
             layers.append(Conv2d(kernel_size=3, output_channels=256, name='conv_3_1'))
             layers.append(Conv2d(kernel_size=3, dilation=2, output_channels=256, name='conv_3_2'))
 
             layers.append(MaxPool2d(kernel_size=2, name='max_3', skip_connection=True and skip_connections))
 
-            layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_4_1'))
-            layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_4_2'))
+            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_4_1'))
+            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_4_2'))
+
+            layers.append(MaxPool2d(kernel_size=2, name='max_4', skip_connection=True and skip_connections))
+
+            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_5_1'))
+            layers.append(Conv2d(kernel_size=3, output_channels=512, name='conv_5_2'))
+
+            layers.append(MaxPool2d(kernel_size=2, name='max_5', skip_connection=True and skip_connections))
+
+            layers.append(Conv2d(kernel_size=7, output_channels=4096, name='conv_6_1'))
+            layers.append(Conv2d(kernel_size=1, output_channels=4096, name='conv_6_2'))
 
         self.inputs = tf.placeholder(tf.float32, [None, self.FIT_IMAGE_HEIGHT, self.FIT_IMAGE_WIDTH,
                                                   self.IMAGE_CHANNELS], name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
-        super(RetinalNetwork, self).__init__(layers=layers, **kwargs)
+        super(LargeNetwork, self).__init__(layers=layers, **kwargs)
