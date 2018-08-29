@@ -13,8 +13,9 @@ class DatasetWMasks(Dataset):
     TARGETS_DIR = "targets"
 
     def __init__(self, WRK_DIR_PATH, batch_size=1, TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd=True,
-                 masks_provided=True, mask_threshold = None, cv_train_inds = None, cv_test_inds = None):
+                 masks_provided=True, init_mask_imgs=False, mask_threshold = None, cv_train_inds = None, cv_test_inds = None):
         self.mask_provided = masks_provided
+        self.init_mask_imgs = init_mask_imgs
         self.mask_threshold = mask_threshold
         super(DatasetWMasks, self).__init__(WRK_DIR_PATH=WRK_DIR_PATH, batch_size=batch_size, TRAIN_SUBDIR=TRAIN_SUBDIR,
                                            TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
@@ -41,7 +42,7 @@ class DatasetWMasks(Dataset):
             image_files = [image_files[i] for i in file_indices]
             target_files = [target_files[i] for i in file_indices]
 
-        if self.mask_provided:
+        if self.mask_provided or self.init_mask_imgs:
             mask_files = sorted(os.listdir(MASKS_DIR_PATH))
             if file_indices is not None:
                 mask_files = [mask_files[i] for i in file_indices]
@@ -60,11 +61,13 @@ class DatasetWMasks(Dataset):
             grn_image_arr = grn_image_arr * 1.0/255.0
             images.append(grn_image_arr)
 
-            if self.mask_provided:
+            if self.mask_provided or self.init_mask_imgs:
                 mask_file = mask_files[i]
                 mask = Image.open(os.path.join(MASKS_DIR_PATH,mask_file))
                 mask_arr = np.array(mask)
                 mask_arr = mask_arr * 1.0 / 255.0
+                if self.init_mask_imgs:
+                    mask_arr = np.where(mask_arr > self.mask_threshold, 1.0, 0.0)
             else:
                 l_image_arr = cv2.cvtColor(image_arr, cv2.COLOR_BGR2LAB)[:,:,0]*(100.0/255.0)
                 mask_arr = np.where(l_image_arr > self.mask_threshold,1.0,0.0)
