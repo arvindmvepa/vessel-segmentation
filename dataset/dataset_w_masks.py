@@ -76,7 +76,7 @@ class DatasetWMasks(Dataset):
                 l_image_arr = cv2.cvtColor(image_arr, cv2.COLOR_BGR2LAB)[:,:,0]*(100.0/255.0)
                 mask_arr = np.where(l_image_arr > self.mask_threshold, 1, 0.0)
             if not self.mask_provided:
-                mask_arr = cv2.morphologyEx(mask_arr, cv2.MORPH_OPEN, kernel)
+                mask_arr = cv2.morphologyEx(mask_arr.astype(np.uint8), cv2.MORPH_OPEN, kernel)
 
             masks.append(mask_arr)
 
