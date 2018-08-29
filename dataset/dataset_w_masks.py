@@ -61,21 +61,24 @@ class DatasetWMasks(Dataset):
             grn_image_arr = grn_image_arr * 1.0/255.0
             images.append(grn_image_arr)
 
-            if not self.mask_provided:
-                kernel = np.ones((3,3), np.uint8)
-
             if self.mask_provided or self.init_mask_imgs:
                 mask_file = mask_files[i]
                 mask = Image.open(os.path.join(MASKS_DIR_PATH,mask_file))
                 mask_arr = np.array(mask)
                 mask_arr = mask_arr * 1.0 / 255.0
+                # load base files to produce masks
                 if self.init_mask_imgs:
+                    # scale scores by 100
                     mask_arr = mask_arr * 100.0
                     mask_arr = np.where(mask_arr > self.mask_threshold, 1, 0)
             else:
+                # convert from BGR to CLIELAB color space
                 l_image_arr = cv2.cvtColor(image_arr, cv2.COLOR_BGR2LAB)[:,:,0]*(100.0/255.0)
                 mask_arr = np.where(l_image_arr > self.mask_threshold, 1, 0.0)
+
+            # apply morphological open operation to created masks
             if not self.mask_provided:
+                kernel = np.ones((3, 3), np.uint8)
                 mask_arr = cv2.morphologyEx(mask_arr.astype(np.uint8), cv2.MORPH_OPEN, kernel)
 
             masks.append(mask_arr)
@@ -85,6 +88,8 @@ class DatasetWMasks(Dataset):
 
             targets.append(target_arr)
 
+            # to debug mask creation
+            """"
             orig_img = image_file
             orig_pth = os.path.join(self.WRK_DIR_PATH, orig_img)
             imsave(orig_pth, grn_image_arr * 255.0)
@@ -95,6 +100,7 @@ class DatasetWMasks(Dataset):
             mask_img = "mask_" + image_file
             mask_pth = os.path.join(self.WRK_DIR_PATH, mask_img)
             imsave(mask_pth, mask_arr * 255.0)
+            """
 
         return np.asarray(images), np.asarray(masks), np.asarray(targets)
 
