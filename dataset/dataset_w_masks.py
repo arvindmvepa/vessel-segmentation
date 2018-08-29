@@ -61,16 +61,23 @@ class DatasetWMasks(Dataset):
             grn_image_arr = grn_image_arr * 1.0/255.0
             images.append(grn_image_arr)
 
+            if not self.mask_provided:
+                kernel = np.ones((3,3), np.uint8)
+
             if self.mask_provided or self.init_mask_imgs:
                 mask_file = mask_files[i]
                 mask = Image.open(os.path.join(MASKS_DIR_PATH,mask_file))
                 mask_arr = np.array(mask)
                 mask_arr = mask_arr * 1.0 / 255.0
                 if self.init_mask_imgs:
-                    mask_arr = np.where(mask_arr > self.mask_threshold, 1.0, 0.0)
+                    mask_arr = mask_arr * 100.0
+                    mask_arr = np.where(mask_arr > self.mask_threshold, 1, 0)
             else:
                 l_image_arr = cv2.cvtColor(image_arr, cv2.COLOR_BGR2LAB)[:,:,0]*(100.0/255.0)
-                mask_arr = np.where(l_image_arr > self.mask_threshold,1.0,0.0)
+                mask_arr = np.where(l_image_arr > self.mask_threshold, 1, 0.0)
+            if not self.mask_provided:
+                mask_arr = cv2.morphologyEx(mask_arr, cv2.MORPH_OPEN, kernel)
+
             masks.append(mask_arr)
 
             target_arr = np.array(skio.imread(os.path.join(TARGETS_DIR_PATH,target_file)))
