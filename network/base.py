@@ -1,10 +1,10 @@
 """This is the file for the base network class"""
 import tensorflow as tf
-from tensorflow.train.adam import AdamOptimizer
-from tensorflow.train.adagrad import AdagradOptimizer
-from tensorflow.train.momentum import MomentumOptimizer
-from tensorflow.train.adadelta import AdadeltaOptimizer
-from tensorflow.train.rmsprop import RMSPropOptimizer
+from tensorflow.python.train.adam import AdamOptimizer
+from tensorflow.python.train.adagrad import AdagradOptimizer
+from tensorflow.python.train.momentum import MomentumOptimizer
+from tensorflow.python.train.adadelta import AdadeltaOptimizer
+from tensorflow.python.train.rmsprop import RMSPropOptimizer
 from utilities.objective_functions import generalised_dice_loss, sensitivity_specificity_loss, cross_entropy, dice
 
 class Network(object):
