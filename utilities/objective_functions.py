@@ -1,55 +1,9 @@
 """from https://niftynet.readthedocs.io/en/dev/_modules/niftynet/layer/loss_segmentation.html"""
 from __future__ import absolute_import, print_function, division
 
-import numpy as np
 import tensorflow as tf
 
-def labels_to_one_hot(ground_truth, num_classes=1):
-    """
-    Converts ground truth labels to one-hot, sparse tensors.
-    Used extensively in segmentation losses.
-
-    :param ground_truth: ground truth categorical labels (rank `N`)
-    :param num_classes: A scalar defining the depth of the one hot dimension
-        (see `depth` of `tf.one_hot`)
-    :return: one-hot sparse tf tensor
-        (rank `N+1`; new axis appended at the end)
-    """
-    # read input/output shapes
-    if isinstance(num_classes, tf.Tensor):
-        num_classes_tf = tf.to_int32(num_classes)
-    else:
-        num_classes_tf = tf.constant(num_classes, tf.int32)
-    input_shape = tf.shape(ground_truth)
-    output_shape = tf.concat(
-        [input_shape, tf.reshape(num_classes_tf, (1,))], 0)
-
-    if num_classes == 1:
-        # need a sparse representation?
-        return tf.reshape(ground_truth, output_shape)
-
-    # squeeze the spatial shape
-    ground_truth = tf.reshape(ground_truth, (-1,))
-    # shape of squeezed output
-    dense_shape = tf.stack([tf.shape(ground_truth)[0], num_classes_tf], 0)
-
-    # create a rank-2 sparse tensor
-    ground_truth = tf.to_int64(ground_truth)
-    ids = tf.range(tf.to_int64(dense_shape[0]), dtype=tf.int64)
-    ids = tf.stack([ids, ground_truth], axis=1)
-    one_hot = tf.SparseTensor(
-        indices=ids,
-        values=tf.ones_like(ground_truth, dtype=tf.float32),
-        dense_shape=tf.to_int64(dense_shape))
-
-    # resume the spatial dims
-    one_hot = tf.sparse_reshape(one_hot, output_shape)
-    return one_hot
-
-def generalised_dice_loss(prediction,
-                          ground_truth,
-                          weight_map=None,
-                          type_weight='Square'):
+def generalised_dice_loss(prediction, ground_truth, weight_map=None, type_weight='Simple', pos_weight=1):
     """
     Function to calculate the Generalised Dice Loss defined in
         Sudre, C. et. al. (2017) Generalised Dice overlap as a deep learning
@@ -63,6 +17,7 @@ def generalised_dice_loss(prediction,
         Simple (inverse of volume) and Uniform (no weighting))
     :return: the loss
     """
+    # convert binary label probabilities to categorical probabilities
     prediction = tf.concat([1 - prediction, prediction], axis=3)
     prediction = tf.cast(prediction, tf.float32)
     if len(ground_truth.shape) == len(prediction.shape):
@@ -87,12 +42,19 @@ def generalised_dice_loss(prediction,
         intersect = tf.sparse_reduce_sum(one_hot * prediction,
                                          reduction_axes=[0])
         seg_vol = tf.reduce_sum(prediction, 0)
+    print("gd stats")
+    print(one_hot.shape)
+    print(ref_vol.shape)
     if type_weight == 'Square':
         weights = tf.reciprocal(tf.square(ref_vol))
     elif type_weight == 'Simple':
         weights = tf.reciprocal(ref_vol)
     elif type_weight == 'Uniform':
         weights = tf.ones_like(ref_vol)
+    elif type_weight == "Custom":
+        cls_weights = [1, pos_weight]
+        print()
+
     else:
         raise ValueError("The variable type_weight \"{}\""
                          "is not defined.".format(type_weight))
@@ -111,12 +73,7 @@ def generalised_dice_loss(prediction,
                                       generalised_dice_score)
     return 1 - generalised_dice_score
 
-
-
-def sensitivity_specificity_loss(prediction,
-                                 ground_truth,
-                                 weight_map=None,
-                                 r=0.05):
+def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.05, pos_weight=1):
     """
     Function to calculate a multiple-ground_truth version of
     the sensitivity-specificity loss defined in "Deep Convolutional
@@ -132,6 +89,10 @@ def sensitivity_specificity_loss(prediction,
         (authors suggest values from 0.01-0.10 will have similar effects)
     :return: the loss
     """
+    # convert binary label probabilities to categorical probabilities
+    prediction = tf.concat([1 - prediction, prediction], axis=3)
+    prediction = tf.cast(prediction, tf.float32)
+
     if weight_map is not None:
         # raise NotImplementedError
         tf.logging.warning('Weight map specified but not used.')
@@ -155,6 +116,54 @@ def sensitivity_specificity_loss(prediction,
          (tf.reduce_sum(one_cold, 0) + epsilon_denominator))
 
     return tf.reduce_sum(r * specificity_part + (1 - r) * sensitivity_part)
+
+
+def dice(prediction, ground_truth, weight_map=None, pos_weight=1):
+    """
+    Function to calculate the dice loss with the definition given in
+
+        Milletari, F., Navab, N., & Ahmadi, S. A. (2016)
+        V-net: Fully convolutional neural
+        networks for volumetric medical image segmentation. 3DV 2016
+
+    using a square in the denominator
+
+    :param prediction: the logits
+    :param ground_truth: the segmentation ground_truth
+    :param weight_map:
+    :return: the loss
+    """
+    # convert binary label probabilities to categorical probabilities
+    prediction = tf.concat([1 - prediction, prediction], axis=3)
+    prediction = tf.cast(prediction, tf.float32)
+    prediction = tf.cast(prediction, tf.float32)
+    if len(ground_truth.shape) == len(prediction.shape):
+        ground_truth = ground_truth[..., -1]
+    one_hot = labels_to_one_hot(ground_truth, tf.shape(prediction)[-1])
+
+    if weight_map is not None:
+        n_classes = prediction.shape[1].value
+        weight_map_nclasses = tf.tile(tf.expand_dims(
+            tf.reshape(weight_map, [-1]), 1), [1, n_classes])
+        dice_numerator = 2.0 * tf.sparse_reduce_sum(
+            weight_map_nclasses * one_hot * prediction, reduction_axes=[0])
+        dice_denominator = \
+            tf.reduce_sum(weight_map_nclasses * tf.square(prediction),
+                          reduction_indices=[0]) + \
+            tf.sparse_reduce_sum(one_hot * weight_map_nclasses,
+                                 reduction_axes=[0])
+    else:
+        dice_numerator = 2.0 * tf.sparse_reduce_sum(
+            one_hot * prediction, reduction_axes=[0])
+        dice_denominator = \
+            tf.reduce_sum(tf.square(prediction), reduction_indices=[0]) + \
+            tf.sparse_reduce_sum(one_hot, reduction_axes=[0])
+    epsilon_denominator = 0.00001
+
+    dice_score = dice_numerator / (dice_denominator + epsilon_denominator)
+    # dice_score.set_shape([n_classes])
+    # minimising (1 - dice_coefficients)
+    return 1.0 - tf.reduce_mean(dice_score)
 
 
 def cross_entropy(prediction, ground_truth, weight_map=None):
@@ -235,52 +244,6 @@ def wasserstein_disagreement_map(
                 M[i, j] * tf.multiply(unstack_pred[i], unstack_labels[j]))
     wass_dis_map = tf.add_n(pairwise_correlations)
     return wass_dis_map
-
-
-
-def dice(prediction, ground_truth, weight_map=None):
-    """
-    Function to calculate the dice loss with the definition given in
-
-        Milletari, F., Navab, N., & Ahmadi, S. A. (2016)
-        V-net: Fully convolutional neural
-        networks for volumetric medical image segmentation. 3DV 2016
-
-    using a square in the denominator
-
-    :param prediction: the logits
-    :param ground_truth: the segmentation ground_truth
-    :param weight_map:
-    :return: the loss
-    """
-    prediction = tf.cast(prediction, tf.float32)
-    if len(ground_truth.shape) == len(prediction.shape):
-        ground_truth = ground_truth[..., -1]
-    one_hot = labels_to_one_hot(ground_truth, tf.shape(prediction)[-1])
-
-    if weight_map is not None:
-        n_classes = prediction.shape[1].value
-        weight_map_nclasses = tf.tile(tf.expand_dims(
-            tf.reshape(weight_map, [-1]), 1), [1, n_classes])
-        dice_numerator = 2.0 * tf.sparse_reduce_sum(
-            weight_map_nclasses * one_hot * prediction, reduction_axes=[0])
-        dice_denominator = \
-            tf.reduce_sum(weight_map_nclasses * tf.square(prediction),
-                          reduction_indices=[0]) + \
-            tf.sparse_reduce_sum(one_hot * weight_map_nclasses,
-                                 reduction_axes=[0])
-    else:
-        dice_numerator = 2.0 * tf.sparse_reduce_sum(
-            one_hot * prediction, reduction_axes=[0])
-        dice_denominator = \
-            tf.reduce_sum(tf.square(prediction), reduction_indices=[0]) + \
-            tf.sparse_reduce_sum(one_hot, reduction_axes=[0])
-    epsilon_denominator = 0.00001
-
-    dice_score = dice_numerator / (dice_denominator + epsilon_denominator)
-    # dice_score.set_shape([n_classes])
-    # minimising (1 - dice_coefficients)
-    return 1.0 - tf.reduce_mean(dice_score)
 
 
 
@@ -428,3 +391,45 @@ def dice_dense_nosquare(prediction, ground_truth, weight_map=None):
 
     dice_score = dice_numerator / (dice_denominator + epsilon_denominator)
     return 1.0 - tf.reduce_mean(dice_score)
+
+def labels_to_one_hot(ground_truth, num_classes=1):
+    """
+    Converts ground truth labels to one-hot, sparse tensors.
+    Used extensively in segmentation losses.
+
+    :param ground_truth: ground truth categorical labels (rank `N`)
+    :param num_classes: A scalar defining the depth of the one hot dimension
+        (see `depth` of `tf.one_hot`)
+    :return: one-hot sparse tf tensor
+        (rank `N+1`; new axis appended at the end)
+    """
+    # read input/output shapes
+    if isinstance(num_classes, tf.Tensor):
+        num_classes_tf = tf.to_int32(num_classes)
+    else:
+        num_classes_tf = tf.constant(num_classes, tf.int32)
+    input_shape = tf.shape(ground_truth)
+    output_shape = tf.concat(
+        [input_shape, tf.reshape(num_classes_tf, (1,))], 0)
+
+    if num_classes == 1:
+        # need a sparse representation?
+        return tf.reshape(ground_truth, output_shape)
+
+    # squeeze the spatial shape
+    ground_truth = tf.reshape(ground_truth, (-1,))
+    # shape of squeezed output
+    dense_shape = tf.stack([tf.shape(ground_truth)[0], num_classes_tf], 0)
+
+    # create a rank-2 sparse tensor
+    ground_truth = tf.to_int64(ground_truth)
+    ids = tf.range(tf.to_int64(dense_shape[0]), dtype=tf.int64)
+    ids = tf.stack([ids, ground_truth], axis=1)
+    one_hot = tf.SparseTensor(
+        indices=ids,
+        values=tf.ones_like(ground_truth, dtype=tf.float32),
+        dense_shape=tf.to_int64(dense_shape))
+
+    # resume the spatial dims
+    one_hot = tf.sparse_reshape(one_hot, output_shape)
+    return one_hot
