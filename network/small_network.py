@@ -48,7 +48,7 @@ class SmallNetwork(Network):
             layers.append(MaxPool2d(kernel_size=self.layer_params['max_2']['ks'], name='max_2',
                                     skip_connection=self.layer_params['max_2']['skip']))
 
-            layers.append(Conv2d(kernel_size=self.ayer_params['conv_3_1']['ks'],
+            layers.append(Conv2d(kernel_size=self.layer_params['conv_3_1']['ks'],
                                  dilation=['conv_3_1']['dilation'], act_fn=act_fn, weight_init=weight_init,
                                  output_channels=self.layer_params['conv_3_1']['output_channels'],
                                  keep_prob=self.layer_params['conv_3_1']['keep_prob'], name='conv_3_1'))
