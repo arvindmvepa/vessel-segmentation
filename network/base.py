@@ -148,5 +148,5 @@ class Network(object):
     def calculate_loss(self, net):
         print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
                                                                         self.targets.get_shape()))
-        self.cost = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
-            self.targets, net, pos_weight=self.wce_pos_weight)) + self.regularization
+        self.cost = self.cur_objective_fn(self.targets, net, pos_weight=self.wce_pos_weight) + self.regularization
+        self.cost_unweighted = self.get_objective_fn("ce")(self.targets, net) + self.regularization
