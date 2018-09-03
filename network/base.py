@@ -9,7 +9,7 @@ from utilities.objective_functions import generalised_dice_loss, sensitivity_spe
 
 class Network(object):
 
-    def __init__(self, objective_fn="wce", pos_weight=1, regularizer_args=None, learning_rate_and_kwargs=(.001, {}),
+    def __init__(self, objective_fn="wce", regularizer_args=None, learning_rate_and_kwargs=(.001, {}),
                  op_fun_and_kwargs=("adam", {}), mask=False, layers=None, **kwargs):
 
         self.cur_objective_fn = objective_fn
@@ -28,7 +28,6 @@ class Network(object):
             raise ValueError("No Layers Defined.")
 
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
-        self.pos_weight = pos_weight
         self.layer_outputs = []
         self.description = ""
         self.layers = {}
@@ -50,20 +49,20 @@ class Network(object):
             net=layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
             self.layer_outputs.append(net)
 
-        self.calculate_net_output(net)
+        self.calculate_net_output(net, **kwargs)
 
-    def calculate_net_output(self, net):
+    def calculate_net_output(self, net,  **loss_kwargs):
         net = tf.image.resize_image_with_crop_or_pad(net, self.IMAGE_HEIGHT, self.IMAGE_WIDTH)
         if self.mask:
             net = self.mask_results(net)
         self.segmentation_result = tf.sigmoid(net)
-        self.calculate_loss(net)
+        self.calculate_loss(net, **loss_kwargs)
         self.train_op = self.op_fn.minimize(self.cost, global_step=self._global_step)
 
-    def calculate_loss(self, net):
+    def calculate_loss(self, net, **kwargs):
         print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
                                                                         self.targets.get_shape()))
-        self.cost = self.cur_objective_fn(self.targets, net, pos_weight=self.pos_weight) + self.regularization
+        self.cost = self.cur_objective_fn(self.targets, net, **kwargs) + self.regularization
         self.cost_unweighted = self.get_objective_fn("ce")(self.targets, net) + self.regularization
 
     def mask_results(self, net):
