@@ -58,7 +58,7 @@ class Network(object):
             net = self.mask_results(net)
         self.segmentation_result = tf.sigmoid(net)
         self.calculate_loss(net)
-        self.train_op = self.op_fn.minimize(self.cost, global_step=self.global_step)
+        self.train_op = self.op_fn.minimize(self.cost, global_step=self._global_step)
 
     @property
     def cur_learning_rate(self):
@@ -68,8 +68,8 @@ class Network(object):
     @cur_learning_rate.setter
     def cur_learning_rate(self, learning_rate_and_kwargs):
         base_learning_rate, kwargs = learning_rate_and_kwargs
+        self._global_step = tf.Variable(0, trainable=False)
         if kwargs:
-            self._global_step = tf.Variable(0, trainable=False)
             self.learning_rate = tf.train.exponential_decay(base_learning_rate, self._global_step, **kwargs)
         else:
             self.learning_rate = base_learning_rate
