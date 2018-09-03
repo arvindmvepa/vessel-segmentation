@@ -181,11 +181,10 @@ class Job(object):
                                   **kwargs)
 
     
-    def train(self, dataset=None,gpu_device=None, decision_threshold=.75, tuning_constant=1.0, metrics_epoch_freq=1,
-              viz_layer_epoch_freq=10, n_epochs=100, metrics_log="metrics_log.csv", num_image_plots=5,
-              save_model=True, debug_net_output=True, weight_init=None, regularizer=None, Relu=False,
-              learningrate=0.001,Beta1=0.9,Beta2=0.999,epsilon=10**-8,Layer_param=None,keep_prob=None,**kwargs):
-
+    def train(self, dataset=None, gpu_device=None, tuning_constant=1.0, metrics_epoch_freq=1, viz_layer_epoch_freq=10,
+              metrics_log="metrics_log.csv", num_image_plots=5, save_model=True, debug_net_output=True,
+              weight_init=None, rglzr=None, act_fn="lrelu", learning_rate_and_kwargs=(.001, {}),
+              op_fun_kwargs=("adam", {}), layer_params=None, **kwargs):
 
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
@@ -208,10 +207,13 @@ class Job(object):
         # initialize network object
         if gpu_device is not None:
             with tf.device(gpu_device):
-                network = self.network_cls(wce_pos_weight=pos_weight,weight_init=weight_init,regularizer=regularizer,Relu=Relu,learningrate=learningrate,Beta1=Beta1,Beta2=Beta2,epsilon=epsilon,Layer_param=Layer_param,keep_prob=keep_prob)
+                network = self.network_cls(wce_pos_weight=pos_weight, weight_init=weight_init, rglzr=rglzr,
+                                           act_fn=act_fn, learning_rate_and_kwargs=learning_rate_and_kwargs,
+                                           op_fun_kwargs=op_fun_kwargs, layer_params=layer_params)
         else:
-            network = self.network_cls(wce_pos_weight=pos_weight,weight_init=weight_init,regularizer=regularizer,Relu=Relu,learningrate=learningrate,Beta1=Beta1,Beta2=Beta2,epsilon=epsilon,Layer_param=Layer_param,keep_prob=keep_prob)
-
+            network = self.network_cls(wce_pos_weight=pos_weight, weight_init=weight_init, rglzr=rglzr, act_fn=act_fn,
+                                       learning_rate_and_kwargs=learning_rate_and_kwargs, op_fun_kwargs=op_fun_kwargs,
+                                       layer_params=layer_params)
 
         # create metrics log file
         metric_log_file_path = os.path.join(self.OUTPUTS_DIR_PATH, metrics_log)

@@ -10,8 +10,8 @@ class Dataset(object):
     IMAGES_DIR = "images"
 
     def __init__(self, batch_size=1, WRK_DIR_PATH =".", TRAIN_SUBDIR="train/", TEST_SUBDIR="test", sgd = True,
-
-                 cv_train_inds = None, cv_test_inds = None, he_flag=False,clahe_flag=False,normalized_flag=False,gamma_flag=False,**kwargs ):
+                 cv_train_inds = None, cv_test_inds = None, hist_eq=None, clahe_kwargs=None,
+                 per_image_normalization=False, gamma=None, **kwargs):
 
         self.WRK_DIR_PATH = WRK_DIR_PATH
         self.batch_size = batch_size
@@ -23,12 +23,17 @@ class Dataset(object):
         else:
             self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TEST_SUBDIR)
 
-        self.train_data = self.get_images_from_file(self.TRAIN_DIR_PATH, cv_train_inds)
-        self.test_data = self.get_images_from_file(self.TEST_DIR_PATH, cv_test_inds)
+        self.train_data = self.get_images_from_file(self.TRAIN_DIR_PATH, cv_train_inds, hist_eq=hist_eq,
+                                                    clahe_kwargs=clahe_kwargs,
+                                                    per_image_normalization=per_image_normalization, gamma=gamma)
+        self.test_data = self.get_images_from_file(self.TEST_DIR_PATH, cv_test_inds, hist_eq=hist_eq,
+                                                   clahe_kwargs=clahe_kwargs,
+                                                   per_image_normalization=per_image_normalization, gamma=gamma)
 
         self.pointer = 0
 
-    def get_images_from_file(self, DIR_PATH, file_indices=None):
+    def get_images_from_file(self, DIR_PATH, file_indices=None, hist_eq=None, clahe_kwargs=None,
+                             per_image_normalization=False, gamma=None):
         raise NotImplementedError("Method Not Implemented")
 
     def get_data_for_tensorflow(self, dataset="train"):

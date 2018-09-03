@@ -3,9 +3,9 @@ import numpy as np
 from skimage import io as skio
 import cv2
 from PIL import Image
-from scipy.misc import imsave
 
 from dataset.base import Dataset
+from utilities.image_preprocessiing import preprocessing
 
 class DatasetWMasks(Dataset):
 
@@ -13,19 +13,23 @@ class DatasetWMasks(Dataset):
     TARGETS_DIR = "targets"
 
     def __init__(self, WRK_DIR_PATH, batch_size=1, TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd=True,
-                 masks_provided=True, init_mask_imgs=False, mask_threshold = None, cv_train_inds = None, cv_test_inds = None):
+                 masks_provided=True, init_mask_imgs=False, mask_threshold = None, cv_train_inds = None,
+                 cv_test_inds = None, histo_eq=None, clahe_kwargs=None, per_image_normalization=False,
+                 gamma=None, **kwargs):
         self.mask_provided = masks_provided
         self.init_mask_imgs = init_mask_imgs
         self.mask_threshold = mask_threshold
         super(DatasetWMasks, self).__init__(WRK_DIR_PATH=WRK_DIR_PATH, batch_size=batch_size, TRAIN_SUBDIR=TRAIN_SUBDIR,
-                                           TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
-                                            cv_test_inds=cv_test_inds)
+                                            TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
+                                            cv_test_inds=cv_test_inds, hist_eq=histo_eq, clahe_kwargs=clahe_kwargs,
+                                            per_image_normalization=per_image_normalization, gamma=gamma, **kwargs)
 
         self.train_images, self.train_masks, self.train_targets = self.train_data
         self.test_images, self.test_masks, self.test_targets = self.test_data
 
 
-    def get_images_from_file(self, DIR_PATH, file_indices=None):
+    def get_images_from_file(self, DIR_PATH, file_indices=None, hist_eq=None, clahe_kwargs=None,
+                             per_image_normalization=False, gamma=None):
 
         images = []
         masks = []
@@ -50,16 +54,20 @@ class DatasetWMasks(Dataset):
         for i, (image_file,target_file) in enumerate(zip(image_files, target_files)):
 
             image_arr = cv2.imread(os.path.join(IMAGES_DIR_PATH,image_file), 1)
-            grn_image_arr = image_arr[:, :, 1]
+            grn_chnl_arr = image_arr[:, :, 1]
 
             top_pad = int((self.network_cls.FIT_IMAGE_HEIGHT - self.network_cls.IMAGE_HEIGHT) / 2)
             bot_pad = (self.network_cls.FIT_IMAGE_HEIGHT - self.network_cls.IMAGE_HEIGHT) - top_pad
             left_pad = int((self.network_cls.FIT_IMAGE_WIDTH - self.network_cls.IMAGE_WIDTH) / 2)
             right_pad = (self.network_cls.FIT_IMAGE_WIDTH - self.network_cls.IMAGE_WIDTH) - left_pad
 
-            grn_image_arr = cv2.copyMakeBorder(grn_image_arr, top_pad, bot_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, 0)
-            grn_image_arr = grn_image_arr * 1.0/255.0
-            images.append(grn_image_arr)
+            grn_chnl_arr = cv2.copyMakeBorder(grn_chnl_arr, top_pad, bot_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, 0)
+            # apply image pre-processing
+            grn_chnl_arr = preprocessing(grn_chnl_arr, histo_eq=hist_eq, clahe_kwargs=clahe_kwargs,
+                                         per_image_normalization=per_image_normalization, gamma=gamma)
+            # apply min-max normalization
+            grn_chnl_arr = grn_chnl_arr * 1.0/(np.max(grn_chnl_arr)-np.min(grn_chnl_arr))
+            images.append(grn_chnl_arr)
 
             if self.mask_provided or self.init_mask_imgs:
                 mask_file = mask_files[i]

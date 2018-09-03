@@ -16,13 +16,20 @@ class SmallNetwork(Network):
 
     IMAGE_CHANNELS = 1
 
-    def __init__(self, weight_init, lr, b1, b2, ep, layer_params, rglzr, act_fn="lrelu", layers=None, **kwargs):
+    def __init__(self, weight_init=None, layer_params=None, act_fn="lrelu", layers=None, **kwargs):
+        self.layer_params = {"conv_1_1":{"ks":3, "dilation":1 , "output_channels":64, "keep_prob":1.0},
+                             "max_1": {"ks":2, "skip": True},
+                             "conv_2_1": {"ks":3, "dilation":1 , "output_channels":128, "keep_prob":1.0},
+                             "max_2": {"ks":2, "skip": True},
+                             "conv_3_1": {"ks":3, "dilation":1 , "output_channels":256, "keep_prob":1.0},
+                             "conv_3_2": {"ks":3, "dilation":1 , "output_channels":256, "keep_prob":1.0},
+                             "max_3": {"ks":2, "skip": True},
+                             "conv_4_1": {"ks":7, "dilation":1 , "output_channels":4096, "keep_prob":1.0},
+                             "conv_4_2": {"ks":1, "dilation":1 , "output_channels":4096, "keep_prob":1.0}
+                             }
 
-        self.lr = lr
-        self.b1 = b1
-        self.b2 = b2
-        self.ep = ep
-        self.rglzr = rglzr
+        if layer_params:
+            self.layer_params.update(layer_params)
 
         if layers == None:
 
@@ -38,9 +45,9 @@ class SmallNetwork(Network):
                                  dilation=layer_params['conv_2_1']['dilation'], act_fn=act_fn, weight_init=weight_init,
                                  output_channels=['conv_2_1']['output_channels'],
                                  keep_prob=layer_params['conv_2_1']['keep_prob'], name='conv_2_1'))
-
             layers.append(MaxPool2d(kernel_size=layer_params['max_2']['ks'], name='max_2',
                                     skip_connection=layer_params['max_2']['skip']))
+
             layers.append(Conv2d(kernel_size=layer_params['conv_3_1']['ks'],
                                  dilation=['conv_3_1']['dilation'], act_fn=act_fn, weight_init=weight_init,
                                  output_channels=layer_params['conv_3_1']['output_channels'],
@@ -49,9 +56,9 @@ class SmallNetwork(Network):
                                  dilation=layer_params['conv_3_2']['dilation'], act_fn=act_fn, weight_init=weight_init,
                                  output_channels=layer_params['conv_3_2']['output_channels'],
                                  keep_prob=layer_params['conv_3_2']['keep_prob'], name='conv_3_2'))
-
             layers.append(MaxPool2d(kernel_size=layer_params['max_3']['ks'], name='max_3',
                                     skip_connection=layer_params['max_3']["skip"]))
+
             layers.append(Conv2d(kernel_size=layer_params['conv_4_1']['ks'],
                                  dilation=['conv_4_1']['dilation'], act_fn=act_fn, weight_init=weight_init,
                                  output_channels=layer_params['conv_4_1']['output_channels'],
