@@ -5,13 +5,18 @@ from tensorflow.train.adagrad import AdagradOptimizer
 from tensorflow.train.momentum import MomentumOptimizer
 from tensorflow.train.adadelta import AdadeltaOptimizer
 from tensorflow.train.rmsprop import RMSPropOptimizer
+from utilities.objective_functions import generalised_dice_loss, sensitivity_specificity_loss, cross_entropy, dice
 
 class Network(object):
 
-    def __init__(self, wce_pos_weight=1, regularizer_args=None, learning_rate_and_kwargs=(.001,{}),
-                 op_fun_and_kwargs=("adam", {}), layers=None, **kwargs):
-        self.cur_learning_rate=learning_rate_and_kwargs
-        self.cur_op_fn=op_fun_and_kwargs
+    def __init__(self, objective_fn="wce", wce_pos_weight=1, regularizer_args=None, learning_rate_and_kwargs=(.001,{}),
+                 op_fun_and_kwargs=("adam", {}), mask=False, layers=None, **kwargs):
+
+        self.cur_objective_fn = objective_fn
+        self.cur_learning_rate = learning_rate_and_kwargs
+        self.cur_op_fn = op_fun_and_kwargs
+        self.regularization = regularizer_args
+        self.mask = mask
 
         if layers == None :
             raise ValueError("No Layers Defined.")
@@ -39,12 +44,15 @@ class Network(object):
             net=layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
             self.layer_outputs.append(net)
 
-        self.net_output(net, regularizer_args=regularizer_args, learning_rate_and_kwargs=learning_rate_and_kwargs,
-                        op_fun_kwargs=op_fun_kwargs)
+        self.calculate_net_output(net)
 
-    def net_output(self, net, regularizer_args=None, learning_rate_and_kwargs=(.001, {}), op_fun_kwargs=("adam", {})):
-        """This method produces the network output"""
-        raise NotImplementedError("Not Implemented")
+    def calculate_net_output(self, net):
+        net = tf.image.resize_image_with_crop_or_pad(net, self.IMAGE_HEIGHT, self.IMAGE_WIDTH)
+        if self.mask:
+            net = self.mask_results(net)
+        self.segmentation_result = tf.sigmoid(net)
+        self.calculate_loss(net)
+        self.train_op = self.op_fn.minimize(self.cost, global_step=self.global_step)
 
     @property
     def cur_learning_rate(self):
@@ -55,8 +63,8 @@ class Network(object):
     def cur_learning_rate(self, learning_rate_and_kwargs):
         base_learning_rate, kwargs = learning_rate_and_kwargs
         if kwargs:
-            self.global_step = tf.Variable(0, trainable=False)
-            self.learning_rate = tf.train.exponential_decay(base_learning_rate, self.global_step, **kwargs)
+            self._global_step = tf.Variable(0, trainable=False)
+            self.learning_rate = tf.train.exponential_decay(base_learning_rate, self._global_step, **kwargs)
         else:
             self.learning_rate = base_learning_rate
 
@@ -68,15 +76,71 @@ class Network(object):
     def cur_op_fn(self, op_fn_and_kwargs):
         op_fn, kwargs = op_fn_and_kwargs
         if op_fn == "adam":
-            self.op_fn = AdamOptimizer(learning_rate=self.cur_learning_rate, **kwargs)
+            op_cls = AdamOptimizer
         elif op_fn == "adagrad":
-            self.op_fn = AdagradOptimizer(learning_rate=self.cur_learning_rate, **kwargs)
+            op_cls = AdagradOptimizer
         elif op_fn == "momentum":
-            self.op_fn = MomentumOptimizer(learning_rate=self.cur_learning_rate, **kwargs)
+            op_cls = MomentumOptimizer
         elif op_fn == "adadelta":
-            self.op_fn = AdadeltaOptimizer(learning_rate=self.cur_learning_rate, **kwargs)
-        elif op_fn == "RMSPropOptimizer":
-            self.op_fn = RMSPropOptimizer(learning_rate=self.cur_learning_rate, **kwargs)
-    @property
-    loss
+            op_cls = AdadeltaOptimizer
+        elif op_fn == "rmsprop":
+            op_cls = RMSPropOptimizer
+        self.op_fn = op_cls(learning_rate=self.cur_learning_rate, **kwargs)
 
+    @property
+    def regularization(self):
+        if self.regularizer is not None:
+            reg_variables = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+            return tf.contrib.layers.apply_regularization(self.regularizer, reg_variables)
+        else:
+            return 0.0
+
+    @regularization.setter
+    def regularization(self, regularizer_args):
+        if regularizer_args:
+            regularizer_type, regularizer_constant = regularizer_args
+            if regularizer_type == "L1":
+                self.regularizer = tf.contrib.layers.l1_regularizer(scale=regularizer_constant)
+            elif regularizer_type == "L2":
+                self.regularizer = tf.contrib.layers.l2_regularizer(scale=regularizer_constant)
+            else:
+                raise ValueError("Regularizer Type {} Unrecognized".format(regularizer_type))
+        else:
+            self.self.regularizer = None
+
+    @property
+    def cur_objective_fn(self):
+        return self.objective_fn
+
+    @cur_objective_fn.setter
+    def cur_objective_fn(self, objective_fn):
+        self.objective_fn = self.get_objective_fn(objective_fn)
+
+    # TODO: Consider impact of masking on objective function, seems it would be considered a constant
+    # TODO: Update objective functions
+    def get_objective_fn(self, objective_fn):
+        if objective_fn == "ce":
+            return lambda targets, net, *args: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(targets, net,
+                                                                                                       pos_weight=1))
+        if objective_fn == "wce":
+            return lambda targets, net, pos_weight, *args: tf.reduce_mean(
+                tf.nn.weighted_cross_entropy_with_logits(targets, net, pos_weight=pos_weight))
+        if objective_fn == "dice":
+            return lambda targets, net, pos_weight, *args: dice(net, targets, weight_map=None, type_weight='Simple')
+        if objective_fn == "gdice":
+            return lambda targets, net, pos_weight, *args: generalised_dice_loss(net, targets, weight_map=None,
+                                                                                 type_weight='Simple')
+        if objective_fn == "ss":
+            return lambda targets, net, pos_weight, *args: sensitivity_specificity_loss(net, targets, weight_map=None,
+                                                                                        type_weight='Simple')
+
+    def mask_results(self, net):
+        net = tf.multiply(net, self.masks)
+        self.targets = tf.multiply(self.targets, self.masks)
+        return net
+
+    def calculate_loss(self, net):
+        print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
+                                                                        self.targets.get_shape()))
+        self.cost = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
+            self.targets, net, pos_weight=self.wce_pos_weight)) + self.regularization

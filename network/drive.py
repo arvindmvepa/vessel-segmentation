@@ -1,8 +1,8 @@
 """This is the file for the DRIVE network subclass"""
 
-from network.small_network_w_masks import SmallNetworkWMasks
+from network.small_network import SmallNetwork
 
-class DriveNetwork(SmallNetworkWMasks):
+class DriveNetwork(SmallNetwork):
 
     IMAGE_HEIGHT = 584
     IMAGE_WIDTH = 565
@@ -10,5 +10,5 @@ class DriveNetwork(SmallNetworkWMasks):
     FIT_IMAGE_HEIGHT = 584
     FIT_IMAGE_WIDTH = 584
     
-    def __init__(self, **kwargs):
-        super(DriveNetwork, self).__init__(**kwargs)
+    def __init__(self, mask=True,**kwargs):
+        super(DriveNetwork, self).__init__(mask=mask,**kwargs)
