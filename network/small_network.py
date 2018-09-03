@@ -34,39 +34,39 @@ class SmallNetwork(Network):
         if layers == None:
 
             layers = []
-            layers.append(Conv2d(kernel_size=layer_params['conv_1_1']['ks'],
-                                 dilation=layer_params['conv_1_1']['dilation'], act_fn=act_fn, weight_init=weight_init,
-                                 output_channels=['conv_1_1']['output_channels'],
-                                 keep_prob=layer_params['conv_1_1']['keep_prob'], name='conv_1_1'))
-            layers.append(MaxPool2d(kernel_size=layer_params['max_1']['ks'],
-                                    skip_connection=layer_params['max_1']['skip'], name='max_1'))
+            layers.append(Conv2d(kernel_size=self.layer_params['conv_1_1']['ks'],
+                                 dilation=self.layer_params['conv_1_1']['dilation'], act_fn=act_fn, weight_init=weight_init,
+                                 output_channels=self.layer_params['conv_1_1']['output_channels'],
+                                 keep_prob=self.layer_params['conv_1_1']['keep_prob'], name='conv_1_1'))
+            layers.append(MaxPool2d(kernel_size=self.layer_params['max_1']['ks'],
+                                    skip_connection=self.layer_params['max_1']['skip'], name='max_1'))
 
-            layers.append(Conv2d(kernel_size=layer_params['conv_2_1']['ks'],
-                                 dilation=layer_params['conv_2_1']['dilation'], act_fn=act_fn, weight_init=weight_init,
-                                 output_channels=['conv_2_1']['output_channels'],
-                                 keep_prob=layer_params['conv_2_1']['keep_prob'], name='conv_2_1'))
-            layers.append(MaxPool2d(kernel_size=layer_params['max_2']['ks'], name='max_2',
-                                    skip_connection=layer_params['max_2']['skip']))
+            layers.append(Conv2d(kernel_size=self.layer_params['conv_2_1']['ks'],
+                                 dilation=self.layer_params['conv_2_1']['dilation'], act_fn=act_fn, weight_init=weight_init,
+                                 output_channels=self.layer_params['conv_2_1']['output_channels'],
+                                 keep_prob=self.layer_params['conv_2_1']['keep_prob'], name='conv_2_1'))
+            layers.append(MaxPool2d(kernel_size=self.layer_params['max_2']['ks'], name='max_2',
+                                    skip_connection=self.layer_params['max_2']['skip']))
 
-            layers.append(Conv2d(kernel_size=layer_params['conv_3_1']['ks'],
+            layers.append(Conv2d(kernel_size=self.ayer_params['conv_3_1']['ks'],
                                  dilation=['conv_3_1']['dilation'], act_fn=act_fn, weight_init=weight_init,
-                                 output_channels=layer_params['conv_3_1']['output_channels'],
-                                 keep_prob=layer_params['conv_3_1']['keep_prob'], name='conv_3_1'))
-            layers.append(Conv2d(kernel_size=layer_params['conv_3_2']['ks'],
-                                 dilation=layer_params['conv_3_2']['dilation'], act_fn=act_fn, weight_init=weight_init,
-                                 output_channels=layer_params['conv_3_2']['output_channels'],
-                                 keep_prob=layer_params['conv_3_2']['keep_prob'], name='conv_3_2'))
-            layers.append(MaxPool2d(kernel_size=layer_params['max_3']['ks'], name='max_3',
-                                    skip_connection=layer_params['max_3']["skip"]))
+                                 output_channels=self.layer_params['conv_3_1']['output_channels'],
+                                 keep_prob=self.layer_params['conv_3_1']['keep_prob'], name='conv_3_1'))
+            layers.append(Conv2d(kernel_size=self.layer_params['conv_3_2']['ks'],
+                                 dilation=self.layer_params['conv_3_2']['dilation'], act_fn=act_fn, weight_init=weight_init,
+                                 output_channels=self.layer_params['conv_3_2']['output_channels'],
+                                 keep_prob=self.layer_params['conv_3_2']['keep_prob'], name='conv_3_2'))
+            layers.append(MaxPool2d(kernel_size=self.layer_params['max_3']['ks'], name='max_3',
+                                    skip_connection=self.layer_params['max_3']["skip"]))
 
-            layers.append(Conv2d(kernel_size=layer_params['conv_4_1']['ks'],
-                                 dilation=['conv_4_1']['dilation'], act_fn=act_fn, weight_init=weight_init,
-                                 output_channels=layer_params['conv_4_1']['output_channels'],
-                                 keep_prob=layer_params['conv_4_1']['keep_prob'], name='conv_4_1'))
-            layers.append(Conv2d(kernel_size=layer_params['conv_4_2']['ks'],
-                                 dilation=['conv_4_2']['dilation'], act_fn=act_fn, weight_init=weight_init,
-                                 output_channels=layer_params['conv_4_2']['output_channels'],
-                                 keep_prob=layer_params['conv_4_2']['keep_prob'], name='conv_4_2'))
+            layers.append(Conv2d(kernel_size=self.layer_params['conv_4_1']['ks'],
+                                 dilation=self.layer_params['conv_4_1']['dilation'], act_fn=act_fn, weight_init=weight_init,
+                                 output_channels=self.layer_params['conv_4_1']['output_channels'],
+                                 keep_prob=self.layer_params['conv_4_1']['keep_prob'], name='conv_4_1'))
+            layers.append(Conv2d(kernel_size=self.layer_params['conv_4_2']['ks'],
+                                 dilation=self.layer_params['conv_4_2']['dilation'], act_fn=act_fn, weight_init=weight_init,
+                                 output_channels=self.layer_params['conv_4_2']['output_channels'],
+                                 keep_prob=self.layer_params['conv_4_2']['keep_prob'], name='conv_4_2'))
 
         self.inputs = tf.placeholder(tf.float32, [None, self.FIT_IMAGE_HEIGHT, self.FIT_IMAGE_WIDTH,
                                                   self.IMAGE_CHANNELS], name='inputs')
