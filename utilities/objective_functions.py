@@ -170,8 +170,9 @@ def cross_entropy(prediction, ground_truth, weight_map=None):
 
     print(ground_truth.shape)
     print(prediction.shape)
-
-    ground_truth = labels_to_one_hot(ground_truth, tf.shape(prediction)[-1])
+    
+    ground_truth = tf.expand_dims(ground_truth, axis=3)
+    ground_truth = tf.stack([ground_truth,1-ground_truth], axis=3)
     prediction = tf.stack([prediction,1-prediction], axis=3)
 
     print(ground_truth.shape)
