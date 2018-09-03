@@ -18,7 +18,6 @@ def generalised_dice_loss(prediction, ground_truth, weight_map=None, type_weight
     :return: the loss
     """
     # convert binary label probabilities to categorical probabilities
-    print(type_weight)
     prediction = tf.concat([1 - prediction, prediction], axis=3)
     prediction = tf.cast(prediction, tf.float32)
     if len(ground_truth.shape) == len(prediction.shape):
