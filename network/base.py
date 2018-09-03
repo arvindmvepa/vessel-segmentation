@@ -128,6 +128,8 @@ class Network(object):
         if objective_fn == "ce":
             return lambda targets, net, *args: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(targets, net,
                                                                                                        pos_weight=1))
+        if objective_fn == "n_ce":
+            return lambda targets, net, pos_weight, *args: cross_entropy(net, targets, weight_map=None)
         if objective_fn == "wce":
             return lambda targets, net, pos_weight, *args: tf.reduce_mean(
                 tf.nn.weighted_cross_entropy_with_logits(targets, net, pos_weight=pos_weight))
