@@ -262,17 +262,16 @@ class Job(object):
                         self.save_debug2(batch_data, viz_layer_outputs_path_train)
 
                     # train on batch
-                    cost, cost_unweighted, layer_outputs, debug1, acc, _ = sess.run(
-                        [network.cost, network.cost_unweighted,
-                         network.layer_outputs, network.debug1,
-                         network.accuracy, network.train_op],
+                    cost, cost_unweighted, layer_outputs, debug1, _ = sess.run(
+                        [network.cost, network.cost_unweighted, network.layer_outputs, network.debug1,
+                         network.train_op],
                         feed_dict=self.get_network_dict(network, batch_data))
                     end = time.time()
 
                     # print training information
-                    print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
-                          'accuracy: {}'.format(batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost,
-                                                cost_unweighted, end - start, pos_weight, acc))
+                    print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}'.format(
+                        batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
+                        end - start, pos_weight))
 
                     # produce debug image 3
                     if viz_layer_epoch_freq is not None and debug_net_output:
