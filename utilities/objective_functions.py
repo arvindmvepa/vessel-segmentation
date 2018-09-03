@@ -113,6 +113,9 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
         (tf.reduce_sum(tf.multiply(squared_error, one_cold), 0) /
          (tf.reduce_sum(one_cold, 0) + epsilon_denominator))
 
+    if r is None:
+        r = float(1)/(pos_weight+1)
+
     return tf.reduce_sum(r * specificity_part + (1 - r) * sensitivity_part)
 
 
