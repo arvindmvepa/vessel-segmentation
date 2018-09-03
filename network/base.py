@@ -9,7 +9,7 @@ from utilities.objective_functions import generalised_dice_loss, sensitivity_spe
 
 class Network(object):
 
-    def __init__(self, objective_fn="wce", wce_pos_weight=1, regularizer_args=None, learning_rate_and_kwargs=(.001,{}),
+    def __init__(self, objective_fn="wce", pos_weight=1, regularizer_args=None, learning_rate_and_kwargs=(.001, {}),
                  op_fun_and_kwargs=("adam", {}), mask=False, layers=None, **kwargs):
 
         self.cur_objective_fn = objective_fn
@@ -28,7 +28,7 @@ class Network(object):
             raise ValueError("No Layers Defined.")
 
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
-        self.wce_pos_weight = wce_pos_weight
+        self.pos_weight = pos_weight
         self.layer_outputs = []
         self.description = ""
         self.layers = {}
@@ -59,6 +59,17 @@ class Network(object):
         self.segmentation_result = tf.sigmoid(net)
         self.calculate_loss(net)
         self.train_op = self.op_fn.minimize(self.cost, global_step=self._global_step)
+
+    def calculate_loss(self, net):
+        print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
+                                                                        self.targets.get_shape()))
+        self.cost = self.cur_objective_fn(self.targets, net, pos_weight=self.pos_weight) + self.regularization
+        self.cost_unweighted = self.get_objective_fn("ce")(self.targets, net) + self.regularization
+
+    def mask_results(self, net):
+        net = tf.multiply(net, self.masks)
+        self.targets = tf.multiply(self.targets, self.masks)
+        return net
 
     @property
     def cur_learning_rate(self):
@@ -94,27 +105,6 @@ class Network(object):
         self.op_fn = op_cls(learning_rate=self.cur_learning_rate, **kwargs)
 
     @property
-    def regularization(self):
-        if self.regularizer is not None:
-            reg_variables = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-            return tf.contrib.layers.apply_regularization(self.regularizer, reg_variables)
-        else:
-            return 0.0
-
-    @regularization.setter
-    def regularization(self, regularizer_args):
-        if regularizer_args:
-            regularizer_type, regularizer_constant = regularizer_args
-            if regularizer_type == "L1":
-                self.regularizer = tf.contrib.layers.l1_regularizer(scale=regularizer_constant)
-            elif regularizer_type == "L2":
-                self.regularizer = tf.contrib.layers.l2_regularizer(scale=regularizer_constant)
-            else:
-                raise ValueError("Regularizer Type {} Unrecognized".format(regularizer_type))
-        else:
-            self.regularizer = None
-
-    @property
     def cur_objective_fn(self):
         return self.objective_fn
 
@@ -138,13 +128,23 @@ class Network(object):
         if objective_fn == "ss":
             return lambda targets, net, **kwargs: sensitivity_specificity_loss(net, targets, **kwargs)
 
-    def mask_results(self, net):
-        net = tf.multiply(net, self.masks)
-        self.targets = tf.multiply(self.targets, self.masks)
-        return net
+    @property
+    def regularization(self):
+        if self.regularizer is not None:
+            reg_variables = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
+            return tf.contrib.layers.apply_regularization(self.regularizer, reg_variables)
+        else:
+            return 0.0
 
-    def calculate_loss(self, net):
-        print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
-                                                                        self.targets.get_shape()))
-        self.cost = self.cur_objective_fn(self.targets, net, pos_weight=self.wce_pos_weight) + self.regularization
-        self.cost_unweighted = self.get_objective_fn("ce")(self.targets, net) + self.regularization
+    @regularization.setter
+    def regularization(self, regularizer_args):
+        if regularizer_args:
+            regularizer_type, regularizer_constant = regularizer_args
+            if regularizer_type == "L1":
+                self.regularizer = tf.contrib.layers.l1_regularizer(scale=regularizer_constant)
+            elif regularizer_type == "L2":
+                self.regularizer = tf.contrib.layers.l2_regularizer(scale=regularizer_constant)
+            else:
+                raise ValueError("Regularizer Type {} Unrecognized".format(regularizer_type))
+        else:
+            self.regularizer = None

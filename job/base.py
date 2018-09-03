@@ -207,12 +207,12 @@ class Job(object):
         # initialize network object
         if gpu_device is not None:
             with tf.device(gpu_device):
-                network = self.network_cls(wce_pos_weight=pos_weight, objective_fn=objective_fn,
+                network = self.network_cls(pos_weight=pos_weight, objective_fn=objective_fn,
                                            weight_init=weight_init, regularizer_args=regularizer_args, act_fn=act_fn,
                                            learning_rate_and_kwargs=learning_rate_and_kwargs,
                                            op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params)
         else:
-            network = self.network_cls(wce_pos_weight=pos_weight, objective_fn=objective_fn,  weight_init=weight_init,
+            network = self.network_cls(pos_weight=pos_weight, objective_fn=objective_fn, weight_init=weight_init,
                                        regularizer_args=regularizer_args, act_fn=act_fn,
                                        learning_rate_and_kwargs=learning_rate_and_kwargs,
                                        op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params)

@@ -3,7 +3,7 @@ from __future__ import absolute_import, print_function, division
 
 import tensorflow as tf
 
-def generalised_dice_loss(prediction, ground_truth, weight_map=None, type_weight='Simple', pos_weight=1):
+def generalised_dice_loss(prediction, ground_truth, weight_map=None, type_weight='Custom', pos_weight=1):
     """
     Function to calculate the Generalised Dice Loss defined in
         Sudre, C. et. al. (2017) Generalised Dice overlap as a deep learning
@@ -42,11 +42,6 @@ def generalised_dice_loss(prediction, ground_truth, weight_map=None, type_weight
         intersect = tf.sparse_reduce_sum(one_hot * prediction,
                                          reduction_axes=[0])
         seg_vol = tf.reduce_sum(prediction, 0)
-    print("gd stats")
-    print(seg_vol)
-    print(seg_vol.shape)
-    print(one_hot)
-    print(ref_vol)
     if type_weight == 'Square':
         weights = tf.reciprocal(tf.square(ref_vol))
     elif type_weight == 'Simple':
@@ -54,9 +49,8 @@ def generalised_dice_loss(prediction, ground_truth, weight_map=None, type_weight
     elif type_weight == 'Uniform':
         weights = tf.ones_like(ref_vol)
     elif type_weight == "Custom":
-        cls_weights = [1, pos_weight]
-        print()
-
+        pos_weights = ground_truth * pos_weight
+        weights = tf.concat([1-ground_truth, pos_weights],axis=2)
     else:
         raise ValueError("The variable type_weight \"{}\""
                          "is not defined.".format(type_weight))
