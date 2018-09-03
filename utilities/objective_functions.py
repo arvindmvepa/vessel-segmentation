@@ -43,8 +43,8 @@ def generalised_dice_loss(prediction, ground_truth, weight_map=None, type_weight
                                          reduction_axes=[0])
         seg_vol = tf.reduce_sum(prediction, 0)
     print("gd stats")
-    print(one_hot.shape)
-    print(ref_vol.shape)
+    print(one_hot)
+    print(ref_vol)
     if type_weight == 'Square':
         weights = tf.reciprocal(tf.square(ref_vol))
     elif type_weight == 'Simple':
