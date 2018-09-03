@@ -5,7 +5,7 @@ import cv2
 from PIL import Image
 
 from dataset.base import Dataset
-from utilities.image_preprocessiing import preprocessing
+from utilities.image_preprocessing import preprocessing
 
 class DatasetWMasks(Dataset):
 

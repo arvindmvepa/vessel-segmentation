@@ -5,7 +5,7 @@ import cv2
 from scipy.misc import imsave
 
 from dataset.base import Dataset
-from utilities.image_preprocessiing import preprocessing
+from utilities.image_preprocessing import preprocessing
 
 class DatasetWoMasks(Dataset):
 
