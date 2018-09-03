@@ -68,7 +68,4 @@ class SmallNetwork(Network):
                                  output_channels=self.layer_params['conv_4_2']['output_channels'],
                                  keep_prob=self.layer_params['conv_4_2']['keep_prob'], name='conv_4_2'))
 
-        self.inputs = tf.placeholder(tf.float32, [None, self.FIT_IMAGE_HEIGHT, self.FIT_IMAGE_WIDTH,
-                                                  self.IMAGE_CHANNELS], name='inputs')
-        self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
         super(SmallNetwork, self).__init__(layers=layers, **kwargs)

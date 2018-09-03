@@ -18,6 +18,12 @@ class Network(object):
         self.regularization = regularizer_args
         self.mask = mask
 
+        self.inputs = tf.placeholder(tf.float32, [None, self.FIT_IMAGE_HEIGHT, self.FIT_IMAGE_WIDTH,
+                                                  self.IMAGE_CHANNELS], name='inputs')
+        self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
+        if self.mask:
+            self.masks = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='masks')
+
         if layers == None :
             raise ValueError("No Layers Defined.")
 
