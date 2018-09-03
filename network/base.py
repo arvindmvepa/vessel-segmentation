@@ -106,7 +106,7 @@ class Network(object):
             else:
                 raise ValueError("Regularizer Type {} Unrecognized".format(regularizer_type))
         else:
-            self.self.regularizer = None
+            self.regularizer = None
 
     @property
     def cur_objective_fn(self):
