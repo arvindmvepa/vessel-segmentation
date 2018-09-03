@@ -63,6 +63,7 @@ def generalised_dice_loss(prediction,
         Simple (inverse of volume) and Uniform (no weighting))
     :return: the loss
     """
+    prediction = tf.concat([1 - prediction, prediction], axis=3)
     prediction = tf.cast(prediction, tf.float32)
     if len(ground_truth.shape) == len(prediction.shape):
         ground_truth = ground_truth[..., -1]
@@ -188,8 +189,6 @@ def cross_entropy(prediction, ground_truth, weight_map=None):
 
     weight_sum = tf.maximum(tf.reduce_sum(weight_map), 1e-6)
     return tf.reduce_sum(entropy * weight_map / weight_sum)
-
-
 
 def cross_entropy_dense(prediction, ground_truth, weight_map=None):
     if weight_map is not None:
