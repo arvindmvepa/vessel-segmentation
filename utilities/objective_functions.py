@@ -49,11 +49,10 @@ def generalised_dice_loss(prediction, ground_truth, weight_map=None, type_weight
     elif type_weight == 'Uniform':
         weights = tf.ones_like(ref_vol)
     elif type_weight == "Custom":
-        pos_weights = ground_truth * pos_weight
-        print('debug')
-        print(ground_truth.shape)
-        weights = tf.stack([1-ground_truth, pos_weights],axis=2)
-        print(weights.shape)
+        # TODO: why reduce the sum by batch? applicable above as well
+        ground_truth_batch = tf.reduce_sum(ground_truth, 0)
+        pos_weights = ground_truth_batch * pos_weight
+        weights = tf.stack([1-ground_truth_batch, pos_weights],axis=2)
     else:
         raise ValueError("The variable type_weight \"{}\""
                          "is not defined.".format(type_weight))
