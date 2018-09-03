@@ -50,7 +50,10 @@ def generalised_dice_loss(prediction, ground_truth, weight_map=None, type_weight
         weights = tf.ones_like(ref_vol)
     elif type_weight == "Custom":
         pos_weights = ground_truth * pos_weight
+        print('debug')
+        print(ground_truth.shape)
         weights = tf.stack([1-ground_truth, pos_weights],axis=2)
+        print(weights.shape)
     else:
         raise ValueError("The variable type_weight \"{}\""
                          "is not defined.".format(type_weight))
