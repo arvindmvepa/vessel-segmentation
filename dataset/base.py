@@ -66,7 +66,7 @@ class Dataset(object):
         return np.array([image*1.0/(np.max(image)-np.min(image)) for image in images])
 
     def apply_image_aug(self, images):
-        images = [np.expand_dims(int(np.round(image*255.0)),axis=2) for image in images]
+        images = [np.expand_dims(np.round(image*255.0).astype(np.uint8),axis=2) for image in images]
         images = self.seq.augment_images(images)
         return [np.squeeze(image,axis=2)*1.0/255.0 for image in images]
 
