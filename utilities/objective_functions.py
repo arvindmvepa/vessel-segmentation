@@ -81,43 +81,35 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
 
     error is the sum of r(specificity part) and (1-r)(sensitivity part)
 
-    :param prediction: the logits
+    :param r_prediction: the logits
     :param ground_truth: segmentation ground_truth.
     :param r: the 'sensitivity ratio'
         (authors suggest values from 0.01-0.10 will have similar effects)
     :return: the loss
     """
     # convert binary label probabilities to categorical probabilities
-    prediction = tf.concat([1 - prediction, prediction], axis=3)
-    prediction = tf.cast(prediction, tf.float32)
-    if len(ground_truth.shape) == len(prediction.shape):
+    if r is None:
+        r = float(1)/(pos_weight+1)
+
+    r_prediction = tf.concat([(1 - prediction)*r, prediction*(1-r)], axis=3)
+    r_prediction = tf.cast(r_prediction, tf.float32)
+
+    if len(ground_truth.shape) == len(r_prediction.shape):
         ground_truth = ground_truth[..., -1]
     if weight_map is not None:
         # raise NotImplementedError
         tf.logging.warning('Weight map specified but not used.')
 
-    prediction = tf.cast(prediction, tf.float32)
-    one_hot = labels_to_one_hot(ground_truth, tf.shape(prediction)[-1])
+    one_hot = labels_to_one_hot(ground_truth, tf.shape(r_prediction)[-1])
 
     one_hot = tf.sparse_tensor_to_dense(one_hot)
     # value of unity everywhere except for the previous 'hot' locations
-    one_cold = 1 - one_hot
 
     # chosen region may contain no voxels of a given label. Prevents nans.
     epsilon_denominator = 1e-5
+    spec_and_sense = tf.reduce_sum(one_hot * r_prediction,[0,1,2])/(tf.reduce_sum(one_hot,[0,1,2])+epsilon_denominator)
 
-    squared_error = tf.square(one_hot - prediction)
-    specificity_part = tf.reduce_sum(
-        squared_error * one_hot, 0) / \
-                       (tf.reduce_sum(one_hot, 0) + epsilon_denominator)
-    sensitivity_part = \
-        (tf.reduce_sum(tf.multiply(squared_error, one_cold), 0) /
-         (tf.reduce_sum(one_cold, 0) + epsilon_denominator))
-
-    if r is None:
-        r = float(1)/(pos_weight+1)
-
-    return tf.reduce_sum(r * specificity_part + (1 - r) * sensitivity_part)
+    return tf.reduce_sum(spec_and_sense)
 
 
 def dice(prediction, ground_truth, weight_map=None, pos_weight=1, **kwargs):
