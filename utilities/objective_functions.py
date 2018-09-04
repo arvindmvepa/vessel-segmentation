@@ -90,7 +90,7 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
     # convert binary label probabilities to categorical probabilities
     if r is None:
         r = float(1)/(pos_weight+1)
-
+    print("ss loss r: {}".format(r))
     r_prediction = tf.concat([(1 - prediction)*r, prediction*(1-r)], axis=3)
     r_prediction = tf.cast(r_prediction, tf.float32)
 
