@@ -11,13 +11,8 @@ class DatasetWoMasks(Dataset):
 
     TARGETS_DIR = "targets"
 
-    def __init__(self, WRK_DIR_PATH, batch_size=1, TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = True,
-                 cv_train_inds = None, cv_test_inds = None, histo_eq=None, clahe_kwargs=None, per_image_normalization=False,
-                 gamma=None, **kwargs):
-        super(DatasetWoMasks, self).__init__(batch_size=batch_size, WRK_DIR_PATH=WRK_DIR_PATH, TRAIN_SUBDIR=TRAIN_SUBDIR,
-                                             TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
-                                             cv_test_inds=cv_test_inds, hist_eq=histo_eq, clahe_kwargs=clahe_kwargs,
-                                             per_image_normalization=per_image_normalization, gamma=gamma, **kwargs)
+    def __init__(self, **kwargs):
+        super(DatasetWoMasks, self).__init__(**kwargs)
 
         self.train_images, self.train_targets = self.train_data
         self.test_images, self.test_targets = self.test_data

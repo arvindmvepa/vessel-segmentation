@@ -12,17 +12,11 @@ class DatasetWMasks(Dataset):
     MASKS_DIR = "masks"
     TARGETS_DIR = "targets"
 
-    def __init__(self, WRK_DIR_PATH, batch_size=1, TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd=True,
-                 masks_provided=True, init_mask_imgs=False, mask_threshold = None, cv_train_inds = None,
-                 cv_test_inds = None, histo_eq=None, clahe_kwargs=None, per_image_normalization=False,
-                 gamma=None, **kwargs):
+    def __init__(self, masks_provided=True, init_mask_imgs=False, mask_threshold = None, *kwargs):
         self.mask_provided = masks_provided
         self.init_mask_imgs = init_mask_imgs
         self.mask_threshold = mask_threshold
-        super(DatasetWMasks, self).__init__(WRK_DIR_PATH=WRK_DIR_PATH, batch_size=batch_size, TRAIN_SUBDIR=TRAIN_SUBDIR,
-                                            TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
-                                            cv_test_inds=cv_test_inds, hist_eq=histo_eq, clahe_kwargs=clahe_kwargs,
-                                            per_image_normalization=per_image_normalization, gamma=gamma, **kwargs)
+        super(DatasetWMasks, self).__init__(**kwargs)
 
         self.train_images, self.train_masks, self.train_targets = self.train_data
         self.test_images, self.test_masks, self.test_targets = self.test_data
