@@ -284,7 +284,7 @@ class Job(object):
                                                network.cur_op_fn))
                     """
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
-                          'regularizer type {} op function {}'.format(
+                          'regularizer type {}, op function {}'.format(
                         batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
                         end-start, pos_weight, network.regularizer_type, network.cur_op_fn))
 

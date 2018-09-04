@@ -57,7 +57,7 @@ class Network(object):
             net = self.mask_results(net)
         self.segmentation_result = tf.sigmoid(net)
         self.calculate_loss(net, **loss_kwargs)
-        self.train_op = self.op_fn.minimize(self.cost, global_step=self._global_step)
+        self.train_op = self.cur_op_fn.minimize(self.cost, global_step=self._global_step)
 
     def calculate_loss(self, net, **kwargs):
         print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
@@ -87,7 +87,7 @@ class Network(object):
 
     @property
     def cur_op_fn(self):
-        self.op_fn
+        return self.op_fn
 
     @cur_op_fn.setter
     def cur_op_fn(self, op_fn_and_kwargs):
