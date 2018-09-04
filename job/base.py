@@ -269,10 +269,9 @@ class Job(object):
                         self.save_debug2(batch_data, viz_layer_outputs_path_train)
 
                     # train on batch
-                    cost, cost_unweighted, layer_outputs, debug1, _, regularization, \
-                    cur_learning_rate = sess.run(
+                    cost, cost_unweighted, layer_outputs, debug1, _ = sess.run(
                         [network.cost, network.cost_unweighted, network.layer_outputs, network.debug1,
-                         network.train_op, network.regularization, network.cur_learning_rate],
+                         network.train_op],
                         feed_dict=self.get_network_dict(network, batch_data))
                     end = time.time()
                     # print training information
