@@ -90,7 +90,8 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
     # convert binary label probabilities to categorical probabilities
     prediction = tf.concat([1 - prediction, prediction], axis=3)
     prediction = tf.cast(prediction, tf.float32)
-
+    if len(ground_truth.shape) == len(prediction.shape):
+        ground_truth = ground_truth[..., -1]
     if weight_map is not None:
         # raise NotImplementedError
         tf.logging.warning('Weight map specified but not used.')
@@ -179,14 +180,7 @@ def cross_entropy(prediction, ground_truth, weight_map=None, **kwargs):
     if len(ground_truth.shape) == len(prediction.shape):
         ground_truth = ground_truth[..., -1]
 
-    print(ground_truth.shape)
-    print(prediction.shape)
-
-    #ground_truth = tf.stack([ground_truth,1-ground_truth], axis=3)
     prediction = tf.concat([1-prediction,prediction], axis=3)
-
-    print(ground_truth.shape)
-    print(prediction.shape)
 
     # TODO trace this back:
     ground_truth = tf.cast(ground_truth, tf.int32)
