@@ -269,9 +269,9 @@ class Job(object):
                         self.save_debug2(batch_data, viz_layer_outputs_path_train)
 
                     # train on batch
-                    cost, cost_unweighted, layer_outputs, debug1, _ = sess.run(
+                    cost, cost_unweighted, layer_outputs, debug1, _, cur_learning_rate = sess.run(
                         [network.cost, network.cost_unweighted, network.layer_outputs, network.debug1,
-                         network.train_op],
+                         network.train_op, network.cur_learning_rate],
                         feed_dict=self.get_network_dict(network, batch_data))
                     end = time.time()
                     # print training information
@@ -284,9 +284,9 @@ class Job(object):
                                                network.cur_op_fn))
                     """
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
-                          'regularizer type {}, op function {}'.format(
+                          'regularizer type {}, op function {}, learning rate {}'.format(
                         batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
-                        end-start, pos_weight, network.regularizer_type, network.cur_op_fn))
+                        end-start, pos_weight, network.regularizer_type, network.cur_op_fn, cur_learning_rate))
 
                     # produce debug image 3
                     if viz_layer_epoch_freq is not None and debug_net_output:
