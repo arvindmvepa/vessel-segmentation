@@ -90,27 +90,32 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
     # convert binary label probabilities to categorical probabilities
     if r is None:
         r = float(1)/(pos_weight+1)
-    print("ss loss r: {}".format(r))
-    r_prediction = tf.concat([(1 - prediction)*(1-r), prediction*r], axis=3)
-    r_prediction = tf.cast(r_prediction, tf.float32)
+    prediction = tf.concat([(1 - prediction)*(1-r), prediction*r], axis=3)
+    prediction = tf.cast(prediction, tf.float32)
 
-    if len(ground_truth.shape) == len(r_prediction.shape):
+    if len(ground_truth.shape) == len(prediction.shape):
         ground_truth = ground_truth[..., -1]
     if weight_map is not None:
         # raise NotImplementedError
         tf.logging.warning('Weight map specified but not used.')
 
-    one_hot = labels_to_one_hot(ground_truth, tf.shape(r_prediction)[-1])
+    # chosen region may contain no voxels of a given label. Prevents nans.
+    epsilon_denominator = 1e-5
+
+    if weight_map is not None:
+        # raise NotImplementedError
+        tf.logging.warning('Weight map specified but not used.')
+
+    prediction = tf.cast(prediction, tf.float32)
+    one_hot = labels_to_one_hot(ground_truth, tf.shape(prediction)[-1])
 
     one_hot = tf.sparse_tensor_to_dense(one_hot)
     # value of unity everywhere except for the previous 'hot' locations
+    one_cold = 1 - one_hot
 
-    # chosen region may contain no voxels of a given label. Prevents nans.
-    epsilon_denominator = 1e-5
-    spec_and_sense = tf.reduce_sum(one_hot * r_prediction,[0,1,2])/(tf.reduce_sum(one_hot,[0,1,2])+epsilon_denominator)
-
-    return tf.reduce_sum(spec_and_sense)
-
+    squared_error = tf.square(one_hot - prediction)
+    return tf.reduce_sum(tf.reduce_sum(squared_error * one_hot, [0,1,2]) /
+                         (tf.reduce_sum(one_hot, [0,1,2]) + epsilon_denominator) * tf.constant([1-r,r]))
 
 def dice(prediction, ground_truth, weight_map=None, pos_weight=1, **kwargs):
     """
