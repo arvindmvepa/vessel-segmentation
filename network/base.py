@@ -130,21 +130,21 @@ class Network(object):
 
     @property
     def regularization(self):
-        if self.regularizer is not None:
+        if self.regularizer_type is not None:
+            if self.regularizer_type == "L1":
+                regularizer = tf.contrib.layers.l1_regularizer(scale=self.regularizer_constant)
+            elif self.regularizer_type == "L2":
+                regularizer = tf.contrib.layers.l2_regularizer(scale=self.regularizer_constant)
+            else:
+                raise ValueError("Regularizer Type {} Unrecognized".format(self.regularizer_type))
             reg_variables = tf.get_collection(tf.GraphKeys.REGULARIZATION_LOSSES)
-            return tf.contrib.layers.apply_regularization(self.regularizer, reg_variables)
+            return tf.contrib.layers.apply_regularization(regularizer, reg_variables)
         else:
-            return 0.0
+            return tf.constant(0.0)
 
     @regularization.setter
     def regularization(self, regularizer_args):
         if regularizer_args:
-            regularizer_type, regularizer_constant = regularizer_args
-            if regularizer_type == "L1":
-                self.regularizer = tf.contrib.layers.l1_regularizer(scale=regularizer_constant)
-            elif regularizer_type == "L2":
-                self.regularizer = tf.contrib.layers.l2_regularizer(scale=regularizer_constant)
-            else:
-                raise ValueError("Regularizer Type {} Unrecognized".format(regularizer_type))
+            self.regularizer_type, self.regularizer_constant = regularizer_args
         else:
-            self.regularizer = None
+            self.regularizer_type = None
