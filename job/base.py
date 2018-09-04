@@ -276,12 +276,18 @@ class Job(object):
                         feed_dict=self.get_network_dict(network, batch_data))
                     end = time.time()
                     # print training information
+                    """
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {},'
                           ' current objective function {}, regularization {}, regularizer {}, learning rate {}, '
                           'op function'.format(batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost,
                                                cost_unweighted, end-start, pos_weight, network.cur_objective_fn,
                                                regularization, network.regularizer_type, cur_learning_rate,
                                                network.cur_op_fn))
+                    """
+                    print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
+                          'regularizer type {} op function {}'.format(
+                        batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
+                        end-start, pos_weight, network.regularizer_type, network.cur_op_fn))
 
                     # produce debug image 3
                     if viz_layer_epoch_freq is not None and debug_net_output:
