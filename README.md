@@ -6,7 +6,7 @@ Python 2.7 was used for development and the network only has been tested for pyt
 
 ## Installation
 
-Install `cv2`, tensorflow 1.2, scikit-image, and statsmodels.
+Install `cv2`, tensorflow 1.2, imgaug, scikit-image, and statsmodels.
 
 ### Data organization
 

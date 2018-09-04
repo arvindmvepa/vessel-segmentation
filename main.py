@@ -2,27 +2,36 @@ from job.dsa import DsaJob
 from job.drive import DriveJob
 from job.stare import StareJob
 from job.chase import ChaseJob
+from imgaug import augmenters as iaa
 
 import os
 
 if __name__ == '__main__':
 
-    EXPERIMENTS_DIR_PATH = "c:/vessel-segmentation/experiments"
-    EXPERIMENT_NAME = "/drive_example_/"
-    Layer_param={'conv_1_1_ks':3,'conv_1_1_oc':64,'conv_1_1_dilation':1,
-            'max_1_ks':2,
-            'conv_2_1_ks':3,'conv_2_1_oc':128,'conv_2_1_dilation':1,
-            'max_2_ks':2,
-            'conv_3_1_ks':3,'conv_3_1_oc':256,'conv_3_1_dilation':1,
-            'conv_3_2_ks':3,'conv_3_2_oc':256,'conv_3_2_dilation':2,
-            'max_3_ks':2,
-            'conv_4_1_ks':7,'conv_4_1_oc':4096,'conv_4_1_dilation':1,
-            'conv_4_2_ks':1,'conv_4_2_oc':4096,'conv_4_2_dilation':1
-            }
-            
-    job = DriveJob(OUTPUTS_DIR_PATH=os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME))
-    job.run_cross_validation(WRK_DIR_PATH="c:/vessel-segmentation/DRIVE/",metrics_epoch_freq=1,
-            viz_layer_epoch_freq=1,n_epochs=5,gpu_device='/gpu:1', weight_init='He',regularizer='L2',Relu=False,
+    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments"
+    EXPERIMENT_NAME = "drive_example"
 
-            learningrate=0.001, Beta1=0.9,Beta2=0.999,epsilon=10**-8,Layer_param=Layer_param, he_flag=False, clahe_flag=            False, normalized_flag=False, gamma_flag=False,keep_prob=1 )
+    for objective_fn, tuning_constant, ss_r, regularizer_args, learning_rate_and_kwargs, op_fun_and_kwargs, weight_init, act_fn, hist_eq,clahe_kwargs,per_image_normalization,gamma,seq in \
+            zip(["wce","gdice", "ss"], [1.0,1.0,1.0], [.05,.05,.05],
+                [None, ("L1",.01),("L2",.01)],
+                [(.001, {}), (.001, {}),(.01, {'decay_steps': 1, 'decay_rate': .1})],
+                [("adam",{}),("rmsprop",{}),("adadelta",{})],
+                ["He", "Xnormal", "default"],
+                ["lrelu", "relu", "relu"],
+                [False, False, True],
+                [None, {"clipLimit": 2.0, "tileGridSize": (8, 8)}, {"clipLimit": 2.0, "tileGridSize": (8, 8)}],
+                [False, True, True], [None, 1.0, 5.0],
+                [None, None, iaa.Sequential([iaa.Crop(px=(0, 16)), iaa.Fliplr(0.5),iaa.GaussianBlur(sigma=(0, 3.0))])]):
+                    job = DriveJob(OUTPUTS_DIR_PATH=os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME))
+                    job.run_cross_validation(WRK_DIR_PATH="/home/ubuntu/new_vessel_segmentation/vessel-segmentation/drive",
+                                             metrics_epoch_freq=1,viz_layer_epoch_freq=1,
+                                             n_epochs=2,objective_fn=objective_fn,
+                                             tuning_constant=tuning_constant, ss_r=ss_r,
+                                             regularizer_args=regularizer_args,
+                                             op_fun_and_kwargs=op_fun_and_kwargs,
+                                             weight_init=weight_init, act_fn=act_fn,
+                                             seq=seq, hist_eq=hist_eq,
+                                             clahe_kwargs=clahe_kwargs,
+                                             per_image_normalization=per_image_normalization,
+                                             gamma=gamma)
 

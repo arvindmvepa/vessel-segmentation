@@ -183,9 +183,9 @@ class Job(object):
     
     def train(self, dataset=None, gpu_device=None, tuning_constant=1.0, metrics_epoch_freq=1, viz_layer_epoch_freq=10,
               metrics_log="metrics_log.csv", num_image_plots=5, save_model=True, debug_net_output=True,
-              objective_fn="wce", regularizer_args=None, learning_rate_and_kwargs=(.001, {}),
-              op_fun_and_kwargs=("adam", {}), weight_init=None, act_fn="lrelu",  weight_map=None, type_weight='Custom',
-              ss_r=.05, layer_params=None, **kwargs):
+              objective_fn="wce", weight_map=None, type_weight='Custom', ss_r=.05, regularizer_args=None,
+              learning_rate_and_kwargs=(.001, {}), op_fun_and_kwargs=("adam", {}), weight_init=None, act_fn="lrelu",
+              layer_params=None, **kwargs):
 
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
@@ -212,13 +212,15 @@ class Job(object):
                                            type_weight=type_weight, r=ss_r, weight_init=weight_init,
                                            regularizer_args=regularizer_args, act_fn=act_fn,
                                            learning_rate_and_kwargs=learning_rate_and_kwargs,
-                                           op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params)
+                                           op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params,
+                                           num_batches_in_epoch = dataset.num_batches_in_epoch())
         else:
             network = self.network_cls(pos_weight=pos_weight, objective_fn=objective_fn, weight_map=weight_map,
                                        type_weight=type_weight, r=ss_r, weight_init=weight_init,
                                        regularizer_args=regularizer_args, act_fn=act_fn,
                                        learning_rate_and_kwargs=learning_rate_and_kwargs,
-                                       op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params)
+                                       op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params,
+                                       num_batches_in_epoch=dataset.num_batches_in_epoch())
 
         # create metrics log file
         metric_log_file_path = os.path.join(self.OUTPUTS_DIR_PATH, metrics_log)

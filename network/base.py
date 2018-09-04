@@ -10,8 +10,8 @@ from utilities.objective_functions import generalised_dice_loss, sensitivity_spe
 class Network(object):
 
     def __init__(self, objective_fn="wce", regularizer_args=None, learning_rate_and_kwargs=(.001, {}),
-                 op_fun_and_kwargs=("adam", {}), mask=False, layers=None, **kwargs):
-
+                 op_fun_and_kwargs=("adam", {}), mask=False, layers=None, num_batches_in_epoch = 1, **kwargs):
+        self.num_batches_in_epoch = num_batches_in_epoch
         self.cur_objective_fn = objective_fn
         self.cur_learning_rate = learning_rate_and_kwargs
         self.cur_op_fn = op_fun_and_kwargs
@@ -80,6 +80,7 @@ class Network(object):
         base_learning_rate, kwargs = learning_rate_and_kwargs
         self._global_step = tf.Variable(0, trainable=False)
         if kwargs:
+            kwargs['decay_steps']=kwargs.get('decay_steps',10)*self.num_batches_in_epoch
             self.learning_rate = tf.train.exponential_decay(base_learning_rate, self._global_step, **kwargs)
         else:
             self.learning_rate = base_learning_rate
