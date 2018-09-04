@@ -116,16 +116,21 @@ class Network(object):
     # TODO: add options including u-net loss
     def get_objective_fn(self, objective_fn):
         if objective_fn == "ce":
+            self.objective_fn_flag = "ce"
             return lambda targets, net, **kwargs: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
                 targets, net, pos_weight=1))
         if objective_fn == "wce":
+            self.objective_fn_flag = "wce"
             return lambda targets, net, pos_weight, **kwargs: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
                 targets, net, pos_weight=pos_weight))
         if objective_fn == "dice":
+            self.objective_fn_flag = "dice"
             return lambda targets, net, **kwargs: dice(net, targets, **kwargs)
         if objective_fn == "gdice":
+            self.objective_fn_flag = "gdice"
             return lambda targets, net, **kwargs: generalised_dice_loss(net, targets, **kwargs)
         if objective_fn == "ss":
+            self.objective_fn_flag = "ss"
             return lambda targets, net, **kwargs: sensitivity_specificity_loss(net, targets, **kwargs)
 
     @property

@@ -286,7 +286,7 @@ class Job(object):
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
                           'regularizer type {}, network obj function{}, op function {}, learning rate {}, regularization {}'.format(
                         batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
-                        end-start, pos_weight, network.regularizer_type, network.cur_objective_fn, network.cur_op_fn,
+                        end-start, pos_weight, network.regularizer_type, network.objective_fn_flag, network.cur_op_fn,
                         cur_learning_rate, network.regularize_flag))
 
                     # produce debug image 3
