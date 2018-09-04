@@ -12,7 +12,7 @@ class DatasetWMasks(Dataset):
     MASKS_DIR = "masks"
     TARGETS_DIR = "targets"
 
-    def __init__(self, masks_provided=True, init_mask_imgs=False, mask_threshold = None, *kwargs):
+    def __init__(self, masks_provided=True, init_mask_imgs=False, mask_threshold = None, **kwargs):
         self.mask_provided = masks_provided
         self.init_mask_imgs = init_mask_imgs
         self.mask_threshold = mask_threshold
