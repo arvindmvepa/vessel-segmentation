@@ -53,21 +53,13 @@ class DatasetWoMasks(Dataset):
             # apply image pre-processing
             image_arr = preprocessing(image_arr, histo_eq=hist_eq, clahe_kwargs=clahe_kwargs,
                                          per_image_normalization=per_image_normalization, gamma=gamma)
-            # apply min-max normalization
-            image_arr = image_arr * 1.0 / (np.max(image_arr) - np.min(image_arr))
+            image_arr = image_arr * 1.0 / 255.0
             images.append(image_arr)
 
             target_arr = np.array(skio.imread(os.path.join(TARGETS_DIR_PATH,target_file)))
             target_arr = np.where(target_arr > 127,1.0,0.0)
 
             targets.append(target_arr)
-
-            orig_img = image_file
-            orig_pth = os.path.join(self.WRK_DIR_PATH, orig_img)
-            imsave(orig_pth, image_arr * 255.0)
-            target_img = "target_" + image_file
-            target_pth = os.path.join(self.WRK_DIR_PATH, target_img)
-            imsave(target_pth, target_arr * 255.0)
 
         return np.asarray(images), np.asarray(targets)
 
@@ -85,7 +77,8 @@ class DatasetWoMasks(Dataset):
             else:
                 images.append(np.array(self.train_images[self.pointer + i]))
                 targets.append(np.array(self.train_targets[self.pointer + i]))
-
+        if self.seq is not None:
+            images = self.apply_image_aug(images)
         self.pointer += self.batch_size
         return np.array(images), np.array(targets)
 

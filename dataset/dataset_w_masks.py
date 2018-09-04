@@ -65,8 +65,7 @@ class DatasetWMasks(Dataset):
             # apply image pre-processing
             grn_chnl_arr = preprocessing(grn_chnl_arr, histo_eq=hist_eq, clahe_kwargs=clahe_kwargs,
                                          per_image_normalization=per_image_normalization, gamma=gamma)
-            # apply min-max normalization
-            grn_chnl_arr = grn_chnl_arr * 1.0/(np.max(grn_chnl_arr)-np.min(grn_chnl_arr))
+            grn_chnl_arr = grn_chnl_arr * 1.0/255.0
             images.append(grn_chnl_arr)
 
             if self.mask_provided or self.init_mask_imgs:
@@ -116,7 +115,8 @@ class DatasetWMasks(Dataset):
                 images.append(np.array(self.train_images[self.pointer + i]))
                 masks.append(np.array(self.train_masks[self.pointer + i]))
                 targets.append(np.array(self.train_targets[self.pointer + i]))
-
+        if self.seq is not None:
+            images = self.apply_image_aug(images)
         self.pointer += self.batch_size
         return np.array(images), np.array(masks), np.array(targets)
 
