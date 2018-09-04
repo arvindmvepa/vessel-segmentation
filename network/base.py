@@ -83,7 +83,7 @@ class Network(object):
             kwargs['decay_steps']=kwargs.get('decay_steps',10)*self.num_batches_in_epoch
             self.learning_rate = tf.train.exponential_decay(base_learning_rate, self._global_step, **kwargs)
         else:
-            self.learning_rate = base_learning_rate
+            self.learning_rate = tf.constant(base_learning_rate)
 
     @property
     def cur_op_fn(self):
