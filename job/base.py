@@ -284,9 +284,10 @@ class Job(object):
                                                network.cur_op_fn))
                     """
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
-                          'regularizer type {}, op function {}, learning rate {}'.format(
+                          'regularizer type {}, network obj function{}, op function {}, learning rate {}, regularization {}'.format(
                         batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
-                        end-start, pos_weight, network.regularizer_type, network.cur_op_fn, cur_learning_rate))
+                        end-start, pos_weight, network.regularizer_type, network.cur_objective_fn, network.cur_op_fn,
+                        cur_learning_rate, network.regularize_flag))
 
                     # produce debug image 3
                     if viz_layer_epoch_freq is not None and debug_net_output:
