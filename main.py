@@ -25,7 +25,7 @@ if __name__ == '__main__':
                     job = DriveJob(OUTPUTS_DIR_PATH=os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME))
                     job.run_cross_validation(WRK_DIR_PATH="/home/ubuntu/new_vessel_segmentation/vessel-segmentation/drive",
                                              metrics_epoch_freq=1,viz_layer_epoch_freq=1,
-                                             n_epochs=2,objective_fn=objective_fn,
+                                             n_epochs=2,n_splits=2,objective_fn=objective_fn,
                                              tuning_constant=tuning_constant, ss_r=ss_r,
                                              regularizer_args=regularizer_args,
                                              op_fun_and_kwargs=op_fun_and_kwargs,
