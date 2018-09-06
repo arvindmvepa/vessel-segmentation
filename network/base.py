@@ -12,7 +12,6 @@ class Network(object):
     def __init__(self, objective_fn="wce", regularizer_args=None, learning_rate_and_kwargs=(.001, {}),
                  op_fun_and_kwargs=("adam", {}), mask=False, layers=None, num_batches_in_epoch = 1, **kwargs):
         self.num_batches_in_epoch = num_batches_in_epoch
-        self.objective_fn_flag = ""
         self.cur_objective_fn = objective_fn
         self.cur_learning_rate = learning_rate_and_kwargs
         self.cur_op_fn = op_fun_and_kwargs
@@ -88,7 +87,7 @@ class Network(object):
 
     @property
     def cur_op_fn(self):
-        return self.op_fn
+        return self._op_fn
 
     @cur_op_fn.setter
     def cur_op_fn(self, op_fn_and_kwargs):
@@ -103,35 +102,30 @@ class Network(object):
             op_cls = AdadeltaOptimizer
         elif op_fn == "rmsprop":
             op_cls = RMSPropOptimizer
-        self.op_fn = op_cls(learning_rate=self.cur_learning_rate, **kwargs)
+        self._op_fn = op_cls(learning_rate=self.cur_learning_rate, **kwargs)
 
     @property
     def cur_objective_fn(self):
-        return self.objective_fn
+        return self._objective_fn
 
     @cur_objective_fn.setter
     def cur_objective_fn(self, objective_fn):
-        self.objective_fn = self.get_objective_fn(objective_fn)
+        self._objective_fn = self.get_objective_fn(objective_fn)
 
     # TODO: Consider impact of masking on objective function, seems it would be considered a constant
     # TODO: add options including u-net loss
     def get_objective_fn(self, objective_fn):
         if objective_fn == "ce":
-            self.objective_fn_flag += "ce"
             return lambda targets, net, **kwargs: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
                 targets, net, pos_weight=1))
         if objective_fn == "wce":
-            self.objective_fn_flag += "wce"
             return lambda targets, net, pos_weight, **kwargs: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
                 targets, net, pos_weight=pos_weight))
         if objective_fn == "dice":
-            self.objective_fn_flag += "dice"
             return lambda targets, net, **kwargs: dice(net, targets, **kwargs)
         if objective_fn == "gdice":
-            self.objective_fn_flag += "gdice"
             return lambda targets, net, **kwargs: generalised_dice_loss(net, targets, **kwargs)
         if objective_fn == "ss":
-            self.objective_fn_flag += "ss"
             return lambda targets, net, **kwargs: sensitivity_specificity_loss(net, targets, **kwargs)
 
     @property

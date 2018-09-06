@@ -109,13 +109,25 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
     prediction = tf.cast(prediction, tf.float32)
     one_hot = labels_to_one_hot(ground_truth, tf.shape(prediction)[-1])
 
-    one_hot = tf.sparse_tensor_to_dense(one_hot)
     # value of unity everywhere except for the previous 'hot' locations
     one_cold = 1 - one_hot
 
+    one_hot = tf.sparse_tensor_to_dense(one_hot)
+    # value of unity everywhere except for the previous 'hot' locations
+
     squared_error = tf.square(one_hot - prediction)
+
+    specificity_part = tf.reduce_sum(squared_error * one_hot, [0,1,2]) / \
+                       (tf.reduce_sum(one_hot, [0,1,2]) + epsilon_denominator)
+
+    sensitivity_part = (tf.reduce_sum(tf.multiply(squared_error, one_cold), [0,1,2]) /
+                        (tf.reduce_sum(one_cold, [0,1,2]) + epsilon_denominator))
+
+    return tf.reduce_sum(r * specificity_part + (1 - r) * sensitivity_part)
+    """
     return tf.reduce_sum(tf.reduce_sum(squared_error * one_hot, [0,1,2]) /
                          (tf.reduce_sum(one_hot, [0,1,2]) + epsilon_denominator) * tf.constant([1-r,r]))
+    """
 
 def dice(prediction, ground_truth, weight_map=None, pos_weight=1, **kwargs):
     """

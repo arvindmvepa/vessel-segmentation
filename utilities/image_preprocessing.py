@@ -2,21 +2,13 @@ import numpy as np
 import cv2
 
 def preprocessing(img, histo_eq=False, clahe_kwargs=None, per_image_normalization=False, gamma=None, **kwargs):
-    print("pre-processing options: hist_eq {}, clahe_kwargs {}, per_image_normalization {}, gamma{}".format(histo_eq,
-                                                                                                            clahe_kwargs,
-                                                                                                            per_image_normalization,
-                                                                                                            gamma))
     if histo_eq:
-        print("histo eq")
         img = histo_equalized(img)
     if clahe_kwargs:
-        print("clahe")
         img = clahe_equalized(img, **clahe_kwargs)
     if per_image_normalization:
-        print("per image normalization")
         img = per_image_normalize(img)
     if gamma:
-        print("gamma")
         img = adjust_gamma(img, gamma)
     return img
 

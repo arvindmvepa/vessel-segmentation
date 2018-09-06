@@ -110,7 +110,6 @@ class DatasetWMasks(Dataset):
                 masks.append(np.array(self.train_masks[self.pointer + i]))
                 targets.append(np.array(self.train_targets[self.pointer + i]))
         if self.seq is not None:
-            print("augmentation {}".format(self.seq))
             images = self.apply_image_aug(images)
         self.pointer += self.batch_size
         return np.array(images), np.array(masks), np.array(targets)

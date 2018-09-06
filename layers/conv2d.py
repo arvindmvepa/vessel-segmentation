@@ -23,21 +23,15 @@ class Conv2d(Layer):
         Conv2d.layer_index = 0
  
     def create_layer(self, input):
-        print(self.weight_init)
-        print(self.act_fn)
         self.input_shape = get_incoming_shape(input)
-        print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
         self.number_of_input_channels = number_of_input_channels
         with tf.variable_scope('conv', reuse=False):
             initializer=None
             if self.weight_init == 'He':
                 initializer = tf.contrib.layers.variance_scaling_initializer(factor=2.0, mode='FAN_IN', uniform=False)
-                print("He")
             elif self.weight_init == 'Xnormal':
                 initializer=tf.contrib.layers.xavier_initializer(uniform=False,seed=None)
-                print("Xnormal")
-            print("initializer {}".format(initializer))
             W = tf.get_variable(('W{}'.format(self.name[-3:])),shape=(self.kernel_size, self.kernel_size,
                                                                       number_of_input_channels, self.output_channels),
                                 initializer=initializer)
@@ -49,27 +43,20 @@ class Conv2d(Layer):
         output = tf.nn.dropout(output, self.keep_prob)
 
         if self.act_fn =="relu":
-            print("relu")
             output=tf.nn.relu(output)
         elif self.act_fn =="lrelu":
-            print(("lrelu"))
             output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b))
         else:
             raise ValueError("Activation function {} not recognized".format(self.act_fn))
         return output
 
     def create_layer_reversed(self, input, prev_layer=None, reuse=False):
-        print(self.weight_init)
-        print(self.act_fn)
         with tf.variable_scope('conv', reuse=reuse):
             initializer=None
             if self.weight_init == 'He':
                 initializer = tf.contrib.layers.variance_scaling_initializer(factor=2.0, mode='FAN_IN', uniform=False)
-                print("He")
             elif self.weight_init == 'Xnormal':
                 initializer=tf.contrib.layers.xavier_initializer(uniform=False,seed=None)
-                print("Xnormal")
-            print("initializer {}".format(initializer))
             W = tf.get_variable('W{}_'.format(self.name[-3:]),
                                 shape=(self.kernel_size, self.kernel_size, self.input_shape[3], self.output_channels),
                                 initializer=initializer)
@@ -85,10 +72,8 @@ class Conv2d(Layer):
         output.set_shape([None, self.input_shape[1], self.input_shape[2], self.input_shape[3]])
 
         if self.act_fn =="relu":
-            print("relu")
             output=tf.nn.relu(output)
         elif self.act_fn =="lrelu":
-            print("lrelu")
             output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b))
         else:
             raise ValueError("Activation function {} not recognized".format(self.act_fn))
