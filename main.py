@@ -16,7 +16,7 @@ if __name__ == '__main__':
     objective_fn, tuning_constant, ss_r, regularizer_args, learning_rate_and_kwargs, op_fun_and_kwargs, weight_init, \
     act_fn, hist_eq,clahe_kwargs,per_image_normalization,gamma,seq = zip(["wce","gdice", "wce"], [1.0,1.0,1.0],
                                                                          [.05,.05,.05],
-                                                                         [None, ("L1",.000001),("L2",.000001)],
+                                                                         [None, ("L1",.000001),None],
                                                                          [(.001, {}), (.001, {}),
                                                                           (.01, {'decay_steps': 10, 'decay_rate': .1})],
                                                                          [("adam",{}),("rmsprop",{}),("adadelta",{})],
@@ -25,7 +25,7 @@ if __name__ == '__main__':
                                                                          [False, False, True],
                                                                          [None, {"clipLimit": 2.0,"tileGridSize":(8,8)},
                                                                           {"clipLimit": 2.0, "tileGridSize": (8, 8)}],
-                                                                         [False, True, True],[None, 1.0, 5.0],
+                                                                         [False, True, True],[None, 1.0, 1.0],
                                                                          [None, None,None])[args_index]
     job = DriveJob(OUTPUTS_DIR_PATH=os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME))
     job.run_cross_validation(WRK_DIR_PATH="/home/ubuntu/new_vessel_segmentation/vessel-segmentation/drive",
