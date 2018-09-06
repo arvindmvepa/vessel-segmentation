@@ -20,6 +20,7 @@ if __name__ == '__main__':
                              tuning_constant=tuning_constant, ss_r=ss_r,
                              regularizer_args=regularizer_args,
                              op_fun_and_kwargs=op_fun_and_kwargs,
+                             learning_rate_and_kwargs=learning_rate_and_kwargs,
                              weight_init=weight_init, act_fn=act_fn,
                              seq=seq, hist_eq=hist_eq,
                              clahe_kwargs=clahe_kwargs,
