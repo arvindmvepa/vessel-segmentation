@@ -24,6 +24,7 @@ class Conv2d(Layer):
  
     def create_layer(self, input):
         self.input_shape = get_incoming_shape(input)
+        print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
         self.number_of_input_channels = number_of_input_channels
         with tf.variable_scope('conv', reuse=False):

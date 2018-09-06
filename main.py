@@ -14,7 +14,7 @@ if __name__ == '__main__':
     #example key-word arguments
     args_index = 2
     objective_fn, tuning_constant, ss_r, regularizer_args, learning_rate_and_kwargs, op_fun_and_kwargs, weight_init, \
-    act_fn, hist_eq,clahe_kwargs,per_image_normalization,gamma,seq = zip(["wce","gdice", "ss"], [1.0,1.0,1.0],
+    act_fn, hist_eq,clahe_kwargs,per_image_normalization,gamma,seq = zip(["wce","gdice", "wce"], [1.0,1.0,1.0],
                                                                          [.05,.05,.05],
                                                                          [None, ("L1",.000001),("L2",.000001)],
                                                                          [(.001, {}), (.001, {}),
