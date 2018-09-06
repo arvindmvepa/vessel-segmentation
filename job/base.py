@@ -276,7 +276,7 @@ class Job(object):
                     end = time.time()
                     # print training information
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
-                          'regularizer type {}, network obj function {}, op function {}, learning rate {}, regularization {}'.format(
+                          'regularizer type {}, op function {}, learning rate {}, regularization {}'.format(
                         batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
                         end-start, pos_weight, network.regularizer_type, network.cur_op_fn, cur_learning_rate,
                         network.regularize_flag))
