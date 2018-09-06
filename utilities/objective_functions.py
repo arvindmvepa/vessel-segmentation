@@ -109,11 +109,11 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
     prediction = tf.cast(prediction, tf.float32)
     one_hot = labels_to_one_hot(ground_truth, tf.shape(prediction)[-1])
 
-    # value of unity everywhere except for the previous 'hot' locations
-    one_cold = 1 - one_hot
-
     one_hot = tf.sparse_tensor_to_dense(one_hot)
     # value of unity everywhere except for the previous 'hot' locations
+
+    # value of unity everywhere except for the previous 'hot' locations
+    one_cold = 1 - one_hot
 
     squared_error = tf.square(one_hot - prediction)
 
