@@ -275,6 +275,7 @@ class Job(object):
                         feed_dict=self.get_network_dict(network, batch_data))
                     end = time.time()
                     # print training information
+                    print(learning_rate_and_kwargs)
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
                           'regularizer type {}, op function {}, learning rate {}, regularization {}'.format(
                         batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
