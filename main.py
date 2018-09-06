@@ -25,15 +25,15 @@ if __name__ == '__main__':
                                                                          [False, False, False],
                                                                          [None, {"clipLimit": 2.0,"tileGridSize":(8,8)},
                                                                           None],
-                                                                         [False, True, None],[None, 1.0, 1.0],
+                                                                         [False, True, False],[None, 1.0, 1.0],
                                                                          [None, None,None])[args_index]
     job = DriveJob(OUTPUTS_DIR_PATH=os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME))
     job.run_cross_validation(WRK_DIR_PATH="/home/ubuntu/new_vessel_segmentation/vessel-segmentation/drive",
                              metrics_epoch_freq=1,viz_layer_epoch_freq=1,
-                             n_epochs=2,n_splits=2,objective_fn=objective_fn,
+                             n_epochs=2,n_splits=2,objective_fn="wce",
                              tuning_constant=tuning_constant, ss_r=ss_r,
                              regularizer_args=regularizer_args,
-                             op_fun_and_kwargs=op_fun_and_kwargs,
+                             op_fun_and_kwargs=("adam",{}),
                              learning_rate_and_kwargs=learning_rate_and_kwargs,
                              weight_init=weight_init, act_fn=act_fn,
                              seq=seq, hist_eq=hist_eq,
