@@ -275,11 +275,8 @@ class Job(object):
                         feed_dict=self.get_network_dict(network, batch_data))
                     end = time.time()
                     # print training information
-                    print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, '
-                          'regularizer type {}, op function {}, learning rate {}, regularization {}'.format(
-                        batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted,
-                        end-start, pos_weight, network.regularizer_type, network.cur_op_fn, cur_learning_rate,
-                        network.regularize_flag))
+                    print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, learning rate {}'.format(
+                        batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted, end-start, pos_weight, cur_learning_rate))
 
                     # produce debug image 3
                     if viz_layer_epoch_freq is not None and debug_net_output:
@@ -316,8 +313,6 @@ class Job(object):
                 sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
                           network.layer_outputs],
                          feed_dict=self.get_network_dict(network, test_data, False))
-
-            # print('test {} : epoch: {}, cost: {}, cost unweighted: {}'.format(i,epoch_i,test_cost,test_cost_unweighted))
 
             segmentation_test_result = segmentation_test_result[0, :, :, 0]
             segmentation_results[i, :, :] = segmentation_test_result
