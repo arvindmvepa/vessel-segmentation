@@ -91,7 +91,7 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
     # convert binary label probabilities to categorical probabilities
     if r is None:
         r = float(1)/(pos_weight+1)
-    prediction = tf.concat([(1 - prediction)*(1-r), prediction*r], axis=3)
+    prediction = tf.concat([1 - prediction, prediction], axis=3)
     prediction = tf.cast(prediction, tf.float32)
 
     if len(ground_truth.shape) == len(prediction.shape):
@@ -115,6 +115,12 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
 
     # value of unity everywhere except for the previous 'hot' locations
     one_cold = 1 - one_hot
+    
+    print("ss output")
+    print(one_hot.shape)
+    print(squared_error.shape)
+    print(tf.reduce_sum(squared_error * one_hot, [0,1,2]).shape)
+    print(tf.reduce_sum(tf.multiply(squared_error, one_cold)).shape)
 
     specificity_part = tf.reduce_sum(squared_error * one_hot) / \
                        (tf.reduce_sum(one_hot) + epsilon_denominator)
@@ -125,11 +131,6 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
     return tf.reduce_sum(r * specificity_part + (1 - r) * sensitivity_part)
 
     """
-    print("objective function ss")
-    print(one_hot.shape)
-    print(squared_error.shape)
-    print(tf.reduce_sum(squared_error * one_hot, [0,1,2]).shape)
-
     return tf.reduce_sum(tf.reduce_sum(squared_error * one_hot, [0,1,2]) /
                          (tf.reduce_sum(one_hot, [0,1,2]) + epsilon_denominator) * tf.constant([1-r,r]))
     """
