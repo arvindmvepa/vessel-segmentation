@@ -122,7 +122,6 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
     print(tf.reduce_sum(squared_error * one_hot, [0,1,2]).shape)
     print(tf.reduce_sum(tf.multiply(squared_error, one_cold)).shape)
 
-    """
     specificity_part = tf.reduce_sum(squared_error * one_hot) / \
                        (tf.reduce_sum(one_hot) + epsilon_denominator)
 
@@ -134,6 +133,7 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
     """
     return tf.reduce_sum(tf.reduce_sum(squared_error * one_hot, [0,1,2]) /
                          (tf.reduce_sum(one_hot, [0,1,2]) + epsilon_denominator) * tf.constant([1-r,r]))
+    """
 
 def dice(prediction, ground_truth, weight_map=None, pos_weight=1, **kwargs):
     """
