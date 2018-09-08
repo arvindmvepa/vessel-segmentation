@@ -36,7 +36,7 @@ if __name__ == '__main__':
 
     ### LAYER ARGS
     weight_init = "Xnormal"
-    act_fn = "relu"
+    act_fn = "lrelu"
 
     ### IMAGE PRE-PREPROCESSING
     hist_eq = False
