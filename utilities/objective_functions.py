@@ -88,9 +88,10 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
         (authors suggest values from 0.01-0.10 will have similar effects)
     :return: the loss
     """
-    # convert binary label probabilities to categorical probabilities
+    # if no r is provided, calculate later
     if r is None:
         r = float(1)/(pos_weight+1)
+    # convert binary label probabilities to categorical probabilities
     prediction = tf.concat([1 - prediction, prediction], axis=3)
     prediction = tf.cast(prediction, tf.float32)
 
@@ -113,6 +114,7 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
     one_hot = tf.sparse_tensor_to_dense(one_hot)
     squared_error = tf.square(one_hot - prediction)
 
+    """
     # value of unity everywhere except for the previous 'hot' locations
     one_cold = 1 - one_hot
 
@@ -129,11 +131,11 @@ def sensitivity_specificity_loss(prediction, ground_truth, weight_map=None, r=0.
                         (tf.reduce_sum(one_cold) + epsilon_denominator))
 
     return tf.reduce_sum(r * specificity_part + (1 - r) * sensitivity_part)
-
     """
+
     return tf.reduce_sum(tf.reduce_sum(squared_error * one_hot, [0,1,2]) /
                          (tf.reduce_sum(one_hot, [0,1,2]) + epsilon_denominator) * tf.constant([1-r,r]))
-    """
+
 
 def dice(prediction, ground_truth, weight_map=None, pos_weight=1, **kwargs):
     """
