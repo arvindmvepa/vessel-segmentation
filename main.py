@@ -36,8 +36,8 @@ if __name__ == '__main__':
 
     ### LAYER ARGS
     weight_init = "He"
-    act_fn = "relu"
-    act_leak_prob = 0.0
+    act_fn = "lrelu"
+    act_leak_prob = 0.50
 
     ### IMAGE PRE-PREPROCESSING
     hist_eq = False
