@@ -35,8 +35,8 @@ if __name__ == '__main__':
     op_fun_and_kwargs = ("rmsprop",{})
 
     ### LAYER ARGS
-    weight_init = "Xnormal"
-    act_fn = "lrelu"
+    weight_init = "He"
+    act_fn = "relu"
 
     ### IMAGE PRE-PREPROCESSING
     hist_eq = False
