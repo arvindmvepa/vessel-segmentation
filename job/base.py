@@ -388,15 +388,15 @@ class Job(object):
 
         fpr_025 = np_fprs[np.where(np_fprs < .025)]
         tpr_025 = np_tprs[0:len(fpr_025)]
-        if len(fpr_10) > 0 and len(tpr_10)> 0:
+        if len(fpr_10) > 1 and len(tpr_10)> 1:
             auc_10_fpr = auc(fpr_10, tpr_10)
         else:
             auc_10_fpr = np.nan
-        if len(fpr_05) > 0 and len(tpr_05) > 0:
+        if len(fpr_05) > 1 and len(tpr_05) > 1:
             auc_05_fpr = auc(fpr_05, tpr_05)
         else:
             auc_05_fpr = np.nan
-        if len(fpr_025) > 0 and len(tpr_025) > 0:
+        if len(fpr_025) > 1 and len(tpr_025) > 1:
             auc_025_fpr = auc(fpr_025, tpr_025)
         else:
             auc_025_fpr = np.nan
