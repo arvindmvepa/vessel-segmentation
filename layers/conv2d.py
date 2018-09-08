@@ -45,7 +45,7 @@ class Conv2d(Layer):
         output = tf.nn.dropout(output, self.keep_prob)
 
         if self.act_fn =="relu":
-            output=tf.nn.relu(output)
+            output=tf.nn.relu(tf.add(tf.contrib.layers.batch_norm(output), b))
         elif self.act_fn =="lrelu":
             output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b), self.act_leak_prob)
         else:
