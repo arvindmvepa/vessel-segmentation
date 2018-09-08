@@ -74,7 +74,7 @@ class Conv2d(Layer):
         output.set_shape([None, self.input_shape[1], self.input_shape[2], self.input_shape[3]])
 
         if self.act_fn =="relu":
-            output=tf.nn.relu(output)
+            output = tf.nn.relu(tf.add(tf.contrib.layers.batch_norm(output), b))
         elif self.act_fn =="lrelu":
             output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b), self.act_leak_prob)
         else:
