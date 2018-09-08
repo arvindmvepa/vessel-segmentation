@@ -32,17 +32,19 @@ if __name__ == '__main__':
     regularizer_args = None
     learning_rate_and_kwargs = (.01, {"decay_epochs":10,"decay_rate":.1})
     #learning_rate_and_kwargs = (.001, {})
-    op_fun_and_kwargs = ("adam",{})
+    op_fun_and_kwargs = ("rmsprop",{})
 
     ### LAYER ARGS
-    weight_init = "He"
-    act_fn = "lrelu"
+    weight_init = "Xnormal"
+    act_fn = "relu"
 
     ### IMAGE PRE-PREPROCESSING
     hist_eq = False
     clahe_kwargs = None
     per_image_normalization = False
     gamma = None
+
+    # this image augmentation setting doesn't seem to be good
     """
     seq = iaa.Sequential([
         iaa.Crop(px=(0, 16)), # crop images from each side by 0 to 16px (randomly chosen)
