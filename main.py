@@ -30,20 +30,20 @@ if __name__ == '__main__':
     tuning_constant = 1.0
     ss_r = None
     regularizer_args = None
-    learning_rate_and_kwargs = (.01, {"decay_epochs":10,"decay_rate":.1})
+    learning_rate_and_kwargs = (.01, {"decay_epochs":10,"decay_rate":.1,"staircase":False})
     #learning_rate_and_kwargs = (.001, {})
     op_fun_and_kwargs = ("rmsprop",{})
 
     ### LAYER ARGS
     weight_init = "He"
     act_fn = "lrelu"
-    act_leak_prob = 0.50
+    act_leak_prob = 0.10
 
     ### IMAGE PRE-PREPROCESSING
-    hist_eq = False
-    clahe_kwargs = None
-    per_image_normalization = False
-    gamma = None
+    hist_eq = True
+    clahe_kwargs = {"clipLimit": 2.0,"tileGridSize":(8,8)}
+    per_image_normalization = True
+    gamma = 3.0
 
     # this image augmentation setting doesn't seem to be good
     """
