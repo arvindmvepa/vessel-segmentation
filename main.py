@@ -30,7 +30,8 @@ if __name__ == '__main__':
     tuning_constant = 1.0
     ss_r = None
     regularizer_args = None
-    learning_rate_and_kwargs = (.01, {"decay_steps":10,"decay_rate":.1})
+    #learning_rate_and_kwargs = (.01, {"decay_epochs":10,"decay_rate":.1})
+    learning_rate_and_kwargs = (.001, {})
     op_fun_and_kwargs = ("adam",{})
 
     ### LAYER ARGS
