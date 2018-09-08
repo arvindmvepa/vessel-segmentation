@@ -80,7 +80,7 @@ class Network(object):
         base_learning_rate, kwargs = learning_rate_and_kwargs
         self._global_step = tf.Variable(0, trainable=False)
         if kwargs:
-            kwargs['decay_steps']=kwargs.get('decay_epochs',10)*self.num_batches_in_epoch
+            kwargs['decay_steps']=kwargs.pop('decay_epochs',10)*self.num_batches_in_epoch
             self.learning_rate = tf.train.exponential_decay(base_learning_rate, self._global_step, **kwargs)
         else:
             self.learning_rate = tf.constant(base_learning_rate)
