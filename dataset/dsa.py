@@ -13,11 +13,8 @@ class DsaDataset(DatasetWoMasks):
     TARGETS1_DIR = "targets1"
     TARGETS2_DIR = "targets2"
 
-    def __init__(self, batch_size=1, WRK_DIR_PATH ="./dsa", TRAIN_SUBDIR="train", TEST_SUBDIR="test", sgd = True,
-                 cv_train_inds = None, cv_test_inds = None, **kwargs):
-        super(DsaDataset, self).__init__(batch_size=batch_size, WRK_DIR_PATH=WRK_DIR_PATH, TRAIN_SUBDIR=TRAIN_SUBDIR,
-                                         TEST_SUBDIR=TEST_SUBDIR, sgd=sgd, cv_train_inds=cv_train_inds,
-                                         cv_test_inds=cv_test_inds, **kwargs)
+    def __init__(self, **kwargs):
+        super(DsaDataset, self).__init__(**kwargs)
 
     def get_images_from_file(self, DIR_PATH, file_indices=None):
         images = []

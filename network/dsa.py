@@ -1,8 +1,8 @@
 """This is the file for the DSA network subclass"""
-from network.large_network_wo_masks import LargeNetworkWoMasks
+from network.large_network import LargeNetwork
 
 
-class DsaNetwork(LargeNetworkWoMasks):
+class DsaNetwork(LargeNetwork):
 
     IMAGE_WIDTH = 1024
     IMAGE_HEIGHT = 1024
@@ -10,5 +10,5 @@ class DsaNetwork(LargeNetworkWoMasks):
     FIT_IMAGE_WIDTH = 1024
     FIT_IMAGE_HEIGHT = 1024
 
-    def __init__(self, layers=None, skip_connections=True, **kwargs):
-        super(DsaNetwork, self).__init__(layers=layers, skip_connections=skip_connections, **kwargs)
+    def __init__(self, mask=False, **kwargs):
+        super(DsaNetwork, self).__init__(mask=mask,**kwargs)
