@@ -30,8 +30,8 @@ if __name__ == '__main__':
     tuning_constant = 1.0
     ss_r = None
     regularizer_args = None
-    #learning_rate_and_kwargs = (.01, {"decay_epochs":10,"decay_rate":.1})
-    learning_rate_and_kwargs = (.001, {})
+    learning_rate_and_kwargs = (.01, {"decay_epochs":10,"decay_rate":.1})
+    #learning_rate_and_kwargs = (.001, {})
     op_fun_and_kwargs = ("adam",{})
 
     ### LAYER ARGS
@@ -43,11 +43,14 @@ if __name__ == '__main__':
     clahe_kwargs = None
     per_image_normalization = False
     gamma = None
+    """
     seq = iaa.Sequential([
         iaa.Crop(px=(0, 16)), # crop images from each side by 0 to 16px (randomly chosen)
         iaa.Fliplr(0.5), # horizontally flip 50% of the images
         iaa.GaussianBlur(sigma=(0, 3.0)) # blur images with a sigma of 0 to 3.0
         ])
+    """
+    seq = None
 
     ### OUTPUT INFO
     EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments"
