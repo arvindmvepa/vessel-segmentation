@@ -14,7 +14,7 @@ class Conv2d(Layer):
         self.output_channels = output_channels
         self.name = name
         self.act_fn=act_fn
-        self.act_leak_prob = act_leak_prob,
+        self.act_leak_prob = act_leak_prob
         self.weight_init= weight_init
         self.keep_prob=keep_prob
         self.dilation = dilation
