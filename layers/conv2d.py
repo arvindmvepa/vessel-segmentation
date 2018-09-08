@@ -8,12 +8,13 @@ from utilities.layer_ops import get_incoming_shape
 class Conv2d(Layer):
     # global things...
     layer_index = 0
-    def __init__(self, kernel_size, output_channels, name, act_fn="lrelu", weight_init=None,
+    def __init__(self, kernel_size, output_channels, name, act_fn="lrelu", act_leak_prob=.2, weight_init=None,
                  keep_prob=None, dilation = 1):
         self.kernel_size = kernel_size
         self.output_channels = output_channels
         self.name = name
         self.act_fn=act_fn
+        self.act_leak_prob = act_leak_prob,
         self.weight_init= weight_init
         self.keep_prob=keep_prob
         self.dilation = dilation
@@ -46,7 +47,7 @@ class Conv2d(Layer):
         if self.act_fn =="relu":
             output=tf.nn.relu(output)
         elif self.act_fn =="lrelu":
-            output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b))
+            output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b), self.act_leak_prob)
         else:
             raise ValueError("Activation function {} not recognized".format(self.act_fn))
         return output
@@ -75,7 +76,7 @@ class Conv2d(Layer):
         if self.act_fn =="relu":
             output=tf.nn.relu(output)
         elif self.act_fn =="lrelu":
-            output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b))
+            output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b), self.act_leak_prob)
         else:
             raise ValueError("Activation function {} not recognized".format(self.act_fn))
         return output

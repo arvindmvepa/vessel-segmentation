@@ -36,7 +36,8 @@ if __name__ == '__main__':
 
     ### LAYER ARGS
     weight_init = "He"
-    act_fn = "relu"
+    act_fn = "lrelu"
+    act_leak_prob = 0.0
 
     ### IMAGE PRE-PREPROCESSING
     hist_eq = False
@@ -74,7 +75,7 @@ if __name__ == '__main__':
                              regularizer_args=regularizer_args,
                              op_fun_and_kwargs=op_fun_and_kwargs,
                              learning_rate_and_kwargs=learning_rate_and_kwargs,
-                             weight_init=weight_init, act_fn=act_fn,
+                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
                              seq=seq, hist_eq=hist_eq,
                              clahe_kwargs=clahe_kwargs,
                              per_image_normalization=per_image_normalization,
