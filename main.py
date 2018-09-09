@@ -38,12 +38,19 @@ if __name__ == '__main__':
     act_leak_probs = [0.0,0.0,0.2,.2,0.4,0.6]
 
     hist_eqs = [True,False]
+    """
     clahe_kwargss = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
                      {"clipLimit": 2.0,"tileGridSize":(8,8)}, {"clipLimit": 2.0,"tileGridSize":(4,4)}, {"clipLimit": 2.0,"tileGridSize":(16,16)},
                      {"clipLimit": 10.0, "tileGridSize": (8, 8)}, {"clipLimit": 10.0, "tileGridSize": (4, 4)}, {"clipLimit": 10.0, "tileGridSize": (16, 16)},
                      {"clipLimit": 20.0, "tileGridSize": (8, 8)}, {"clipLimit": 20.0, "tileGridSize": (4, 4)}, {"clipLimit": 20.0, "tileGridSize": (16, 16)},
                      {"clipLimit": 40.0, "tileGridSize": (8, 8)}, {"clipLimit": 40.0, "tileGridSize": (4, 4)}, {"clipLimit": 40.0, "tileGridSize": (16, 16)},
                      {"clipLimit": 65.0, "tileGridSize": (8, 8)}, {"clipLimit": 65.0, "tileGridSize": (4, 4)}, {"clipLimit": 65.0, "tileGridSize": (16, 16)}]
+    """
+    clahe_kwargss = [None, None, None, None, None,
+                     {"clipLimit": 2.0,"tileGridSize":(8,8)}, {"clipLimit": 2.0,"tileGridSize":(4,4)},
+                     {"clipLimit": 2.0,"tileGridSize":(16,16)}, {"clipLimit": 20.0, "tileGridSize": (8, 8)},
+                     {"clipLimit": 60.0, "tileGridSize": (8, 8)}]
+
     per_image_normalizations = [True]
     gammas = [1.0,1.0,1.0,2.0,4.0,6.0]
 
