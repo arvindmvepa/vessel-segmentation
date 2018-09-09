@@ -40,7 +40,7 @@ if __name__ == '__main__':
     hist_eqs = [True,False]
     clahe_kwargss = [{"clipLimit": 2.0,"tileGridSize":(8,8)}]
     per_image_normalizations = [True]
-    gammas = [3.0]
+    gammas = [1.0,2.0,4.0,6.0]
 
     seqs = [None, None, iaa.Sequential([
         iaa.Crop(px=(0, 16)), # crop images from each side by 0 to 16px (randomly chosen)
@@ -52,8 +52,9 @@ if __name__ == '__main__':
                                                 per_image_normalizations, gammas, seqs))
     cur_hyper_parameter_combos = sample(total_hyper_parameter_combos, num_searches)
 
-    for objective_fn,tuning_constant,ss_r,regularizer_args,op_fun_and_kwargs,learning_rate_and_kwargs, weight_init, \
-        act_fn, act_leak_prob, seq, hist_eq, clahe_kwargs, per_image_normalization,gamma in cur_hyper_parameter_combos:
+    for tuning_constant, ss_r, objective_fn, regularizer_args, learning_rate_and_kwargs, op_fun_and_kwargs, weight_init,\
+        act_fn, act_leak_prob, hist_eq, clahe_kwargs, per_image_normalization, gamma, seq in \
+            cur_hyper_parameter_combos:
 
         EXPERIMENT_NAME = str((objective_fn,tuning_constant,ss_r,regularizer_args,op_fun_and_kwargs,
                                learning_rate_and_kwargs, weight_init, act_fn, act_leak_prob, False if seq is None else True,
