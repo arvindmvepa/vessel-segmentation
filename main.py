@@ -38,9 +38,14 @@ if __name__ == '__main__':
     act_leak_probs = [0.0,0.0,0.2,.2,0.4,0.6]
 
     hist_eqs = [True,False]
-    clahe_kwargss = [{"clipLimit": 2.0,"tileGridSize":(8,8)}]
+    clahe_kwargss = [None, None, None, None, None, None, None, None, None, None, None, None, None, None, None,
+                     {"clipLimit": 2.0,"tileGridSize":(8,8)}, {"clipLimit": 2.0,"tileGridSize":(4,4)}, {"clipLimit": 2.0,"tileGridSize":(16,16)},
+                     {"clipLimit": 10.0, "tileGridSize": (8, 8)}, {"clipLimit": 10.0, "tileGridSize": (4, 4)}, {"clipLimit": 10.0, "tileGridSize": (16, 16)},
+                     {"clipLimit": 20.0, "tileGridSize": (8, 8)}, {"clipLimit": 20.0, "tileGridSize": (4, 4)}, {"clipLimit": 20.0, "tileGridSize": (16, 16)},
+                     {"clipLimit": 40.0, "tileGridSize": (8, 8)}, {"clipLimit": 40.0, "tileGridSize": (4, 4)}, {"clipLimit": 40.0, "tileGridSize": (16, 16)},
+                     {"clipLimit": 65.0, "tileGridSize": (8, 8)}, {"clipLimit": 65.0, "tileGridSize": (4, 4)}, {"clipLimit": 65.0, "tileGridSize": (16, 16)}]
     per_image_normalizations = [True]
-    gammas = [1.0,2.0,4.0,6.0]
+    gammas = [1.0,1.0,1.0,2.0,4.0,6.0]
 
     seqs = [None, None, iaa.Sequential([
         iaa.Crop(px=(0, 16)), # crop images from each side by 0 to 16px (randomly chosen)
