@@ -10,7 +10,7 @@ import os
 if __name__ == '__main__':
 
     num_searches = 130
-    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments"
+    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments1"
 
     metrics_epoch_freq = 5
     viz_layer_epoch_freq = 101
@@ -32,7 +32,8 @@ if __name__ == '__main__':
                                  (.1, {}),
                                  (.01, {}),
                                  (.001, {})]
-    op_fun_and_kwargss = [("adam",{}),("grad",{}),("adagrad",{}),("momentum",{}),("adadelta",{}),("rmsprop",{})]
+    # op_fun_and_kwargss = [("adam",{}),("grad",{}),("adagrad",{}),("momentum",{}),("adadelta",{}),("rmsprop",{})]
+    op_fun_and_kwargss = [("adam", {}), ("grad", {}), ("adagrad", {}), ("adadelta", {}), ("rmsprop", {})]
     weight_inits = ["default","He","Xnormal"]
     act_fns = ["lrelu"]
     act_leak_probs = [0.0,0.0,0.2,.2,0.4,0.6]
