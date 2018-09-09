@@ -182,10 +182,10 @@ class Job(object):
 
     
     def train(self, dataset=None, gpu_device=None, tuning_constant=1.0, metrics_epoch_freq=1, viz_layer_epoch_freq=10,
-              metrics_log="metrics_log.csv", num_image_plots=5, save_model=True, debug_net_output=True,
-              objective_fn="wce", weight_map=None, type_weight='Custom', ss_r=.05, regularizer_args=None,
-              learning_rate_and_kwargs=(.001, {}), op_fun_and_kwargs=("adam", {}), weight_init=None, act_fn="lrelu",
-              act_leak_prob=.2, layer_params=None, **kwargs):
+              metrics_log="metrics_log.csv", num_image_plots=5, save_model=True, save_sample_test_images=True,
+              debug_net_output=True,objective_fn="wce", weight_map=None, type_weight='Custom', ss_r=.05,
+              regularizer_args=None, learning_rate_and_kwargs=(.001, {}), op_fun_and_kwargs=("adam", {}),
+              weight_init=None, act_fn="lrelu", act_leak_prob=.2, layer_params=None, **kwargs):
 
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
@@ -293,11 +293,12 @@ class Job(object):
                         self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
                                                      self.decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
                                                      viz_layer_outputs_path_test, num_image_plots, summary_writer,
-                                                     cost=cost, cost_unweighted=cost_unweighted)
+                                                     cost=cost, cost_unweighted=cost_unweighted, save_model=save_model,
+                                                     save_sample_test_images=save_sample_test_images)
 
     def get_results_on_test_set(self, metrics_log_file_path, network, dataset, sess, decision_threshold, epoch_i,
                                 timestamp, viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots,
-                                summary_writer, **kwargs):
+                                save_model, save_sample_test_images, summary_writer, **kwargs):
 
         max_thresh_accuracy = 0.0
         test_cost = 0.0
@@ -341,7 +342,8 @@ class Job(object):
         mask_flat = self.get_test_mask_flat(dataset)
 
         # save target (if files don't exist)
-        self.save_data(prediction_flat, target_flat, mask_flat, timestamp, epoch_i)
+        if save_model:
+            self.save_data(prediction_flat, target_flat, mask_flat, timestamp, epoch_i)
 
         # get class proportion on test set
         _, test_neg_class_frac, test_pos_class_frac = dataset.get_inverse_pos_freq(*dataset.test_data[1:])
@@ -353,18 +355,19 @@ class Job(object):
                                            test_cost=test_cost, test_cost_unweighted=test_cost_unweighted)
 
         # produce image plots
-        test_plot_buf = draw_results(dataset.test_images[:num_image_plots],
-                                     dataset.test_targets[:num_image_plots],
-                                     segmentation_results[:num_image_plots, :, :],
-                                     acc, network, epoch_i, num_image_plots, os.path.join(self.OUTPUTS_DIR_PATH,
-                                                                                          self.IMAGE_PLOT_DIR),
-                                     decision_threshold)
+        if save_sample_test_images:
+            test_plot_buf = draw_results(dataset.test_images[:num_image_plots],
+                                         dataset.test_targets[:num_image_plots],
+                                         segmentation_results[:num_image_plots, :, :],
+                                         acc, network, epoch_i, num_image_plots, os.path.join(self.OUTPUTS_DIR_PATH,
+                                                                                              self.IMAGE_PLOT_DIR),
+                                         decision_threshold)
 
-        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
-        image = tf.expand_dims(image, 0)
-        image_summary_op = tf.summary.image("plot", image)
-        image_summary = sess.run(image_summary_op)
-        summary_writer.add_summary(image_summary)
+            image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
+            image = tf.expand_dims(image, 0)
+            image_summary_op = tf.summary.image("plot", image)
+            image_summary = sess.run(image_summary_op)
+            summary_writer.add_summary(image_summary)
 
     @classmethod
     def get_metrics_on_test_set(cls, metrics_log_file_path, prediction_flat, target_flat, mask_flat, decision_threshold,

@@ -61,7 +61,7 @@ if __name__ == '__main__':
         OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
 
         job = DriveJob(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
-        job.run_cross_validation(WRK_DIR_PATH=WRK_DIR_PATH,
+        job.run_cross_validation(WRK_DIR_PATH=WRK_DIR_PATH, save_model=False, save_sample_test_images=False,
                                  metrics_epoch_freq=metrics_epoch_freq,viz_layer_epoch_freq=viz_layer_epoch_freq,
                                  n_epochs=n_epochs,n_splits=n_splits,objective_fn=objective_fn,
                                  tuning_constant=tuning_constant, ss_r=ss_r,
