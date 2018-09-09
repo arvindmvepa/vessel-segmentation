@@ -292,9 +292,9 @@ class Job(object):
                     if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch()-1:
                         self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
                                                      self.decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
-                                                     viz_layer_outputs_path_test, num_image_plots, summary_writer,
-                                                     cost=cost, cost_unweighted=cost_unweighted, save_model=save_model,
-                                                     save_sample_test_images=save_sample_test_images)
+                                                     viz_layer_outputs_path_test, num_image_plots, save_model,
+                                                     save_sample_test_images, summary_writer, cost=cost,
+                                                     cost_unweighted=cost_unweighted)
 
     def get_results_on_test_set(self, metrics_log_file_path, network, dataset, sess, decision_threshold, epoch_i,
                                 timestamp, viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots,
