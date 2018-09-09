@@ -56,8 +56,8 @@ if __name__ == '__main__':
         act_fn, act_leak_prob, seq, hist_eq, clahe_kwargs, per_image_normalization,gamma in cur_hyper_parameter_combos:
 
         EXPERIMENT_NAME = str((objective_fn,tuning_constant,ss_r,regularizer_args,op_fun_and_kwargs,
-                               learning_rate_and_kwargs, weight_init, act_fn, act_leak_prob, seq, hist_eq, clahe_kwargs,
-                               per_image_normalization,gamma))
+                               learning_rate_and_kwargs, weight_init, act_fn, act_leak_prob, False if seq is None else True,
+                               hist_eq, clahe_kwargs, per_image_normalization,gamma))
         OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
 
         job = DriveJob(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
