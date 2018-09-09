@@ -47,9 +47,9 @@ if __name__ == '__main__':
         iaa.GaussianBlur(sigma=(0, 3.0)) # blur images with a sigma of 0 to 3.0
         ])]
 
-    total_hyper_parameter_combos = product(tuning_constants, ss_rs, objective_fns, regularizer_argss, learning_rate_and_kwargss,
-                                     op_fun_and_kwargss, weight_inits, act_fns, act_leak_probs, hist_eqs, clahe_kwargss,
-                                     per_image_normalizations, gammas, seqs)
+    total_hyper_parameter_combos = list(product(tuning_constants, ss_rs, objective_fns, regularizer_argss, learning_rate_and_kwargss,
+                                                op_fun_and_kwargss, weight_inits, act_fns, act_leak_probs, hist_eqs, clahe_kwargss,
+                                                per_image_normalizations, gammas, seqs))
     cur_hyper_parameter_combos = sample(total_hyper_parameter_combos, num_searches)
 
     for objective_fn,tuning_constant,ss_r,regularizer_args,op_fun_and_kwargs,learning_rate_and_kwargs, weight_init, \
