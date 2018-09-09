@@ -34,7 +34,7 @@ if __name__ == '__main__':
                                  (.001, {})]
     op_fun_and_kwargss = [("adam",{}),("grad",{}),("adagrad",{}),("momentum",{}),("adadelta",{}),("rmsprop",{})]
     weight_inits = ["default","He","Xnormal"]
-    act_fns = ["lrelu"],
+    act_fns = ["lrelu"]
     act_leak_probs = [0.0,0.0,0.2,.2,0.4,0.6]
 
     hist_eqs = [True,False]
