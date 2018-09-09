@@ -5,6 +5,8 @@ from tensorflow.python.training.adagrad import AdagradOptimizer
 from tensorflow.python.training.momentum import MomentumOptimizer
 from tensorflow.python.training.adadelta import AdadeltaOptimizer
 from tensorflow.python.training.rmsprop import RMSPropOptimizer
+from tensorflow.python.training.gradient_descent import GradientDescentOptimizer
+
 from utilities.objective_functions import generalised_dice_loss, sensitivity_specificity_loss, cross_entropy, dice
 
 class Network(object):
@@ -94,6 +96,8 @@ class Network(object):
         op_fn, kwargs = op_fn_and_kwargs
         if op_fn == "adam":
             op_cls = AdamOptimizer
+        elif op_fn == "grad":
+            op_cls = GradientDescentOptimizer
         elif op_fn == "adagrad":
             op_cls = AdagradOptimizer
         elif op_fn == "momentum":
