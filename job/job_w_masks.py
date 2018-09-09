@@ -48,3 +48,6 @@ class JobWMasks(Job):
 
     def get_test_mask_flat(self, dataset):
         return dataset.test_masks.flatten()
+
+    def get_val_mask_flat(self, dataset):
+        return dataset.val_masks.flatten()

@@ -4,6 +4,7 @@ import numpy as np
 from skimage import io as skio
 import cv2
 from scipy.misc import imsave
+from utilities.image_preprocessing import preprocessing
 
 from dataset.dataset_wo_masks import DatasetWoMasks
 from network.dsa import DsaNetwork
@@ -16,7 +17,8 @@ class DsaDataset(DatasetWoMasks):
     def __init__(self, **kwargs):
         super(DsaDataset, self).__init__(**kwargs)
 
-    def get_images_from_file(self, DIR_PATH, file_indices=None):
+    def get_images_from_file(self, DIR_PATH, file_indices=None, hist_eq=None, clahe_kwargs=None,
+                             per_image_normalization=False, gamma=None):
         images = []
         targets = []
 
@@ -29,6 +31,8 @@ class DsaDataset(DatasetWoMasks):
         for image_file in image_files:
             image_path = os.path.join(IMAGES_DIR_PATH, image_file)
             image_arr = cv2.imread(image_path, 0)
+            image_arr = preprocessing(image_arr, histo_eq=hist_eq, clahe_kwargs=clahe_kwargs,
+                                      per_image_normalization=per_image_normalization, gamma=gamma)
             image_arr = np.multiply(image_arr, 1.0 / 255)
             images.append(image_arr)
 

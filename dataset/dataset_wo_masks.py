@@ -2,7 +2,6 @@ import os
 import numpy as np
 from skimage import io as skio
 import cv2
-from scipy.misc import imsave
 
 from dataset.base import Dataset
 from utilities.image_preprocessing import preprocessing
@@ -11,10 +10,14 @@ class DatasetWoMasks(Dataset):
 
     TARGETS_DIR = "targets"
 
-    def __init__(self, **kwargs):
-        super(DatasetWoMasks, self).__init__(**kwargs)
+    def __init__(self, early_stopping=False, **kwargs):
+        super(DatasetWoMasks, self).__init__(early_stopping=early_stopping, **kwargs)
 
-        self.train_images, self.train_targets = self.train_data
+        if early_stopping:
+            self.train_images, self.train_targets = self.train_data
+            self.val_images, self.val_targets = self.val_data
+        else:
+            self.train_images, self.train_targets = self.train_data
         self.test_images, self.test_targets = self.test_data
 
     def get_images_from_file(self, DIR_PATH, file_indices=None, hist_eq=None, clahe_kwargs=None,

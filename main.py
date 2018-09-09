@@ -3,31 +3,32 @@ from job.drive import DriveJob
 from job.stare import StareJob
 from job.chase import ChaseJob
 from imgaug import augmenters as iaa
-
+from itertools import product
+from random import sample
 import os
 
 if __name__ == '__main__':
 
     ### OPTIMIZATION
-    objective_fn = "wce"
+    op_fun_and_kwargs = ("adam", {})
     tuning_constant = 1.0
-    ss_r = None
+    ss_r = .5
+    objective_fn = "wce"
     regularizer_args = None
-    learning_rate_and_kwargs = (.01, {"decay_epochs":10,"decay_rate":.1,"staircase":False})
-    #learning_rate_and_kwargs = (.001, {})
-    op_fun_and_kwargs = ("adam",{})
+    learning_rate_and_kwargs = (.01, {})
 
     ### LAYER ARGS
     weight_init = "He"
     act_fn = "lrelu"
-    act_leak_prob = 0.10
+    act_leak_prob = 0.2
 
     ### IMAGE PRE-PREPROCESSING
-    hist_eq = True
-    clahe_kwargs = {"clipLimit": 2.0,"tileGridSize":(8,8)}
-    per_image_normalization = True
-    gamma = 3.0
+    hist_eq = False
+    clahe_kwargs = None
+    per_image_normalization = False
+    gamma = 1.0
 
+    ### IMAGE AUGMENTATION
     # this image augmentation setting doesn't seem to be good
     """
     seq = iaa.Sequential([
@@ -38,29 +39,33 @@ if __name__ == '__main__':
     """
     seq = None
 
+    ### JOB INFO
+    Job_cls = DriveJob
+    WRK_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/drive"
+    n_splits = 4
+
     ### OUTPUT INFO
-    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments"
-    EXPERIMENT_NAME = "example"
+    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments2"
+    EXPERIMENT_NAME = str((objective_fn,tuning_constant,ss_r if objective_fn=="ss" else None,regularizer_args,op_fun_and_kwargs,
+                           learning_rate_and_kwargs, weight_init, act_fn, act_leak_prob, False if seq is None else True,
+                           hist_eq, clahe_kwargs, per_image_normalization,gamma))
     OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
     metrics_epoch_freq = 1
     viz_layer_epoch_freq = 101
-    n_epochs = 30
+    n_epochs = 5
 
-    ### JOB INFO
-    WRK_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/drive"
-    n_splits = 2
-
-    job = DriveJob(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
-    job.run_cross_validation(WRK_DIR_PATH=WRK_DIR_PATH,
-                             metrics_epoch_freq=metrics_epoch_freq,viz_layer_epoch_freq=viz_layer_epoch_freq,
-                             n_epochs=n_epochs,n_splits=n_splits,objective_fn=objective_fn,
-                             tuning_constant=tuning_constant, ss_r=ss_r,
-                             regularizer_args=regularizer_args,
-                             op_fun_and_kwargs=op_fun_and_kwargs,
-                             learning_rate_and_kwargs=learning_rate_and_kwargs,
-                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
-                             seq=seq, hist_eq=hist_eq,
-                             clahe_kwargs=clahe_kwargs,
-                             per_image_normalization=per_image_normalization,
-                             gamma=gamma)
+    job = Job_cls(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
+    job.run_cv(WRK_DIR_PATH=WRK_DIR_PATH, mc=True, val_prop=.1, early_stopping=True, early_stopping_metric="auc",
+               save_model=False, save_sample_test_images=False,
+               metrics_epoch_freq=metrics_epoch_freq, viz_layer_epoch_freq=viz_layer_epoch_freq,
+               n_epochs=n_epochs, n_splits=n_splits, objective_fn=objective_fn,
+               tuning_constant=tuning_constant, ss_r=ss_r,
+               regularizer_args=regularizer_args,
+               op_fun_and_kwargs=op_fun_and_kwargs,
+               learning_rate_and_kwargs=learning_rate_and_kwargs,
+               weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+               seq=seq, hist_eq=hist_eq,
+               clahe_kwargs=clahe_kwargs,
+               per_image_normalization=per_image_normalization,
+               gamma=gamma)
 
