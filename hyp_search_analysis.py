@@ -1,6 +1,7 @@
 from imgaug import augmenters as iaa
 import csv
 from collections import defaultdict
+import numpy as np
 
 import os
 
@@ -129,7 +130,7 @@ def analyze():
 
     with open(hyp_metrics_log_path, "a") as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
-        hyp_keys_opts_strs = [[hyp_key+"_"+hyp_opt for hyp_opt in auc_roc_marg_scores[0][hyp_key].keys()]
+        hyp_keys_opts_strs = [[hyp_key+"_"+str(hyp_opt) for hyp_opt in auc_roc_marg_scores[0][hyp_key].keys()]
                               for hyp_key in filtered_hyps]
         writer.writerow(hyp_keys_opts_strs)
 
