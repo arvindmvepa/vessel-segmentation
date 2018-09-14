@@ -60,47 +60,36 @@ def analyze():
         for tuning_constant in hyps_options["tuning_constants"]:
             auc_roc_marg_scores[i]["tuning_constants"][str(tuning_constant)]
 
-        auc_roc_marg_scores[i]["ss_rs"] = defaultdict(list)
         for ss_r in hyps_options["ss_rs"]:
             auc_roc_marg_scores[i]["ss_rs"][str(ss_r)]
 
-        auc_roc_marg_scores[i]["objective_fns"] = defaultdict(list)
         for objective_fn in hyps_options["objective_fns"]:
             auc_roc_marg_scores[i]["objective_fns"][str(objective_fn)]
 
-        auc_roc_marg_scores[i]["regularizer_argss"] = defaultdict(list)
         for regularizer_args in hyps_options["regularizer_argss"]:
             auc_roc_marg_scores[i]["regularizer_argss"][str(regularizer_args)]
 
-        auc_roc_marg_scores[i]["learning_rate_and_kwargss"] = defaultdict(list)
         for learning_rate_and_kwargs in hyps_options["learning_rate_and_kwargss"]:
             auc_roc_marg_scores[i]["learning_rate_and_kwargss"][str(learning_rate_and_kwargs)]
 
-        auc_roc_marg_scores[i]["op_fun_and_kwargss"] = defaultdict(list)
         for op_fun_and_kwargs in hyps_options["op_fun_and_kwargss"]:
             auc_roc_marg_scores[i]["op_fun_and_kwargss"][str(op_fun_and_kwargs)]
 
-        auc_roc_marg_scores[i]["weight_inits"] = defaultdict(list)
         for weight_init in hyps_options["weight_inits"]:
             auc_roc_marg_scores[i]["weight_inits"][str(weight_init)]
 
-        auc_roc_marg_scores[i]["act_leak_probs"] = defaultdict(list)
         for act_leak_prob in hyps_options["act_leak_probs"]:
             auc_roc_marg_scores[i]["act_leak_probs"][str(act_leak_prob)]
 
-        auc_roc_marg_scores[i]["hist_eqs"] = defaultdict(list)
         for hist_eq in hyps_options["hist_eqs"]:
             auc_roc_marg_scores[i]["hist_eqs"][str(hist_eq)]
 
-        auc_roc_marg_scores[i]["clahe_kwargss"] = defaultdict(list)
         for clahe_kwargs in hyps_options["clahe_kwargss"]:
             auc_roc_marg_scores[i]["clahe_kwargss"][str(clahe_kwargs)]
 
-        auc_roc_marg_scores[i]["gammas"] = defaultdict(list)
         for gamma in hyps_options["gammas"]:
             auc_roc_marg_scores[i]["gammas"][str(gamma)]
 
-        auc_roc_marg_scores[i]["seqs"] = defaultdict(list)
         for seq in hyps_options["seqs"]:
             if seq:
                 auc_roc_marg_scores[i]["seqs"][str(True)]
@@ -129,7 +118,7 @@ def analyze():
                 for job_hyp_param,hyp_name in zip(job_hyp_params,filtered_hyps):
                     hyp_options = hyps_options[hyp_name]
                     for hyp_option in hyp_options:
-                        if hyp_option in job_hyp_param:
+                        if str(hyp_option) in job_hyp_param:
                             auc_roc_marg_scores[i][hyp_name][hyp_option] += [auc]
 
     hyp_metrics_log = "hyp_log.csv"
