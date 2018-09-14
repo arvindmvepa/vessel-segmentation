@@ -43,7 +43,7 @@ def analyze():
         ])]
 
     ### Dictionary for Job results
-    auc_roc_marg_scores = defaultdict(lambda x: defaultdict(lambda y: defaultdict(lambda y: list)))
+    auc_roc_marg_scores = defaultdict(lambda : defaultdict(lambda : defaultdict(lambda y: list)))
     n_metric_intervals = 4
 
     list_all_hyps = ["tuning_constants","ss_rs","objective_fns","regularizer_argss","learning_rate_and_kwargss",
