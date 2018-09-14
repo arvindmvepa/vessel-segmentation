@@ -120,7 +120,6 @@ class Network(object):
     # TODO: Consider impact of masking on objective function, seems it would be considered a constant
     # TODO: add options including u-net loss
     def get_objective_fn(self, objective_fn):
-        print(objective_fn)
         if objective_fn == "ce":
             return lambda targets, net, **kwargs: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
                 targets, net, pos_weight=1))

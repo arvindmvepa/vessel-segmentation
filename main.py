@@ -32,6 +32,7 @@ if __name__ == '__main__':
                                  (.1, {}),
                                  (.01, {}),
                                  (.001, {})]
+
     # op_fun_and_kwargss = [("adam",{}),("grad",{}),("adagrad",{}),("momentum",{}),("adadelta",{}),("rmsprop",{})]
     op_fun_and_kwargss = [("adam", {}), ("grad", {}), ("adagrad", {}), ("adadelta", {}), ("rmsprop", {})]
     weight_inits = ["default","He","Xnormal"]
@@ -52,7 +53,7 @@ if __name__ == '__main__':
                      {"clipLimit": 2.0,"tileGridSize":(16,16)}, {"clipLimit": 20.0, "tileGridSize": (8, 8)},
                      {"clipLimit": 60.0, "tileGridSize": (8, 8)}]
 
-    per_image_normalizations = [True]
+    per_image_normalizations = [False, True]
     gammas = [1.0,1.0,1.0,2.0,4.0,6.0]
 
     seqs = [None, None, iaa.Sequential([
