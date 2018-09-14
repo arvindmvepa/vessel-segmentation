@@ -115,6 +115,8 @@ def analyze():
             for i, row in enumerate(csv_reader):
                 auc = row[auc_col]
 
+                print(job_hyp_params)
+
                 for job_hyp_param,hyp_name in zip(job_hyp_params,filtered_hyps):
                     hyp_options = hyps_options[hyp_name]
                     for hyp_option in hyp_options:
@@ -136,7 +138,6 @@ def analyze():
             for hyp_name in filtered_hyps:
                 hyp_options = hyps_options[hyp_name]
                 for hyp_option in hyp_options:
-                    print(auc_roc_marg_scores[i][hyp_name][hyp_option])
                     results += [auc_roc_marg_scores[i][hyp_name][hyp_option]]
             writer.writerow(results)
 
