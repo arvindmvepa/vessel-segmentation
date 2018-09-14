@@ -121,6 +121,7 @@ def analyze():
                     hyp_options = hyps_options[hyp_name]
                     for hyp_option in hyp_options:
                         if str(hyp_option) in job_file:
+                            print(auc_roc_marg_scores[i][hyp_name][hyp_option])
                             auc_roc_marg_scores[i][hyp_name][hyp_option] = auc_roc_marg_scores[i][hyp_name][hyp_option] + [auc]
 
     hyp_metrics_log = "hyp_log.csv"
