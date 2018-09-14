@@ -141,7 +141,7 @@ def analyze():
                 for hyp_option in hyp_options:
                     if str(hyp_option) in auc_roc_marg_scores[i][hyp_name]:
                         list_results_str = auc_roc_marg_scores[i][hyp_name][str(hyp_option)]
-                        list_results = [p.findall(results_str)[0] for results_str in list_results_str]
+                        list_results = [float(p.findall(results_str)[0]) for results_str in list_results_str]
                         print(auc_roc_marg_scores[i][hyp_name][str(hyp_option)])
                         print(list_results)
                         results += [np.mean(list_results)]
