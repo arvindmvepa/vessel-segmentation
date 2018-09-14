@@ -122,7 +122,7 @@ def analyze():
                             auc_roc_marg_scores[i][hyp_name][hyp_option] += [auc]
 
     hyp_metrics_log = "hyp_log.csv"
-    hyp_metrics_log_path = os.path.join(EXPERIMENTS_DIR_PATH, hyp_metrics_log)
+    hyp_metrics_log_path = os.path.join("/home/ubuntu/new_vessel_segmentation/vessel-segmentation", hyp_metrics_log)
 
     with open(hyp_metrics_log_path, "a") as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
