@@ -122,7 +122,7 @@ def analyze():
                     hyp_options = hyps_options[hyp_name]
                     for hyp_option in hyp_options:
                         if str(hyp_option) in job_hyp_param:
-                            auc_roc_marg_scores[i][hyp_name][hyp_option] += [auc]
+                            auc_roc_marg_scores[i][hyp_name][hyp_option] = auc_roc_marg_scores[i][hyp_name][hyp_option] + [auc]
 
     hyp_metrics_log = "hyp_log.csv"
     hyp_metrics_log_path = os.path.join("/home/ubuntu/new_vessel_segmentation/vessel-segmentation", hyp_metrics_log)
@@ -139,7 +139,7 @@ def analyze():
             for hyp_name in filtered_hyps:
                 hyp_options = hyps_options[hyp_name]
                 for hyp_option in hyp_options:
-                    results += [auc_roc_marg_scores[i][hyp_name][hyp_option]]
+                    results += [np.mean([auc_roc_marg_scores[i][hyp_name][hyp_option]])]
             writer.writerow(results)
 
 if __name__ == '__main__':
