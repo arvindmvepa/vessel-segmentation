@@ -141,6 +141,7 @@ def analyze():
                 hyp_options = hyps_options[hyp_name]
                 for hyp_option in hyp_options:
                     if hyp_option in auc_roc_marg_scores[i][hyp_name]:
+                        print(auc_roc_marg_scores[i][hyp_name][hyp_option])
                         results += [np.mean(auc_roc_marg_scores[i][hyp_name][hyp_option])]
             writer.writerow(results)
 
