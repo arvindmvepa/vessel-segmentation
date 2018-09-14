@@ -121,9 +121,6 @@ def analyze():
                     hyp_options = hyps_options[hyp_name]
                     for hyp_option in hyp_options:
                         if str(hyp_option) in job_file:
-                            print(hyp_name)
-                            print(hyp_option)
-                            print(auc_roc_marg_scores[i][hyp_name][str(hyp_option)])
                             auc_roc_marg_scores[i][hyp_name][str(hyp_option)] = auc_roc_marg_scores[i][hyp_name][str(hyp_option)] + [auc]
 
     hyp_metrics_log = "hyp_log.csv"
@@ -145,6 +142,8 @@ def analyze():
                     if str(hyp_option) in auc_roc_marg_scores[i][hyp_name]:
                         list_results_str = auc_roc_marg_scores[i][hyp_name][str(hyp_option)]
                         list_results = [p.findall(results_str)[0] for results_str in list_results_str]
+                        print(auc_roc_marg_scores[i][hyp_name][str(hyp_option)])
+                        print(list_results)
                         results += [np.mean(list_results)]
             writer.writerow(results)
 
