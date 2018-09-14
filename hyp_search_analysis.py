@@ -2,6 +2,7 @@ from imgaug import augmenters as iaa
 import csv
 from collections import defaultdict
 import numpy as np
+import re
 
 import os
 
@@ -106,7 +107,6 @@ def analyze():
         print(job_file)
         JOB_PATH = os.path.join(EXPERIMENTS_DIR_PATH, job_file)
         job_metrics_file = [file for file in os.listdir(JOB_PATH) if "mof" in file][0]
-        job_hyp_params = job_file.split(',')
         JOB_METRICS_PATH = os.path.join(JOB_PATH, job_metrics_file)
 
         auc_col = 1
@@ -117,12 +117,10 @@ def analyze():
             for i, row in enumerate(csv_reader):
                 auc = row[auc_col]
 
-                print(job_hyp_params)
-
-                for job_hyp_param,hyp_name in zip(job_hyp_params,filtered_hyps):
+                for hyp_name in filtered_hyps:
                     hyp_options = hyps_options[hyp_name]
                     for hyp_option in hyp_options:
-                        if str(hyp_option) in job_hyp_param:
+                        if str(hyp_option) in job_file:
                             auc_roc_marg_scores[i][hyp_name][hyp_option] = auc_roc_marg_scores[i][hyp_name][hyp_option] + [auc]
 
     hyp_metrics_log = "hyp_log.csv"
@@ -134,6 +132,7 @@ def analyze():
                               for hyp_key in filtered_hyps]
         writer.writerow(hyp_keys_opts_strs)
 
+        p = re.compile(r'\d+\.\d+')
         for i in range(n_metric_intervals):
             metric_i_auc_roc_marg_scores = auc_roc_marg_scores[i]
             results = []
@@ -141,8 +140,9 @@ def analyze():
                 hyp_options = hyps_options[hyp_name]
                 for hyp_option in hyp_options:
                     if hyp_option in auc_roc_marg_scores[i][hyp_name]:
-                        print(auc_roc_marg_scores[i][hyp_name][hyp_option])
-                        results += [np.mean(auc_roc_marg_scores[i][hyp_name][hyp_option])]
+                        list_results_str = auc_roc_marg_scores[i][hyp_name][hyp_option]
+                        list_results = [p.findall(results_str)[0] for results_str in list_results_str]
+                        results += [np.mean(list_results)]
             writer.writerow(results)
 
 if __name__ == '__main__':
