@@ -140,7 +140,8 @@ def analyze():
             for hyp_name in filtered_hyps:
                 hyp_options = hyps_options[hyp_name]
                 for hyp_option in hyp_options:
-                    results += [np.mean([auc_roc_marg_scores[i][hyp_name][hyp_option]])]
+                    if hyp_option in auc_roc_marg_scores[i][hyp_name]:
+                        results += [np.mean(auc_roc_marg_scores[i][hyp_name][hyp_option])]
             writer.writerow(results)
 
 if __name__ == '__main__':
