@@ -104,7 +104,7 @@ def analyze():
     for job_file in job_files:
         JOB_PATH = os.path.join(EXPERIMENTS_DIR_PATH, job_file)
         job_metrics_file = [file for file in os.listdir(JOB_PATH) if "mof" in file][0]
-        job_hyp_params = job_metrics_file.split(',')
+        job_hyp_params = job_file.split(',')
         JOB_METRICS_PATH = os.path.join(JOB_PATH, job_metrics_file)
 
         auc_col = 1
