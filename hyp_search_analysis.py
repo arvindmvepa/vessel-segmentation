@@ -57,7 +57,6 @@ def analyze():
     for i in range(n_metric_intervals):
         auc_roc_marg_scores[i]
 
-        auc_roc_marg_scores[i]["tuning_constants"] = defaultdict(lambda x: list)
         for tuning_constant in hyps_options["tuning_constants"]:
             auc_roc_marg_scores[i]["tuning_constants"][str(tuning_constant)]
 
