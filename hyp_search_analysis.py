@@ -102,6 +102,7 @@ def analyze():
     job_files = os.listdir(EXPERIMENTS_DIR_PATH)
 
     for job_file in job_files:
+        print(job_file)
         JOB_PATH = os.path.join(EXPERIMENTS_DIR_PATH, job_file)
         job_metrics_file = [file for file in os.listdir(JOB_PATH) if "mof" in file][0]
         job_hyp_params = job_file.split(',')
