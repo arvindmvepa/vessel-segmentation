@@ -128,8 +128,8 @@ def analyze():
 
     with open(hyp_metrics_log_path, "a") as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
-        hyp_keys_opts_strs = [[hyp_key+"_"+str(hyp_opt) for hyp_opt in auc_roc_marg_scores[0][hyp_key].keys()]
-                              for hyp_key in filtered_hyps]
+        hyp_keys_opts_strs = sum([[hyp_key+"_"+str(hyp_opt) for hyp_opt in auc_roc_marg_scores[0][hyp_key].keys()]
+                              for hyp_key in filtered_hyps],[])
         writer.writerow(hyp_keys_opts_strs)
 
         p = re.compile(r'\d+\.\d+')
@@ -142,8 +142,6 @@ def analyze():
                     if str(hyp_option) in auc_roc_marg_scores[i][hyp_name]:
                         list_results_str = auc_roc_marg_scores[i][hyp_name][str(hyp_option)]
                         list_results = [float(p.findall(results_str)[0]) for results_str in list_results_str]
-                        print(auc_roc_marg_scores[i][hyp_name][str(hyp_option)])
-                        print(list_results)
                         results += [np.mean(list_results)]
             writer.writerow(results)
 
