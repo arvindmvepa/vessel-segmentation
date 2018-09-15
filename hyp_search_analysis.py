@@ -3,11 +3,11 @@ import csv
 from collections import defaultdict
 import numpy as np
 import re
-#from utilities.misc import remove_duplicates
-from itertools import groupby
+from utilities.misc import remove_duplicates
 
 import os
 
+# hyper-parameter ordering corresponding to the file name ordering must be established here
 def get_hyp_opts(all_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regularizer_argss", "op_fun_and_kwargss",
                                   "learning_rate_and_kwargss","weight_inits","act_fns","act_leak_probs","seqs",
                                   "hist_eqs","clahe_kwargss","per_image_normalizations","gammas")):
@@ -41,7 +41,7 @@ def get_hyp_opts(all_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
 
     # create dictionary with hyper-parameter name as keys and the corresponding list of hyper-parameter options as
     # values
-    hyps_options=dict()
+    hyps_opts=dict()
     for hyp in all_hyps:
         # update name for complex image augmentation name
         if hyp == "seqs":
@@ -54,67 +54,18 @@ def get_hyp_opts(all_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
         #remove any duplicates
         hyp_opts = remove_duplicates(hyp_opts)
         #remove any unnecessary string characters
-        hyps_options[hyp]= [str(hyp_opt).replace('"', '').replace("'", '') for hyp_opt in hyp_opts]
+        hyps_opts[hyp]= [str(hyp_opt).replace('"', '').replace("'", '') for hyp_opt in hyp_opts]
 
-    return hyps_options
+    return hyps_opts, all_hyps
 
-
-
-def analyze(relevant_hyps = ("tuning_constants", "ss_rs", "objective_fns", "regularizer_argss",
-                             "learning_rate_and_kwargss","op_fun_and_kwargss","weight_inits",
-                             "act_leak_probs","hist_eqs","clahe_kwargss","gammas","seqs")):
+def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regularizer_argss",
+                             "op_fun_and_kwargss","learning_rate_and_kwargss","weight_inits","act_leak_probs","seqs",
+                             "hist_eqs","clahe_kwargss","gammas")):
     # dict for Job results
     auc_roc_marg_scores = defaultdict(lambda : defaultdict(lambda : defaultdict(list)))
     n_metric_intervals = 4
 
-    hyps_options = get_hyp_opts()
-    list_all_hyps = hyps_options.keys()
-
-    # initialize dictionary and define relevant hyper-parameters
-    """
-    for i in range(n_metric_intervals):
-        auc_roc_marg_scores[i]
-
-        for tuning_constant in hyps_options["tuning_constants"]:
-            auc_roc_marg_scores[i]["tuning_constants"][str(tuning_constant)]
-
-        for ss_r in hyps_options["ss_rs"]:
-            auc_roc_marg_scores[i]["ss_rs"][str(ss_r)]
-
-        for objective_fn in hyps_options["objective_fns"]:
-            auc_roc_marg_scores[i]["objective_fns"][str(objective_fn)]
-
-        for regularizer_args in hyps_options["regularizer_argss"]:
-            auc_roc_marg_scores[i]["regularizer_argss"][str(regularizer_args)]
-
-        for learning_rate_and_kwargs in hyps_options["learning_rate_and_kwargss"]:
-            auc_roc_marg_scores[i]["learning_rate_and_kwargss"][str(learning_rate_and_kwargs)]
-
-        for op_fun_and_kwargs in hyps_options["op_fun_and_kwargss"]:
-            auc_roc_marg_scores[i]["op_fun_and_kwargss"][str(op_fun_and_kwargs)]
-
-        for weight_init in hyps_options["weight_inits"]:
-            auc_roc_marg_scores[i]["weight_inits"][str(weight_init)]
-
-        for act_leak_prob in hyps_options["act_leak_probs"]:
-            auc_roc_marg_scores[i]["act_leak_probs"][str(act_leak_prob)]
-
-        for hist_eq in hyps_options["hist_eqs"]:
-            auc_roc_marg_scores[i]["hist_eqs"][str(hist_eq)]
-
-        for clahe_kwargs in hyps_options["clahe_kwargss"]:
-            auc_roc_marg_scores[i]["clahe_kwargss"][str(clahe_kwargs)]
-
-        for gamma in hyps_options["gammas"]:
-            auc_roc_marg_scores[i]["gammas"][str(gamma)]
-
-        for seq in hyps_options["seqs"]:
-            if seq:
-                auc_roc_marg_scores[i]["seqs"][str(True)]
-            else:
-                auc_roc_marg_scores[i]["seqs"][str(False)]
-    """
-    #relevant_hyps = [hyp for hyp in list_all_hyps if hyp in auc_roc_marg_scores[0]]
+    hyps_opts, all_hyps = get_hyp_opts()
 
     EXPERIMENTS_DIR_PATH = "/Users/arvind.m.vepa/Documents/vessel segmentation/first round hyp results/experiments1"
     job_files = os.listdir(EXPERIMENTS_DIR_PATH)
@@ -133,10 +84,10 @@ def analyze(relevant_hyps = ("tuning_constants", "ss_rs", "objective_fns", "regu
             next(csv_reader, None)
             for i, row in enumerate(csv_reader):
                 auc = row[auc_col]
-                for hyp_name,job_opt in zip(list_all_hyps,job_opts):
+                for hyp_name,job_opt in zip(all_hyps,job_opts):
                     check = False
                     if hyp_name in relevant_hyps:
-                        hyp_opts = hyps_options[hyp_name]
+                        hyp_opts = hyps_opts[hyp_name]
                         for hyp_opt in hyp_opts:
                             if str(hyp_opt) in job_opt or job_opt in str(hyp_opt):
                                 auc_roc_marg_scores[i][hyp_name][str(hyp_opt)] = \
@@ -144,7 +95,7 @@ def analyze(relevant_hyps = ("tuning_constants", "ss_rs", "objective_fns", "regu
                                 check=True
                     if not check:
                         print("missed {}, job opt str {}, parameterized opts {}".format(hyp_name, job_opt,
-                                                                                        hyps_options[hyp_name]))
+                                                                                        hyps_opts[hyp_name]))
 
     hyp_metrics_log = "hyp_log.csv"
     hyp_metrics_log_path = os.path.join("/Users/arvind.m.vepa/Documents/vessel segmentation/first round hyp results",
@@ -161,20 +112,13 @@ def analyze(relevant_hyps = ("tuning_constants", "ss_rs", "objective_fns", "regu
             metric_i_auc_roc_marg_scores = auc_roc_marg_scores[i]
             results = []
             for hyp_name in relevant_hyps:
-                hyp_opts = hyps_options[hyp_name]
+                hyp_opts = hyps_opts[hyp_name]
                 for hyp_opt in hyp_opts:
                     if str(hyp_opt) in auc_roc_marg_scores[i][hyp_name]:
                         list_results_str = auc_roc_marg_scores[i][hyp_name][str(hyp_opt)]
                         list_results = [float(p.findall(results_str)[0]) for results_str in list_results_str]
                         results += [np.mean(list_results)]
             writer.writerow(results)
-
-def remove_duplicates(data):
-    ''' Remove duplicates from the data (normally a list).
-        The data must be sortable and have an equality operator
-    '''
-    data = sorted(data)
-    return [k for k, v in groupby(data)]
 
 if __name__ == '__main__':
     analyze()
