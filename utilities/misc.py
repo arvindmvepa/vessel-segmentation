@@ -1,4 +1,5 @@
 import numpy as np
+from itertools import groupby
 
 def find_closest_pos(positions, start_pos=(0,0)):
     min = np.inf
@@ -24,3 +25,10 @@ def find_class_balance(targets, masks):
     total_neg = total_num_pixels - total_pos
     weight = total_neg / total_pos
     return weight, float(total_neg)/float(total_num_pixels), float(total_pos)/float(total_num_pixels)
+
+def remove_duplicates(data):
+    ''' Remove duplicates from the data (normally a list).
+        The data must be sortable and have an equality operator
+    '''
+    data = sorted(data)
+    return [k for k, v in groupby(data)]
