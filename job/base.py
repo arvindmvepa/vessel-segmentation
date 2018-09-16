@@ -212,6 +212,8 @@ class Job(object):
         if dataset is None:
             dataset = self.dataset_cls(early_stopping=early_stopping,**kwargs)
 
+        print("job")
+        print(len(dataset.train_data))
         pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant, *dataset.train_data[1:])
 
         # initialize network object
