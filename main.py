@@ -9,7 +9,8 @@ import os
 
 if __name__ == '__main__':
 
-    num_searches = 130
+    #num_searches = 130
+    num_searches = 1
     EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments2"
 
     metrics_epoch_freq = 5
