@@ -18,6 +18,7 @@ class DatasetWMasks(Dataset):
         self.mask_threshold = mask_threshold
         super(DatasetWMasks, self).__init__(early_stopping=early_stopping, **kwargs)
         if early_stopping:
+            print(self.train_data)
             self.train_images, self.train_masks, self.train_targets = self.train_data
             self.val_images, self.val_masks, self.val_targets = self.val_data
         else:
