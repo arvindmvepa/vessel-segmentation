@@ -4,6 +4,7 @@ from collections import defaultdict
 import numpy as np
 import re
 from utilities.misc import remove_duplicates
+from statsmodels import robust
 
 import os
 
@@ -60,14 +61,22 @@ def get_hyp_opts(all_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
 
 def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regularizer_argss",
                              "op_fun_and_kwargss","learning_rate_and_kwargss","weight_inits","act_leak_probs","seqs",
-                             "hist_eqs","clahe_kwargss","gammas")):
-    # dict for Job results
+                             "hist_eqs","clahe_kwargss","gammas"), mof_metric="mad", n_metric_intervals=4,
+            EXPERIMENTS_DIR_PATH="/Users/arvind.m.vepa/Documents/vessel segmentation/first round hyp results/experiments1"):
+
+    # define func for measure of fit
+    if mof_metric == "mad":
+        mof_func = robust.mad
+    elif mof_metric == "std":
+        mof_func = np.std
+
+    # dict for marginal hyp job results
     auc_roc_marg_scores = defaultdict(lambda : defaultdict(lambda : defaultdict(list)))
-    n_metric_intervals = 4
+    # dict for job results
+    job_results = defaultdict(lambda : defaultdict(float))
 
     hyps_opts, all_hyps = get_hyp_opts()
 
-    EXPERIMENTS_DIR_PATH = "/Users/arvind.m.vepa/Documents/vessel segmentation/first round hyp results/experiments1"
     job_files = os.listdir(EXPERIMENTS_DIR_PATH)
 
     for job_file in job_files:
@@ -78,12 +87,15 @@ def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
         job_opts = re.split(r',\s*(?![^()]*\)|[^{}]*\})', job_file_str)
 
         auc_col = 1
+        p = re.compile(r'\d+\.\d+')
 
         with open(JOB_METRICS_PATH) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             next(csv_reader, None)
             for i, row in enumerate(csv_reader):
-                auc = row[auc_col]
+                auc_results = row[auc_col]
+                auc_results = [float(result) for result in p.findall(auc_results)][0:2]
+                job_results[i][job_file_str] = auc_results
                 for hyp_name,job_opt in zip(all_hyps,job_opts):
                     check = False
                     if hyp_name in relevant_hyps:
@@ -91,34 +103,67 @@ def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
                         for hyp_opt in hyp_opts:
                             if str(hyp_opt) in job_opt or job_opt in str(hyp_opt):
                                 auc_roc_marg_scores[i][hyp_name][str(hyp_opt)] = \
-                                    auc_roc_marg_scores[i][hyp_name][str(hyp_opt)] + [auc]
+                                    auc_roc_marg_scores[i][hyp_name][str(hyp_opt)] + [auc_results[0]]
                                 check=True
                     if not check:
                         print("missed {}, job opt str {}, parameterized opts {}".format(hyp_name, job_opt,
                                                                                         hyps_opts[hyp_name]))
+    n_results_hyp_opts = []
+    for i in range(n_metric_intervals):
+        i_results = []
+        i_hyp_opts = []
+        for hyp_name in relevant_hyps:
+            hyp_opts = hyps_opts[hyp_name]
+            for hyp_opt in hyp_opts:
+                if str(hyp_opt) in auc_roc_marg_scores[i][hyp_name]:
+                    list_results = auc_roc_marg_scores[i][hyp_name][str(hyp_opt)]
+                    mean_result = np.mean(list_results)
+                    mof_result = mof_func(list_results)
+                    i_results += [(mean_result, mof_result)]
+                    i_hyp_opts += [hyp_name+"_"+str(hyp_opt)]
+        n_results_hyp_opts += [zip(i_results,i_hyp_opts)]
 
-    hyp_metrics_log = "hyp_log.csv"
-    hyp_metrics_log_path = os.path.join("/Users/arvind.m.vepa/Documents/vessel segmentation/first round hyp results",
-                                        hyp_metrics_log)
+
+    hyp_metrics_log = "marg_hyp_log.csv"
+    hyp_metrics_log_path = os.path.join(EXPERIMENTS_DIR_PATH,hyp_metrics_log)
 
     with open(hyp_metrics_log_path, "a") as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
-        hyp_keys_opts_strs = sum([[hyp_key+"_"+str(hyp_opt) for hyp_opt in auc_roc_marg_scores[0][hyp_key].keys()]
-                              for hyp_key in relevant_hyps],[])
-        writer.writerow(hyp_keys_opts_strs)
-
-        p = re.compile(r'\d+\.\d+')
+        writer.writerow([i_result_hyp_opt[1] for i_result_hyp_opt in n_results_hyp_opts[0]]+["mean", mof_metric])
         for i in range(n_metric_intervals):
-            metric_i_auc_roc_marg_scores = auc_roc_marg_scores[i]
-            results = []
-            for hyp_name in relevant_hyps:
-                hyp_opts = hyps_opts[hyp_name]
-                for hyp_opt in hyp_opts:
-                    if str(hyp_opt) in auc_roc_marg_scores[i][hyp_name]:
-                        list_results_str = auc_roc_marg_scores[i][hyp_name][str(hyp_opt)]
-                        list_results = [float(p.findall(results_str)[0]) for results_str in list_results_str]
-                        results += [np.mean(list_results)]
-            writer.writerow(results)
+            i_results, _= zip(*n_results_hyp_opts[i])
+            mean_results, _ = zip(*i_results)
+            writer.writerow([" +/- ".join([str(metric) for metric in np.round(i_result,4)])+" % rank {:.1%}".format(float(i)/len(i_results)) for i,i_result in enumerate(i_results)]+
+                            [np.round(np.mean(mean_results),4),np.round(mof_func(mean_results),4)])
+
+    rank_hyp_metrics_log = "rank_marg_hyp_log.csv"
+    rank_hyp_metrics_log_path = os.path.join(EXPERIMENTS_DIR_PATH, rank_hyp_metrics_log)
+
+    with open(rank_hyp_metrics_log_path, "a") as csv_file:
+        writer = csv.writer(csv_file, delimiter=',')
+
+        for i in range(n_metric_intervals):
+            i_results_hyp_opts = n_results_hyp_opts[i]
+            i_results_hyp_opts = sorted(i_results_hyp_opts, key = lambda x: x[0][0], reverse=True)
+            i_results, i_hyp_opts = zip(*i_results_hyp_opts)
+            mean_results, _ = zip(*i_results)
+            writer.writerow(list(i_hyp_opts)+["mean", mof_metric])
+            writer.writerow([" +/- ".join([str(np.round(metric,4)) for metric in i_result])+" % rank {:.1%}".format(float(i)/len(i_results)) for i,i_result in enumerate(i_results)]+
+                            [np.round(np.mean(mean_results),4),np.round(mof_func(mean_results),4)])
+
+    rank_job_log = "rank_job_log.csv"
+    rank_job_log_path = os.path.join(EXPERIMENTS_DIR_PATH, rank_job_log)
+
+    with open(rank_job_log_path, "a") as csv_file:
+        writer = csv.writer(csv_file, delimiter=',')
+
+        for i in range(n_metric_intervals):
+            i_job_results = job_results[i]
+            i_job_results = i_job_results.items()
+            i_job_results = sorted(i_job_results, key = lambda x: x[1][0], reverse=True)
+            i_job, i_results = zip(*i_job_results)
+            writer.writerow(list(i_job)+["mean", mof_metric])
+            writer.writerow(list([" +/- ".join([str(metric) for metric in np.round(i_result,4)])+" % rank {:.1%}".format(float(i)/len(i_results)) for i,i_result in enumerate(i_results)])+[np.round(np.mean(i_results),4),np.round(mof_func(i_results),4)])
 
 if __name__ == '__main__':
     analyze()
