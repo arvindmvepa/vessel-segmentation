@@ -2,7 +2,6 @@ import os
 import numpy as np
 from skimage import io as skio
 import cv2
-from scipy.misc import imsave
 
 from dataset.base import Dataset
 from utilities.image_preprocessing import preprocessing

@@ -2,7 +2,6 @@
 import numpy as np
 import math
 from math import ceil
-from utilities.misc import find_class_balance
 import os
 from sklearn.model_selection import train_test_split
 
@@ -29,7 +28,7 @@ class Dataset(object):
                                                     clahe_kwargs=clahe_kwargs,
                                                     per_image_normalization=per_image_normalization, gamma=gamma)
         if early_stopping:
-            self.train_data, self.val_data = train_test_split(self.train_data, early_stopping_val_prop)
+            self.train_data, self.val_data = train_test_split(self.train_data, test_size=early_stopping_val_prop)
 
         self.test_data = self.get_images_from_file(self.TEST_DIR_PATH, cv_test_inds, hist_eq=hist_eq,
                                                    clahe_kwargs=clahe_kwargs,
