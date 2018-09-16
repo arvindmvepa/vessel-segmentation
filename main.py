@@ -60,15 +60,21 @@ if __name__ == '__main__':
         iaa.Crop(px=(0, 16)), # crop images from each side by 0 to 16px (randomly chosen)
         iaa.GaussianBlur(sigma=(0, 3.0)) # blur images with a sigma of 0 to 3.0
         ])]
-
+    """
     total_hyper_parameter_combos = list(product(tuning_constants, ss_rs, objective_fns, regularizer_argss, learning_rate_and_kwargss,
                                                 op_fun_and_kwargss, weight_inits, act_fns, act_leak_probs, hist_eqs, clahe_kwargss,
                                                 per_image_normalizations, gammas, seqs))
+    """
+    total_hyper_parameter_combos = list(product(tuning_constants[0:1], ss_rs[0:1], objective_fns[0:1],
+                                                regularizer_argss[0:1], learning_rate_and_kwargss[0:1],
+                                                op_fun_and_kwargss[0:1], weight_inits[0:1], act_fns[0:1],
+                                                act_leak_probs[0:1], hist_eqs[0:1], clahe_kwargss[0:1],
+                                                per_image_normalizations[0:1], gammas, seqs[0:1]))
     cur_hyper_parameter_combos = sample(total_hyper_parameter_combos, num_searches)
 
     for tuning_constant, ss_r, objective_fn, regularizer_args, learning_rate_and_kwargs, op_fun_and_kwargs, weight_init,\
         act_fn, act_leak_prob, hist_eq, clahe_kwargs, per_image_normalization, gamma, seq in \
-            cur_hyper_parameter_combos[0:1]:
+            cur_hyper_parameter_combos:
 
         EXPERIMENT_NAME = str((objective_fn,tuning_constant,ss_r if objective_fn=="ss" else None,regularizer_args,op_fun_and_kwargs,
                                learning_rate_and_kwargs, weight_init, act_fn, act_leak_prob, False if seq is None else True,
