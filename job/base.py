@@ -75,6 +75,9 @@ class Job(object):
 
         # run job per cv fold
         for i, (train_inds, test_inds) in enumerate(fold_obj.split(imgs)):
+            print("mccv")
+            print(train_inds)
+            print(test_inds)
             fold_metrics_log_fname_lst = list(metrics_log_fname_lst)
             fold_suffix = "_fold_"+str(i)
             fold_metrics_log_fname_lst[0] = metrics_log_fname_lst[0] + fold_suffix
