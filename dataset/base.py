@@ -28,8 +28,11 @@ class Dataset(object):
                                                     clahe_kwargs=clahe_kwargs,
                                                     per_image_normalization=per_image_normalization, gamma=gamma)
         if early_stopping:
+            print("base")
+            print(len(self.train_data))
             self.train_data, self.val_data = train_test_split(self.train_data, test_size=early_stopping_val_prop)
-
+            print(len(self.train_data))
+            print(len(self.val_data))
         self.test_data = self.get_images_from_file(self.TEST_DIR_PATH, cv_test_inds, hist_eq=hist_eq,
                                                    clahe_kwargs=clahe_kwargs,
                                                    per_image_normalization=per_image_normalization, gamma=gamma)
