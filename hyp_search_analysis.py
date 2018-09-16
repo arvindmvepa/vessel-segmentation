@@ -162,8 +162,9 @@ def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
             i_job_results = i_job_results.items()
             i_job_results = sorted(i_job_results, key = lambda x: x[1][0], reverse=True)
             i_job, i_results = zip(*i_job_results)
+            mean_results, _ = zip(*i_results)
             writer.writerow(list(i_job)+["mean", mof_metric])
-            writer.writerow(list([" +/- ".join([str(metric) for metric in np.round(i_result,4)])+" % rank {:.1%}".format(float(i)/len(i_results)) for i,i_result in enumerate(i_results)])+[np.round(np.mean(i_results),4),np.round(mof_func(i_results),4)])
+            writer.writerow(list([" +/- ".join([str(metric) for metric in np.round(i_result,4)])+" % rank {:.1%}".format(float(i)/len(i_results)) for i,i_result in enumerate(i_results)])+[np.round(np.mean(mean_results),4),np.round(mof_func(mean_results),4)])
 
 if __name__ == '__main__':
     analyze()
