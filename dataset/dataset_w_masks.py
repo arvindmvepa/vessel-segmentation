@@ -12,13 +12,16 @@ class DatasetWMasks(Dataset):
     MASKS_DIR = "masks"
     TARGETS_DIR = "targets"
 
-    def __init__(self, masks_provided=True, init_mask_imgs=False, mask_threshold = None, **kwargs):
+    def __init__(self, early_stopping=False, masks_provided=True, init_mask_imgs=False, mask_threshold = None, **kwargs):
         self.mask_provided = masks_provided
         self.init_mask_imgs = init_mask_imgs
         self.mask_threshold = mask_threshold
-        super(DatasetWMasks, self).__init__(**kwargs)
-
-        self.train_images, self.train_masks, self.train_targets = self.train_data
+        super(DatasetWMasks, self).__init__(early_stopping=early_stopping, **kwargs)
+        if early_stopping:
+            self.train_images, self.train_masks, self.train_targets = self.train_data
+            self.val_images, self.val_masks, self.val_targets = self.val_data
+        else:
+            self.train_images, self.train_masks, self.train_targets = self.train_data
         self.test_images, self.test_masks, self.test_targets = self.test_data
 
 

@@ -10,7 +10,7 @@ import os
 if __name__ == '__main__':
 
     num_searches = 130
-    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments1"
+    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments2"
 
     metrics_epoch_freq = 5
     viz_layer_epoch_freq = 101
@@ -68,7 +68,7 @@ if __name__ == '__main__':
 
     for tuning_constant, ss_r, objective_fn, regularizer_args, learning_rate_and_kwargs, op_fun_and_kwargs, weight_init,\
         act_fn, act_leak_prob, hist_eq, clahe_kwargs, per_image_normalization, gamma, seq in \
-            cur_hyper_parameter_combos:
+            cur_hyper_parameter_combos[0:1]:
 
         EXPERIMENT_NAME = str((objective_fn,tuning_constant,ss_r if objective_fn=="ss" else None,regularizer_args,op_fun_and_kwargs,
                                learning_rate_and_kwargs, weight_init, act_fn, act_leak_prob, False if seq is None else True,
@@ -76,16 +76,17 @@ if __name__ == '__main__':
         OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
 
         job = DriveJob(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
-        job.run_cross_validation(WRK_DIR_PATH=WRK_DIR_PATH, save_model=False, save_sample_test_images=False,
-                                 metrics_epoch_freq=metrics_epoch_freq,viz_layer_epoch_freq=viz_layer_epoch_freq,
-                                 n_epochs=n_epochs,n_splits=n_splits,objective_fn=objective_fn,
-                                 tuning_constant=tuning_constant, ss_r=ss_r,
-                                 regularizer_args=regularizer_args,
-                                 op_fun_and_kwargs=op_fun_and_kwargs,
-                                 learning_rate_and_kwargs=learning_rate_and_kwargs,
-                                 weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
-                                 seq=seq, hist_eq=hist_eq,
-                                 clahe_kwargs=clahe_kwargs,
-                                 per_image_normalization=per_image_normalization,
-                                 gamma=gamma)
+        job.run_cv(WRK_DIR_PATH=WRK_DIR_PATH, mc=True, early_stopping=True, early_stopping_metric="auc",
+                   save_model=False, save_sample_test_images=False,
+                   metrics_epoch_freq=metrics_epoch_freq, viz_layer_epoch_freq=viz_layer_epoch_freq,
+                   n_epochs=n_epochs, n_splits=n_splits, objective_fn=objective_fn,
+                   tuning_constant=tuning_constant, ss_r=ss_r,
+                   regularizer_args=regularizer_args,
+                   op_fun_and_kwargs=op_fun_and_kwargs,
+                   learning_rate_and_kwargs=learning_rate_and_kwargs,
+                   weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                   seq=seq, hist_eq=hist_eq,
+                   clahe_kwargs=clahe_kwargs,
+                   per_image_normalization=per_image_normalization,
+                   gamma=gamma)
 

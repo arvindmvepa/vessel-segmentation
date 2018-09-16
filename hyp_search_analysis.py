@@ -62,7 +62,7 @@ def get_hyp_opts(all_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
 def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regularizer_argss",
                              "op_fun_and_kwargss","learning_rate_and_kwargss","weight_inits","act_leak_probs","seqs",
                              "hist_eqs","clahe_kwargss","gammas"), mof_metric="mad", n_metric_intervals=4,
-            EXPERIMENTS_DIR_PATH="/Users/arvind.m.vepa/Documents/vessel segmentation/first round hyp results/experiments1"):
+            EXPERIMENTS_DIR_PATH="/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments1"):
 
     # define func for measure of fit
     if mof_metric == "mad":
