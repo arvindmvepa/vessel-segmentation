@@ -217,7 +217,6 @@ class Job(object):
         for data in dataset.train_data:
             print(data.shape)
         pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant, *dataset.train_data[1:])
-        return
 
         # initialize network object
         if gpu_device is not None:
@@ -441,8 +440,8 @@ class Job(object):
         val_cost_unweighted = val_cost_unweighted / len(dataset.test_images)
 
         prediction_flat = segmentation_results.flatten()
-        target_flat = np.round(dataset.test_targets.flatten())
-        mask_flat = self.get_test_mask_flat(dataset)
+        target_flat = np.round(dataset.val_targets.flatten())
+        mask_flat = self.get_val_mask_flat(dataset)
 
         return self.get_metrics_on_val_set(prediction_flat, target_flat, mask_flat, early_stopping_metric,
                                           decision_threshold, max_thresh_accuracy=max_thresh_accuracy,
@@ -808,8 +807,10 @@ class Job(object):
     def get_max_threshold_accuracy_image(results, neg_class_frac, pos_class_frac, *args):
         raise NotImplementedError("Not Implemented")
 
-
     def get_test_mask_flat(self, dataset):
+        return None
+
+    def get_val_mask_flat(self, dataset):
         return None
 
     def get_network_dict(self, network, input_data, train=True):
