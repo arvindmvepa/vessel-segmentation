@@ -9,41 +9,54 @@ import os
 
 if __name__ == '__main__':
 
-    num_searches = 1
+    num_searches = 130
     EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments2"
 
-    metrics_epoch_freq = 1
+    metrics_epoch_freq = 5
     viz_layer_epoch_freq = 101
-    n_epochs = 5
+    n_epochs = 20
 
     WRK_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/drive"
     n_splits = 3
 
     ### RANDOM SEARCH
-    tuning_constants = [1.0]
-    ss_rs = [.5]
-    objective_fns = ["wce"]
-    regularizer_argss = [None]
-    learning_rate_and_kwargss = [(.01, {})]
+    tuning_constants = [.2,.5,1.0,1.5,2.0]
+    ss_rs = [.166,.33,.5,.6,.667]
+    objective_fns = ["wce","gdice","ss"]
+    regularizer_argss = [None, None,None, None,("L1",1E-8),("L1",1E-6),("L1",1E-4),("L1",1E-2),("L2",1E-8),("L2",1E-6),
+                        ("L2",1E-4),("L2",1E-2)]
+    learning_rate_and_kwargss = [(.1, {"decay_epochs":5,"decay_rate":.1,"staircase":False}),
+                                 (.1, {"decay_epochs":5,"decay_rate":.1,"staircase":True}),
+                                 (.1, {"decay_epochs": 10, "decay_rate": .1, "staircase": False}),
+                                 (.1, {"decay_epochs": 10, "decay_rate": .1, "staircase": True}),
+                                 (.1, {}),
+                                 (.01, {}),
+                                 (.001, {})]
 
-    op_fun_and_kwargss = [("adam", {})]
-    weight_inits = ["He"]
+    op_fun_and_kwargss = [("adam", {}), ("grad", {}), ("adagrad", {}), ("adadelta", {}), ("rmsprop", {})]
+    weight_inits = ["default","He","Xnormal"]
     act_fns = ["lrelu"]
-    act_leak_probs = [0.2]
+    act_leak_probs = [0.0,0.0,0.2,.2,0.4,0.6]
 
     hist_eqs = [True,False]
 
-    clahe_kwargss = [None]
+    clahe_kwargss = [None, None, None, None, None,
+                     {"clipLimit": 2.0,"tileGridSize":(8,8)}, {"clipLimit": 2.0,"tileGridSize":(4,4)},
+                     {"clipLimit": 2.0,"tileGridSize":(16,16)}, {"clipLimit": 20.0, "tileGridSize": (8, 8)},
+                     {"clipLimit": 60.0, "tileGridSize": (8, 8)}]
 
-    per_image_normalizations = [False]
-    gammas = [1.0]
+    per_image_normalizations = [True]
+    gammas = [1.0,1.0,1.0,2.0,4.0,6.0]
 
-    seqs = [None]
-    total_hyper_parameter_combos = list(product(tuning_constants, ss_rs, objective_fns,
-                                                regularizer_argss, learning_rate_and_kwargss,
-                                                op_fun_and_kwargss, weight_inits, act_fns,
-                                                act_leak_probs, hist_eqs, clahe_kwargss,
+    seqs = [None, None, iaa.Sequential([
+        iaa.Crop(px=(0, 16)), # crop images from each side by 0 to 16px (randomly chosen)
+        iaa.GaussianBlur(sigma=(0, 3.0)) # blur images with a sigma of 0 to 3.0
+        ])]
+
+    total_hyper_parameter_combos = list(product(tuning_constants, ss_rs, objective_fns, regularizer_argss, learning_rate_and_kwargss,
+                                                op_fun_and_kwargss, weight_inits, act_fns, act_leak_probs, hist_eqs, clahe_kwargss,
                                                 per_image_normalizations, gammas, seqs))
+
     cur_hyper_parameter_combos = sample(total_hyper_parameter_combos, num_searches)
 
     for tuning_constant, ss_r, objective_fn, regularizer_args, learning_rate_and_kwargs, op_fun_and_kwargs, weight_init,\
