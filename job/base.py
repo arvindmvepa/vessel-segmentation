@@ -217,6 +217,7 @@ class Job(object):
         for data in dataset.train_data:
             print(data.shape)
         pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant, *dataset.train_data[1:])
+        return
 
         # initialize network object
         if gpu_device is not None:
