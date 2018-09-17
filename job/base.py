@@ -14,7 +14,7 @@ import tensorflow as tf
 import datetime
 from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, roc_auc_score, confusion_matrix, \
     roc_curve, auc
-from sklearn.model_selection import KFold
+from sklearn.model_selection import KFold, ShuffleSplit
 
 from random import randint
 
@@ -53,11 +53,16 @@ class Job(object):
 
     # only metrics are returned per fold
     # for most other output, only last is kept
-    def run_cross_validation(self, n_splits=3, mof_metric="mad",**kwargs):
+    def run_cv(self, n_splits=3, mc=False, val_prop=.20, mof_metric="mad", **kwargs):
         # produce cv indices
-        k_fold = KFold(n_splits=n_splits, shuffle=True)
+        if not mc:
+            fold_obj = KFold(n_splits=n_splits, shuffle=True)
+        # produce mccv indices
+        else:
+            fold_obj = ShuffleSplit(n_splits=n_splits, test_size=val_prop)
+
         WRK_DIR_PATH = kwargs.get("WRK_DIR_PATH",".")
-        TRAIN_SUBDIR = kwargs.get("TRAIN_SUBDIR","train/")
+        TRAIN_SUBDIR = kwargs.get("TRAIN_SUBDIR","train")
         IMAGES_DIR_PATH = os.path.join(WRK_DIR_PATH, TRAIN_SUBDIR, Dataset.IMAGES_DIR)
         imgs = os.listdir(IMAGES_DIR_PATH)
 
@@ -69,7 +74,7 @@ class Job(object):
         folds_metrics_log_fname = []
 
         # run job per cv fold
-        for i, (train_inds, test_inds) in enumerate(k_fold.split(imgs)):
+        for i, (train_inds, test_inds) in enumerate(fold_obj.split(imgs)):
             fold_metrics_log_fname_lst = list(metrics_log_fname_lst)
             fold_suffix = "_fold_"+str(i)
             fold_metrics_log_fname_lst[0] = metrics_log_fname_lst[0] + fold_suffix
@@ -181,9 +186,10 @@ class Job(object):
                                   **kwargs)
 
     
-    def train(self, dataset=None, gpu_device=None, tuning_constant=1.0, metrics_epoch_freq=1, viz_layer_epoch_freq=10,
-              metrics_log="metrics_log.csv", num_image_plots=5, save_model=True, debug_net_output=True,
-              objective_fn="wce", weight_map=None, type_weight='Custom', ss_r=.05, regularizer_args=None,
+    def train(self, dataset=None, gpu_device=None, early_stopping=False, early_stopping_metric="auc",
+              tuning_constant=1.0, metrics_epoch_freq=1, viz_layer_epoch_freq=10, metrics_log="metrics_log.csv",
+              num_image_plots=5, save_model=True, save_sample_test_images=True,debug_net_output=True,objective_fn="wce",
+              weight_map=None, type_weight='Custom', ss_r=.05, regularizer_args=None,
               learning_rate_and_kwargs=(.001, {}), op_fun_and_kwargs=("adam", {}), weight_init=None, act_fn="lrelu",
               act_leak_prob=.2, layer_params=None, **kwargs):
 
@@ -201,8 +207,7 @@ class Job(object):
 
         # kwargs are applied to dataset class
         if dataset is None:
-            dataset = self.dataset_cls(**kwargs)
-
+            dataset = self.dataset_cls(early_stopping=early_stopping,**kwargs)
         pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant, *dataset.train_data[1:])
 
         # initialize network object
@@ -224,7 +229,9 @@ class Job(object):
 
         # create metrics log file
         metric_log_file_path = os.path.join(self.OUTPUTS_DIR_PATH, metrics_log)
-        self.write_to_csv(sorted(self.get_metric_names(self.num_thresh_scores)), metric_log_file_path)
+
+        if not early_stopping:
+            self.write_to_csv(sorted(self.get_metric_names(self.num_thresh_scores)), metric_log_file_path, mode="w")
 
         # create summary writer
         summary_writer = tf.summary.FileWriter(
@@ -246,6 +253,9 @@ class Job(object):
         with tf.Session(config=config) as sess:
             sess.run(tf.global_variables_initializer())
             tf.train.Saver(tf.all_variables(), max_to_keep=None)
+
+            if early_stopping:
+                best_early_stopping = None
 
             # loop over epochs
             for epoch_i in range(self.n_epochs):
@@ -275,7 +285,6 @@ class Job(object):
                         feed_dict=self.get_network_dict(network, batch_data))
                     end = time.time()
                     # print training information
-                    print(network.objective_fn)
                     print('{}/{}, epoch: {}, cost: {}, cost unweighted: {}, batch time: {}, positive_weight: {}, learning rate {}'.format(
                         batch_num, self.n_epochs * dataset.num_batches_in_epoch(), epoch_i, cost, cost_unweighted, end-start, pos_weight, cur_learning_rate))
 
@@ -290,14 +299,32 @@ class Job(object):
 
                     # calculate results on test set
                     if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch()-1:
-                        self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
-                                                     self.decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
-                                                     viz_layer_outputs_path_test, num_image_plots, summary_writer,
-                                                     cost=cost, cost_unweighted=cost_unweighted)
+                        if early_stopping:
+                            cur_early_stopping = self.get_results_on_val_set(metric_log_file_path, network, dataset, sess,
+                                                                             self.decision_threshold,
+                                                                             early_stopping_metric, save_model)
+                            if not best_early_stopping:
+                                best_early_stopping = cur_early_stopping
+                            elif early_stopping_metric not in ["cost","cost_unweighted"]:
+                                if cur_early_stopping > best_early_stopping:
+                                    best_early_stopping = cur_early_stopping
+                            else:
+                                if cur_early_stopping < best_early_stopping:
+                                    best_early_stopping = cur_early_stopping
+                            # if current model has best validation loss, re-create metric file
+                            if cur_early_stopping == best_early_stopping:
+                                self.write_to_csv(sorted(self.get_metric_names(self.num_thresh_scores)),
+                                                  metric_log_file_path, mode="w")
+                        if not early_stopping or cur_early_stopping == best_early_stopping:
+                            self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
+                                                         self.decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
+                                                         viz_layer_outputs_path_test, num_image_plots, save_model,
+                                                         save_sample_test_images, summary_writer, cost=cost,
+                                                         cost_unweighted=cost_unweighted)
 
     def get_results_on_test_set(self, metrics_log_file_path, network, dataset, sess, decision_threshold, epoch_i,
                                 timestamp, viz_layer_epoch_freq, viz_layer_outputs_path_test, num_image_plots,
-                                summary_writer, **kwargs):
+                                save_model, save_sample_test_images, summary_writer, **kwargs):
 
         max_thresh_accuracy = 0.0
         test_cost = 0.0
@@ -341,7 +368,8 @@ class Job(object):
         mask_flat = self.get_test_mask_flat(dataset)
 
         # save target (if files don't exist)
-        self.save_data(prediction_flat, target_flat, mask_flat, timestamp, epoch_i)
+        if save_model:
+            self.save_data(prediction_flat, target_flat, mask_flat, timestamp, epoch_i)
 
         # get class proportion on test set
         _, test_neg_class_frac, test_pos_class_frac = dataset.get_inverse_pos_freq(*dataset.test_data[1:])
@@ -353,18 +381,63 @@ class Job(object):
                                            test_cost=test_cost, test_cost_unweighted=test_cost_unweighted)
 
         # produce image plots
-        test_plot_buf = draw_results(dataset.test_images[:num_image_plots],
-                                     dataset.test_targets[:num_image_plots],
-                                     segmentation_results[:num_image_plots, :, :],
-                                     acc, network, epoch_i, num_image_plots, os.path.join(self.OUTPUTS_DIR_PATH,
-                                                                                          self.IMAGE_PLOT_DIR),
-                                     decision_threshold)
+        if save_sample_test_images:
+            test_plot_buf = draw_results(dataset.test_images[:num_image_plots],
+                                         dataset.test_targets[:num_image_plots],
+                                         segmentation_results[:num_image_plots, :, :],
+                                         acc, network, epoch_i, num_image_plots, os.path.join(self.OUTPUTS_DIR_PATH,
+                                                                                              self.IMAGE_PLOT_DIR),
+                                         decision_threshold)
 
-        image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
-        image = tf.expand_dims(image, 0)
-        image_summary_op = tf.summary.image("plot", image)
-        image_summary = sess.run(image_summary_op)
-        summary_writer.add_summary(image_summary)
+            image = tf.image.decode_png(test_plot_buf.getvalue(), channels=4)
+            image = tf.expand_dims(image, 0)
+            image_summary_op = tf.summary.image("plot", image)
+            image_summary = sess.run(image_summary_op)
+            summary_writer.add_summary(image_summary)
+
+    def get_results_on_val_set(self, metrics_log_file_path, network, dataset, sess, decision_threshold,
+                               early_stopping_metric, save_model, **kwargs):
+
+        max_thresh_accuracy = 0.0
+        val_cost = 0.0
+        val_cost_unweighted = 0.0
+
+        segmentation_results = np.zeros((dataset.val_targets.shape[0], dataset.val_targets.shape[1],
+                                         dataset.val_targets.shape[2]))
+        # get test results per image
+        for i, val_data in enumerate(zip(*dataset.val_data)):
+            val_data = dataset.tf_reshape(val_data)
+            # get network results on test image
+            val_cost_, val_cost_unweighted_, segmentation_val_result, layer_outputs = \
+                sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
+                          network.layer_outputs],
+                         feed_dict=self.get_network_dict(network, val_data, False))
+
+            segmentation_val_result = segmentation_val_result[0, :, :, 0]
+            segmentation_results[i, :, :] = segmentation_val_result
+
+            val_cost += val_cost_
+            val_cost_unweighted += val_cost_unweighted_
+
+            _, val_neg_class_frac, val_pos_class_frac = dataset.get_inverse_pos_freq(*val_data[1:])
+
+            # calculate max threshold accuracy per test image
+            thresh_max = self.get_max_threshold_accuracy_image(segmentation_val_result, val_neg_class_frac,
+                                                               val_pos_class_frac, *val_data[1:])
+            max_thresh_accuracy += thresh_max
+
+        # combine test results to produce overall metric scores
+        max_thresh_accuracy = max_thresh_accuracy / len(dataset.test_images)
+        val_cost = val_cost / len(dataset.test_images)
+        val_cost_unweighted = val_cost_unweighted / len(dataset.test_images)
+
+        prediction_flat = segmentation_results.flatten()
+        target_flat = np.round(dataset.val_targets.flatten())
+        mask_flat = self.get_val_mask_flat(dataset)
+
+        return self.get_metrics_on_val_set(prediction_flat, target_flat, mask_flat, early_stopping_metric,
+                                          decision_threshold, max_thresh_accuracy=max_thresh_accuracy,
+                                          val_cost=val_cost, val_cost_unweighted=val_cost_unweighted)
 
     @classmethod
     def get_metrics_on_test_set(cls, metrics_log_file_path, prediction_flat, target_flat, mask_flat, decision_threshold,
@@ -477,6 +550,103 @@ class Job(object):
 
         return acc
 
+    @classmethod
+    def get_metrics_on_val_set(cls, prediction_flat, target_flat, mask_flat, early_stopping_metric, decision_threshold,
+                               val_cost, val_cost_unweighted, **kwargs):
+
+        if early_stopping_metric == "cost":
+            return val_cost
+
+        if early_stopping_metric == "cost_unweighted":
+            return val_cost_unweighted
+
+        # produce AUCROC score with map
+        if early_stopping_metric == "auc":
+            return roc_auc_score(target_flat, prediction_flat, sample_weight=mask_flat)
+
+        if early_stopping_metric == "aucfpr10" or early_stopping_metric == "aucfpr05" or \
+                        early_stopping_metric == "aucfpr025":
+
+            # produce auc_score curve thresholded at different FP poinnts
+            fprs, tprs, thresholds = roc_curve(target_flat, prediction_flat, sample_weight=mask_flat)
+            np_fprs, np_tprs, np_thresholds = np.array(fprs).flatten(), np.array(tprs).flatten(), \
+                                              np.array(thresholds).flatten()
+
+            if early_stopping_metric == "auc_10_fpr":
+                fpr_10 = np_fprs[np.where(np_fprs < .10)]
+                tpr_10 = np_tprs[0:len(fpr_10)]
+                if len(fpr_10) > 1 and len(tpr_10)> 1:
+                    auc_10_fpr = auc(fpr_10, tpr_10)
+                else:
+                    auc_10_fpr = np.nan
+                return auc_10_fpr
+
+            if early_stopping_metric == "aucfpr05":
+                fpr_05 = np_fprs[np.where(np_fprs < .05)]
+                tpr_05 = np_tprs[0:len(fpr_05)]
+                if len(fpr_05) > 1 and len(tpr_05) > 1:
+                    auc_05_fpr = auc(fpr_05, tpr_05)
+                else:
+                    auc_05_fpr = np.nan
+                return auc_05_fpr
+
+            if early_stopping_metric == "aucfpr025":
+                fpr_025 = np_fprs[np.where(np_fprs < .025)]
+                tpr_025 = np_tprs[0:len(fpr_025)]
+                if len(fpr_025) > 1 and len(tpr_025) > 1:
+                    auc_025_fpr = auc(fpr_025, tpr_025)
+                else:
+                    auc_025_fpr = np.nan
+                early_stopping_metric = auc_025_fpr
+
+        # produce metrics based on predictions given by decisions thresholded at .5
+        rounded_prediction_flat = np.round(prediction_flat)
+        (precision, recall, fbeta_score, _) = precision_recall_fscore_support(target_flat,
+                                                                              rounded_prediction_flat,
+                                                                              average='binary',
+                                                                              sample_weight=mask_flat)
+        if early_stopping_metric == "precision":
+            return precision
+        if early_stopping_metric == "recall":
+            return recall
+
+        tn, fp, fn, tp = confusion_matrix(target_flat, rounded_prediction_flat).ravel()
+        kappa = cohen_kappa_score(target_flat, rounded_prediction_flat)
+        if early_stopping_metric == "kappa":
+            return kappa
+        acc = float(tp + tn) / float(tp + tn + fp + fn)
+        if early_stopping_metric == "acc":
+            return acc
+        specificity = float(tn) / float(tn + fp)
+        if early_stopping_metric == "specificity":
+            return specificity
+
+        # produce metrics based on predictions given by decision_threshold
+        thresh_prediction_flat = (prediction_flat > decision_threshold).astype(int)
+
+        (r_precision, r_recall, r_fbeta_score, _) = precision_recall_fscore_support(target_flat,
+                                                                                    thresh_prediction_flat,
+                                                                                    average='binary',
+                                                                                    sample_weight=mask_flat)
+        if early_stopping_metric == "r_precision":
+            return r_precision
+        if early_stopping_metric == "r_recall":
+            return r_recall
+
+
+        r_tn, r_fp, r_fn, r_tp = confusion_matrix(target_flat, thresh_prediction_flat, sample_weight=mask_flat).ravel()
+        r_kappa = cohen_kappa_score(target_flat, thresh_prediction_flat, sample_weight=mask_flat)
+        if early_stopping_metric == "r_kappa":
+            return r_kappa
+        r_acc = float(r_tp + r_tn) / float(r_tp + r_tn + r_fp + r_fn)
+        if early_stopping_metric == "r_acc":
+            return r_acc
+        r_specificity = float(r_tn) / float(r_tn + r_fp)
+        if early_stopping_metric == "r_specificity":
+            return r_specificity
+
+        return
+
     def get_ensemble_results(self, n_epochs, decision_threshold, num_thresh_scores, test_neg_class_frac, test_pos_class_frac,
                              metrics_log='ensemble_results.txt', combining_metric="mean", **kwargs):
 
@@ -557,8 +727,8 @@ class Job(object):
                     imsave(os.path.join(os.path.join(output_path, "mask2"),"channel_"+str(k)+".jpeg"),channel_output)
 
     @staticmethod
-    def write_to_csv(entries, file_path, **kwargs):
-        with open(file_path, "a") as csv_file:
+    def write_to_csv(entries, file_path, mode="a",**kwargs):
+        with open(file_path, mode) as csv_file:
             writer = csv.writer(csv_file, delimiter=',')
             writer.writerow(entries)
 
@@ -629,8 +799,10 @@ class Job(object):
     def get_max_threshold_accuracy_image(results, neg_class_frac, pos_class_frac, *args):
         raise NotImplementedError("Not Implemented")
 
-
     def get_test_mask_flat(self, dataset):
+        return None
+
+    def get_val_mask_flat(self, dataset):
         return None
 
     def get_network_dict(self, network, input_data, train=True):

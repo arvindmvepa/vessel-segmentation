@@ -5,6 +5,8 @@ from tensorflow.python.training.adagrad import AdagradOptimizer
 from tensorflow.python.training.momentum import MomentumOptimizer
 from tensorflow.python.training.adadelta import AdadeltaOptimizer
 from tensorflow.python.training.rmsprop import RMSPropOptimizer
+from tensorflow.python.training.gradient_descent import GradientDescentOptimizer
+
 from utilities.objective_functions import generalised_dice_loss, sensitivity_specificity_loss, cross_entropy, dice
 
 class Network(object):
@@ -94,6 +96,8 @@ class Network(object):
         op_fn, kwargs = op_fn_and_kwargs
         if op_fn == "adam":
             op_cls = AdamOptimizer
+        elif op_fn == "grad":
+            op_cls = GradientDescentOptimizer
         elif op_fn == "adagrad":
             op_cls = AdagradOptimizer
         elif op_fn == "momentum":
@@ -116,7 +120,6 @@ class Network(object):
     # TODO: Consider impact of masking on objective function, seems it would be considered a constant
     # TODO: add options including u-net loss
     def get_objective_fn(self, objective_fn):
-        print(objective_fn)
         if objective_fn == "ce":
             return lambda targets, net, **kwargs: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
                 targets, net, pos_weight=1))

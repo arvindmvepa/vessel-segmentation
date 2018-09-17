@@ -41,6 +41,7 @@ class LargeNetwork(Network):
 
         if layers == None :
 
+            layers = list()
             layers.append(Conv2d(kernel_size=self.layer_params['conv_1_1']['ks'],
                                  dilation=self.layer_params['conv_1_1']['dilation'], act_fn=act_fn,
                                  act_leak_prob=act_leak_prob, weight_init=weight_init,
