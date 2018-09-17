@@ -13,9 +13,9 @@ if __name__ == '__main__':
     num_searches = 1
     EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments2"
 
-    metrics_epoch_freq = 5
+    metrics_epoch_freq = 1
     viz_layer_epoch_freq = 101
-    n_epochs = 20
+    n_epochs = 2
 
     WRK_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/drive"
     n_splits = 3
