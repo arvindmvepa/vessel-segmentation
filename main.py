@@ -40,7 +40,8 @@ if __name__ == '__main__':
     seq = None
 
     ### JOB INFO
-    WRK_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/drive"
+    Job_cls = DsaJob
+    WRK_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/dsa"
     n_splits = 3
 
     ### OUTPUT INFO
@@ -53,7 +54,7 @@ if __name__ == '__main__':
     viz_layer_epoch_freq = 101
     n_epochs = 5
 
-    job = DriveJob(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
+    job = Job_cls(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
     job.run_cv(WRK_DIR_PATH=WRK_DIR_PATH, mc=True, early_stopping=True, early_stopping_metric="auc",
                save_model=False, save_sample_test_images=False,
                metrics_epoch_freq=metrics_epoch_freq, viz_layer_epoch_freq=viz_layer_epoch_freq,
