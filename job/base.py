@@ -53,7 +53,7 @@ class Job(object):
 
     # only metrics are returned per fold
     # for most other output, only last is kept
-    def run_cv(self, n_splits=3, mc=False, val_prop=.20, mof_metric="mad", **kwargs):
+    def run_cv(self, n_splits=3, mc=False, val_prop=.10, mof_metric="mad", **kwargs):
         # produce cv indices
         if not mc:
             fold_obj = KFold(n_splits=n_splits, shuffle=True)
@@ -75,9 +75,6 @@ class Job(object):
 
         # run job per cv fold
         for i, (train_inds, test_inds) in enumerate(fold_obj.split(imgs)):
-            print("mccv")
-            print(train_inds)
-            print(test_inds)
             fold_metrics_log_fname_lst = list(metrics_log_fname_lst)
             fold_suffix = "_fold_"+str(i)
             fold_metrics_log_fname_lst[0] = metrics_log_fname_lst[0] + fold_suffix
@@ -211,11 +208,6 @@ class Job(object):
         # kwargs are applied to dataset class
         if dataset is None:
             dataset = self.dataset_cls(early_stopping=early_stopping,**kwargs)
-
-        print("job")
-        print(len(dataset.train_data))
-        for data in dataset.train_data:
-            print(data.shape)
         pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant, *dataset.train_data[1:])
 
         # initialize network object
