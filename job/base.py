@@ -53,7 +53,7 @@ class Job(object):
 
     # only metrics are returned per fold
     # for most other output, only last is kept
-    def run_cv(self, n_splits=3, mc=False, val_prop=.10, mof_metric="mad", **kwargs):
+    def run_cv(self, n_splits=3, mc=False, val_prop=.20, mof_metric="mad", **kwargs):
         # produce cv indices
         if not mc:
             fold_obj = KFold(n_splits=n_splits, shuffle=True)
