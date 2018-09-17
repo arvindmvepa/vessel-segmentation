@@ -307,7 +307,7 @@ class Job(object):
 
                     # calculate results on test set
                     if (epoch_i + 1) % metrics_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch()-1:
-                        if not early_stopping:
+                        if early_stopping:
                             cur_early_stopping = self.get_results_on_val_set(metric_log_file_path, network, dataset, sess,
                                                                              self.decision_threshold,
                                                                              early_stopping_metric, save_model)
@@ -319,10 +319,10 @@ class Job(object):
                             else:
                                 if cur_early_stopping < best_early_stopping:
                                     best_early_stopping = cur_early_stopping
-                        # if current model has best validation loss, re-create metric file
-                        if cur_early_stopping == best_early_stopping:
-                            self.write_to_csv(sorted(self.get_metric_names(self.num_thresh_scores)),
-                                              metric_log_file_path, mode="w")
+                            # if current model has best validation loss, re-create metric file
+                            if cur_early_stopping == best_early_stopping:
+                                self.write_to_csv(sorted(self.get_metric_names(self.num_thresh_scores)),
+                                                  metric_log_file_path, mode="w")
                         if not early_stopping or cur_early_stopping == best_early_stopping:
                             self.get_results_on_test_set(metric_log_file_path, network, dataset, sess,
                                                          self.decision_threshold, epoch_i, timestamp, viz_layer_epoch_freq,
