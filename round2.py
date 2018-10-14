@@ -42,9 +42,9 @@ def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_
 
     exp_string += str(per_image_normalization) + sep
     exp_string += str(gamma)
-    #exp_string = exp_string.replace("\'","").replace("\"","")
+    exp_string = exp_string.replace("\'","").replace("\"","")
 
-    exp_string = exp_string.replace("\\", "").replace('/', '')
+    #exp_string = exp_string.replace("\\", "").replace('/', '')
     return exp_string
 
 if __name__ == '__main__':
