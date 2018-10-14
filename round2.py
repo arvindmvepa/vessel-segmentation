@@ -10,7 +10,7 @@ import json
 
 def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_fun_and_kwargs,
                           learning_rate_and_kwargs, weight_init, act_fn, act_leak_prob, seq, hist_eq, clahe_kwargs,
-                          per_image_normalization,gamma, sep="*"):
+                          per_image_normalization,gamma, sep="+"):
     exp_string = ""
     exp_string += objective_fn + sep
     exp_string += str(tuning_constant) + sep
