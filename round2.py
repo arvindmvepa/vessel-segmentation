@@ -7,6 +7,7 @@ from itertools import product
 from random import sample
 import os
 import json
+from copy import deepcopy
 
 def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_fun_and_kwargs,
                           learning_rate_and_kwargs, weight_init, act_fn, act_leak_prob, seq, hist_eq, clahe_kwargs,
@@ -18,6 +19,7 @@ def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_
     exp_string += str(regularizer_args) + sep
     exp_string += str(op_fun_and_kwargs) + sep
 
+    learning_rate_and_kwargs = deepcopy(learning_rate_and_kwargs)
     learning_rate_kwargs = learning_rate_and_kwargs[1]
     if "decay_epochs" in learning_rate_kwargs:
         learning_rate_kwargs["d_e"]=learning_rate_kwargs.pop("decay_epochs")
@@ -33,6 +35,7 @@ def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_
     exp_string += str(seq) + sep
     exp_string += str(hist_eq) + sep
 
+    clahe_kwargs = deepcopy(clahe_kwargs)
     if clahe_kwargs is None:
         exp_string += str(None) + sep
     else:
