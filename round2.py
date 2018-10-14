@@ -43,13 +43,14 @@ def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_
     exp_string += str(per_image_normalization) + sep
     exp_string += str(gamma)
 
+    exp_string.replace("\\", "").replace('/', '')
     return exp_string
 
 if __name__ == '__main__':
 
     num_searches = 20
     #EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments3"
-    EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation"
+    EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\experiments3"
 
     metrics_epoch_freq = 5
     viz_layer_epoch_freq = 101
