@@ -62,7 +62,7 @@ def get_hyp_opts(all_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
 def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regularizer_argss",
                              "op_fun_and_kwargss","learning_rate_and_kwargss","weight_inits","act_leak_probs","seqs",
                              "hist_eqs","clahe_kwargss","gammas"), mof_metric="mad", n_metric_intervals=4,
-            EXPERIMENTS_DIR_PATH="/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments1"):
+            EXPERIMENTS_DIR_PATH="/Users/arvind.m.vepa/Documents/vessel segmentation/second round hyp results/aws combined"):
 
     # define func for measure of fit
     if mof_metric == "mad":
@@ -83,7 +83,8 @@ def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
         JOB_PATH = os.path.join(EXPERIMENTS_DIR_PATH, job_file)
         job_metrics_file = [file for file in os.listdir(JOB_PATH) if "mof" in file][0]
         JOB_METRICS_PATH = os.path.join(JOB_PATH, job_metrics_file)
-        job_file_str = job_file[1:len(job_file)-1].replace('"', '').replace("'", '')
+        #job_file_str = job_file[1:len(job_file)-1].replace("_","'").replace("$","/").replace('"', '').replace("'", '')
+        job_file_str = job_file[1:len(job_file) - 1].replace("$", "/").replace('"', '').replace("'",'')
         job_opts = re.split(r',\s*(?![^()]*\)|[^{}]*\})', job_file_str)
 
         auc_col = 1
@@ -167,7 +168,7 @@ def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
             writer.writerow(list([" +/- ".join([str(metric) for metric in np.round(i_result,4)])+" % rank {:.1%}".format(float(i)/len(i_results)) for i,i_result in enumerate(i_results)])+[np.round(np.mean(mean_results),4),np.round(mof_func(mean_results),4)])
 
 if __name__ == '__main__':
-    analyze()
+    analyze(n_metric_intervals=20)
 
 
 
