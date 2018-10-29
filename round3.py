@@ -66,14 +66,14 @@ if __name__ == '__main__':
     ss_rs = [.6,.667, .8] # adjusted (removed lower constant values)
     objective_fns = ["wce","ss"] # adjusted (removed `gdice`)
     regularizer_argss = [None,("L1",1E-8),("L2",1E-4),("L2",1E-6), ("L2",1E-8)] # adjusted (removed some)
-    learning_rate_and_kwargss = [(.01, {"decay_epochs": 5, "decay_rate": .1, "staircase": True}),
-                                 (.01, {"decay_epochs": 5, "decay_rate": .1, "staircase": False}),
-                                 (.01, {"decay_epochs": 10, "decay_rate": .1, "staircase": True}),
-                                 (.01, {"decay_epochs": 10, "decay_rate": .1, "staircase": False}),
-                                 (.001, {"decay_epochs": 5, "decay_rate": .1, "staircase": True}),
-                                 (.001, {"decay_epochs": 5, "decay_rate": .1, "staircase": False}),
-                                 (.001, {"decay_epochs": 10, "decay_rate": .1, "staircase": True}),
-                                 (.001, {"decay_epochs": 10, "decay_rate": .1, "staircase": False}),
+    learning_rate_and_kwargss = [(.01, {"decay_epochs": 25, "decay_rate": .1, "staircase": True}),
+                                 (.01, {"decay_epochs": 25, "decay_rate": .1, "staircase": False}),
+                                 (.01, {"decay_epochs": 50, "decay_rate": .1, "staircase": True}),
+                                 (.01, {"decay_epochs": 50, "decay_rate": .1, "staircase": False}),
+                                 (.001, {"decay_epochs": 25, "decay_rate": .1, "staircase": True}),
+                                 (.001, {"decay_epochs": 25, "decay_rate": .1, "staircase": False}),
+                                 (.001, {"decay_epochs": 50, "decay_rate": .1, "staircase": True}),
+                                 (.001, {"decay_epochs": 50, "decay_rate": .1, "staircase": False}),
                                  (.001, {}),
                                  (.001, {}),
                                  (.001, {}),
