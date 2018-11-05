@@ -1,8 +1,4 @@
-from job.dsa import DsaJob
 from job.drive import DriveJob
-from job.stare import StareJob
-from job.chase import ChaseJob
-from imgaug import augmenters as iaa
 from itertools import product
 from random import sample
 import os
@@ -14,8 +10,8 @@ def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_
                           per_image_normalization,gamma, sep="__"):
     exp_string = ""
     exp_string += objective_fn + sep
-    exp_string += str(tuning_constant) + sep
-    exp_string += str(ss_r) if objective_fn=="ss" else str(None) + sep
+    exp_string += (str(tuning_constant) if objective_fn !="ss" else str(None)) + sep
+    exp_string += (str(ss_r) if objective_fn=="ss" else str(None)) + sep
     exp_string += str(regularizer_args) + sep
     exp_string += str(op_fun_and_kwargs) + sep
 
@@ -53,9 +49,9 @@ def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_
 
 if __name__ == '__main__':
 
-    num_searches = 20
-    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments3"
-    #EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\experiments3"
+    num_searches = 40
+    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments4"
+    #EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\experiments4"
 
     metrics_epoch_freq = 5
     viz_layer_epoch_freq = 101
@@ -66,30 +62,35 @@ if __name__ == '__main__':
     n_splits = 4
 
     ### RANDOM SEARCH
-    tuning_constants = [.5,1.0,1.5,2.0]
-    ss_rs = [.166,.5,.6,.667]
-    objective_fns = ["wce","gdice","ss"]
-    regularizer_argss = [None, None, None,("L1",1E-6), ("L1",1E-8), ("L2",1E-4),("L2",1E-6),("L2",1E-6),("L2",1E-6), ("L2",1E-8)]
+    tuning_constants = [.5,1.0,1.5,2.0] # made each equal freq
+    ss_rs = [.63] # modified values
+    objective_fns = ["wce","wce","wce","wce","ss"] # made ss and wce terms have equal prob
+    regularizer_argss = [None,("L1",1E-8),("L2",1E-4),("L2",1E-6), ("L2",1E-8)]
     learning_rate_and_kwargss = [(.1, {"decay_epochs":5,"decay_rate":.1,"staircase":False}),
                                  (.1, {"decay_epochs":5,"decay_rate":.1,"staircase":True}),
                                  (.1, {"decay_epochs": 10, "decay_rate": .1, "staircase": True}),
-                                 (.1, {}),
-                                 (.01, {}),
-                                 (.001, {})]
+                                 (.01, {"decay_epochs": 25, "decay_rate": .1, "staircase": True}),
+                                 (.01, {"decay_epochs": 25, "decay_rate": .1, "staircase": False}),
+                                 (.01, {"decay_epochs": 50, "decay_rate": .1, "staircase": True}),
+                                 (.01, {"decay_epochs": 50, "decay_rate": .1, "staircase": False}),
+                                 (.001, {"decay_epochs": 25, "decay_rate": .1, "staircase": True}),
+                                 (.001, {"decay_epochs": 50, "decay_rate": .1, "staircase": True}),
+                                 (.001, {"decay_epochs": 50, "decay_rate": .1, "staircase": False}),
+                                 (.001, {})] # removed some and added earlier ones
 
-    op_fun_and_kwargss = [("adam", {}), ("grad", {}), ("rmsprop", {}), ("rmsprop", {}), ("rmsprop", {})]
+    op_fun_and_kwargss = [("adam", {}), ("rmsprop", {}), ("rmsprop", {})] # increase freq of rmsprop
     weight_inits = ["default","He","Xnormal"]
     act_fns = ["lrelu"]
-    act_leak_probs = [0.0,0.2,0.2,0.4,0.6]
+    act_leak_probs = [0.2,0.2,0.4,0.6] # removed 0.0
 
     hist_eqs = [False]
 
-    clahe_kwargss = [None, None, None, None, None, {"clipLimit": 2.0,"tileGridSize":(8,8)}, {"clipLimit": 2.0,"tileGridSize":(4,4)},
+    clahe_kwargss = [None, {"clipLimit": 2.0,"tileGridSize":(8,8)}, {"clipLimit": 2.0,"tileGridSize":(4,4)},
                      {"clipLimit": 2.0,"tileGridSize":(16,16)}, {"clipLimit": 20.0, "tileGridSize": (8, 8)},
-                     {"clipLimit": 60.0, "tileGridSize": (8, 8)}]
+                     {"clipLimit": 60.0, "tileGridSize": (8, 8)}] # decreased None freq
 
     per_image_normalizations = [False, True]
-    gammas = [1.0,2.0,6.0]
+    gammas = [1.0, 1.0, 1.0, 1.0, 2.0, 2.0, 3.0] # removed 6.0, added 3.0
 
     seqs = [None]
 
