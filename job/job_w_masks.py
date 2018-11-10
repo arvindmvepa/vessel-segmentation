@@ -9,6 +9,7 @@ from sklearn.metrics import precision_recall_fscore_support, cohen_kappa_score, 
     roc_curve, auc
 import os
 from job.base import Job
+from scipy.misc import imsave
 
 
 class JobWMasks(Job):
@@ -51,3 +52,33 @@ class JobWMasks(Job):
 
     def get_val_mask_flat(self, dataset):
         return dataset.val_masks.flatten()
+
+    @staticmethod
+    def save_debug1(input_data, save_path):
+        test1 = np.array(np.round(input_data[0][0,:,:]*255), dtype=np.uint8)
+        test1_mask = np.array(np.round(input_data[1][0,:,:]*255), dtype=np.uint8)
+        test1_target = np.array(np.round(input_data[2][0,:,:]*255), dtype=np.uint8)
+        imsave(os.path.join(save_path, "test1.jpeg"), test1)
+        imsave(os.path.join(save_path, "test1_mask.jpeg"), test1_mask)
+        imsave(os.path.join(save_path, "test1_target.jpeg"), test1_target)
+
+    @staticmethod
+    def save_debug2(input_data, save_path):
+        test2 = np.array(np.round(input_data[0][0,:,:,0]*255), dtype=np.uint8)
+        test2_mask = np.array(np.round(input_data[1][0,:,:,0]*255), dtype=np.uint8)
+        test2_target = np.array(np.round(input_data[2][0,:,:,0]*255), dtype=np.uint8)
+        imsave(os.path.join(save_path, "test2.jpeg"), test2)
+        imsave(os.path.join(save_path, "test2_mask.jpeg"), test2_mask)
+        imsave(os.path.join(save_path, "test2_target.jpeg"), test2_target)
+
+    @staticmethod
+    def save_debug3(input_data, debug_data, save_path):
+        test3 = np.array(np.round(input_data[0][0,:,:,0]*255), dtype=np.uint8)
+        test3_mask = np.array(np.round(input_data[1][0,:,:,0]*255), dtype=np.uint8)
+        test3_target = np.array(np.round(input_data[2][0,:,:,0]*255), dtype=np.uint8)
+        imsave(os.path.join(save_path, "test3.jpeg"), test3)
+        imsave(os.path.join(save_path, "test3_mask.jpeg"), test3_mask)
+        imsave(os.path.join(save_path, "test3_target.jpeg"), test3_target)
+        debug1 = debug_data[0,:,:,0]
+        debug1 = np.array(np.round(debug1*255), dtype=np.uint8)
+        imsave(os.path.join(save_path, "netowrk_input_debug1.jpeg"), debug1)

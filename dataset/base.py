@@ -4,6 +4,9 @@ import math
 from math import ceil
 import os
 from sklearn.model_selection import train_test_split
+from imgaug import imgaug
+from utilities.augmentation import apply_image_aug
+
 
 class Dataset(object):
 
@@ -68,10 +71,8 @@ class Dataset(object):
     def apply_img_normalization(self, images):
         return np.array([image*1.0/(np.max(image)-np.min(image)) for image in images])
 
-    def apply_image_aug(self, images):
-        images = [np.expand_dims(np.round(image*255.0).astype(np.uint8),axis=2) for image in images]
-        images = self.seq.augment_images(images)
-        return [np.squeeze(image,axis=2)*1.0/255.0 for image in images]
+    def apply_aug(self, *args, **kwargs):
+        return apply_image_aug(*args, **kwargs)
 
     def num_batches_in_epoch(self):
         return int(math.floor(len(self.train_data[0]) / self.batch_size))

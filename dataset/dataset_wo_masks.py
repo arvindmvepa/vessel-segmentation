@@ -76,7 +76,9 @@ class DatasetWoMasks(Dataset):
                 images.append(np.array(self.train_images[self.pointer + i]))
                 targets.append(np.array(self.train_targets[self.pointer + i]))
         if self.seq is not None:
-            images = self.apply_image_aug(images)
+            seq_det = self.seq._to_deterministic()
+            images = self.apply_aug(images, seq_det)
+            targets = self.apply_aug(targets, seq_det, masks=True)
         self.pointer += self.batch_size
         return np.array(images), np.array(targets)
 
