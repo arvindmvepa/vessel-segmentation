@@ -764,11 +764,11 @@ class Job(object):
     def save_debug3(input_data, debug_data, save_path):
         test3 = np.array(np.round(input_data[0][0,:,:,0]*255), dtype=np.uint8)
         test3_target = np.array(np.round(input_data[len(input_data)-1][0,:,:,0]*255), dtype=np.uint8)
-        imsave(os.path.join(save_path, "test2.jpeg"), test3)
-        imsave(os.path.join(save_path, "test2_target.jpeg"), test3_target)
+        imsave(os.path.join(save_path, "test3.jpeg"), test3)
+        imsave(os.path.join(save_path, "test3_target.jpeg"), test3_target)
         debug1 = debug_data[0,:,:,0]
         debug1 = np.array(np.round(debug1*255), dtype=np.uint8)
-        imsave(os.path.join(save_path, "debug1.jpeg"), debug1)
+        imsave(os.path.join(save_path, "netowrk_input_debug1.jpeg"), debug1)
 
     @staticmethod
     def get_metric_names(num_thresh_scores):

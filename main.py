@@ -29,15 +29,12 @@ if __name__ == '__main__':
     gamma = 1.0
 
     ### IMAGE AUGMENTATION
-    # this image augmentation setting doesn't seem to be good
-    """
     seq = iaa.Sequential([
-        iaa.Crop(px=(0, 16)), # crop images from each side by 0 to 16px (randomly chosen)
-        iaa.Fliplr(0.5), # horizontally flip 50% of the images
-        iaa.GaussianBlur(sigma=(0, 3.0)) # blur images with a sigma of 0 to 3.0
+        iaa.Crop(px=(0, 16), name="Cropper"), # crop images from each side by 0 to 16px (randomly chosen)
+        iaa.Fliplr(0.5, name="Flipper"), # horizontally flip 50% of the images
+        iaa.GaussianBlur(sigma=(0, 3.0), name="GaussianBlur") # blur images with a sigma of 0 to 3.0
         ])
-    """
-    seq = None
+    #seq = None
 
     ### JOB INFO
     Job_cls = DriveJob
@@ -51,7 +48,7 @@ if __name__ == '__main__':
                            hist_eq, clahe_kwargs, per_image_normalization,gamma))
     OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
     metrics_epoch_freq = 1
-    viz_layer_epoch_freq = 101
+    viz_layer_epoch_freq = 1
     n_epochs = 5
 
     job = Job_cls(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
