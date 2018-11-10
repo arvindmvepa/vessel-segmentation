@@ -5,6 +5,7 @@ import os
 import json
 from copy import deepcopy
 from imgaug import augmenters as iaa
+from imgaug import parameters as iap
 
 def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_fun_and_kwargs,
                           learning_rate_and_kwargs, weight_init, act_fn, act_leak_prob, seq, hist_eq, clahe_kwargs,
@@ -99,9 +100,9 @@ if __name__ == '__main__':
 
     seqs = [iaa.Sequential([iaa.Fliplr(0.5, name="Flipper")]),
             iaa.Sequential([iaa.GaussianBlur(sigma=(0, 3.0), name="GaussianBlur")]),
-            iaa.Sequential([iaa.Affine(rotate=[0, 90, 180, 270], mode='constant', cval=0, name="rotateNoInterp")]),
+            iaa.Sequential([iaa.Affine(rotate=iap.Choice([0,90,180,270]), mode='constant', cval=0, name="rotateNoInterp")]),
             iaa.Sequential([iaa.Affine(rotate=(-90, 90), mode='constant', cval=0, name="rotate")]),
-            iaa.Sequential([iaa.Affine(rotate=[0, 90, 180, 270], mode='constant', cval=0, name="rotateNoInterp"),
+            iaa.Sequential([iaa.Affine(rotate=iap.Choice([0,90,180,270]), mode='constant', cval=0, name="rotateNoInterp"),
                             iaa.Fliplr(0.5, name="Flipper")]),
             iaa.Sequential([iaa.Affine(rotate=(-90, 90), mode='constant', cval=0, name="rotate"),
                             iaa.Fliplr(0.5, name="Flipper")]),
