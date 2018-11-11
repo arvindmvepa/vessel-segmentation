@@ -82,7 +82,15 @@ if __name__ == '__main__':
                                  (.001, {"decay_epochs": 25, "decay_rate": .1, "staircase": True}),
                                  (.001, {"decay_epochs": 50, "decay_rate": .1, "staircase": True}),
                                  (.001, {"decay_epochs": 50, "decay_rate": .1, "staircase": False}),
-                                 (.001, {})] #removed some
+                                 (.1, {"decay_epochs": 20, "decay_rate": .1, "staircase": True}),
+                                 (.01, {"decay_epochs": 50, "decay_rate": .1, "staircase": True}),
+                                 (.01, {"decay_epochs": 50, "decay_rate": .1, "staircase": False}),
+                                 (.01, {"decay_epochs": 100, "decay_rate": .1, "staircase": True}),
+                                 (.01, {"decay_epochs": 100, "decay_rate": .1, "staircase": False}),
+                                 (.001, {"decay_epochs": 50, "decay_rate": .1, "staircase": True}),
+                                 (.001, {"decay_epochs": 100, "decay_rate": .1, "staircase": True}),
+                                 (.001, {"decay_epochs": 100, "decay_rate": .1, "staircase": False}),
+                                 (.001, {})] #removed some, double delay for schedules
 
     op_fun_and_kwargss = [("adam", {}), ("rmsprop", {}), ("rmsprop", {})]
     weight_inits = ["default","He","Xnormal"]
