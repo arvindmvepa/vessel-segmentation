@@ -58,12 +58,12 @@ def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_
 if __name__ == '__main__':
 
     num_searches = 40
-    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/aug_exp"
-    # EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\aug_exp"
+    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/aug_exp1"
+    # EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\aug_exp1"
 
     metrics_epoch_freq = 5
-    viz_layer_epoch_freq = 101
-    n_epochs = 100
+    viz_layer_epoch_freq = 10001
+    n_epochs = 150
 
     WRK_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/drive"
     #WRK_DIR_PATH = "C:\\vessel-segmentation\\drive"
