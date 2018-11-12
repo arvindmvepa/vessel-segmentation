@@ -50,8 +50,8 @@ def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_
 if __name__ == '__main__':
 
     num_searches = 40
-    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments5"
-    # EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\experiments5"
+    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments6_1"
+    # EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\experiments6_1"
 
     metrics_epoch_freq = 5
     viz_layer_epoch_freq = 1000
@@ -108,6 +108,8 @@ if __name__ == '__main__':
                                                 hist_eq, clahe_kwargs, per_image_normalization, gamma)
 
         OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
+
+        # gpu_device='/gpu:1'
 
         job = DriveJob(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
         job.run_cv(WRK_DIR_PATH=WRK_DIR_PATH, mc=True, val_prop=.10, early_stopping=False, early_stopping_metric="auc",
