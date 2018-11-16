@@ -51,16 +51,15 @@ def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_
 
 if __name__ == '__main__':
 
-    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments7_test_eval"
+    EXPERIMENTS_DIR_PATH = "/root/vessel-segmentation/experiments7_test_eval"
     # EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\experiments6_1"
 
-    metrics_epoch_freq = 1
+    metrics_epoch_freq = 5
     viz_layer_epoch_freq = 1000
-    n_epochs = 2
+    n_epochs = 100
 
-    WRK_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/drive"
+    WRK_DIR_PATH = "/root/DRIVE"
     #WRK_DIR_PATH = "C:\\vessel-segmentation\\drive"
-    n_splits = 4
 
     job_opts_all = None
     with open('top_job_opts.csv') as csv_file:
@@ -79,5 +78,5 @@ if __name__ == '__main__':
         job = DriveJob(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
         job.run_single_model(WRK_DIR_PATH=WRK_DIR_PATH, early_stopping=False, early_stopping_metric="auc",
                    save_model=False, save_sample_test_images=False, metrics_epoch_freq=metrics_epoch_freq,
-                   viz_layer_epoch_freq=viz_layer_epoch_freq, n_epochs=n_epochs, n_splits=n_splits, **job_kwargs)
+                   viz_layer_epoch_freq=viz_layer_epoch_freq, n_epochs=n_epochs, **job_kwargs)
 
