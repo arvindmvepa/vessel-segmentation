@@ -1,5 +1,14 @@
+#from imgaug import augmenters as iaa
+import csv
+from collections import defaultdict
+import numpy as np
+import re
+from utilities.misc import remove_duplicates
+from statsmodels import robust
 from copy import deepcopy
 import json
+import os
+
 from utilities.misc import remove_duplicates, copy_jobs, analyze
 
 def clean_str(val):
@@ -15,30 +24,33 @@ def get_hyp_opts(all_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
 
     # hyper-parameter search space
     tuning_constants = [.5,1.0,1.5,2.0]
-    ss_rs = [.166,.5,.6,.667]
-    objective_fns = ["wce","gdice","ss"]
 
-    regularizer_argss = [None, None, None,("L1",1E-6), ("L1",1E-8), ("L2",1E-4),("L2",1E-6),("L2",1E-6),("L2",1E-6), ("L2",1E-8)]
-    learning_rate_and_kwargss = [(.1, {"decay_epochs":5,"decay_rate":.1,"staircase":False}),
-                                 (.1, {"decay_epochs":5,"decay_rate":.1,"staircase":True}),
-                                 (.1, {"decay_epochs": 10, "decay_rate": .1, "staircase": True}),
-                                 (.1, {}),
-                                 (.01, {}),
+    ss_rs = [None]
+    objective_fns = ["wce"]
+
+    regularizer_argss = [None,("L1",1E-8),("L2",1E-4),("L2",1E-6), ("L2",1E-8)]
+
+    learning_rate_and_kwargss = [(.1, {"decay_epochs": 10, "decay_rate": .1, "staircase": True}),
+                                 (.01, {"decay_epochs": 25, "decay_rate": .1, "staircase": True}),
+                                 (.01, {"decay_epochs": 25, "decay_rate": .1, "staircase": False}),
+                                 (.01, {"decay_epochs": 50, "decay_rate": .1, "staircase": True}),
+                                 (.01, {"decay_epochs": 50, "decay_rate": .1, "staircase": False}),
+                                 (.001, {"decay_epochs": 25, "decay_rate": .1, "staircase": True}),
+                                 (.001, {"decay_epochs": 50, "decay_rate": .1, "staircase": True}),
+                                 (.001, {"decay_epochs": 50, "decay_rate": .1, "staircase": False}),
                                  (.001, {})]
 
-    op_fun_and_kwargss = [("adam", {}), ("grad", {}), ("rmsprop", {}), ("rmsprop", {}), ("rmsprop", {})]
+    op_fun_and_kwargss = [("adam", {}), ("rmsprop", {})]
     weight_inits = ["default","He","Xnormal"]
     act_fns = ["lrelu"]
-    act_leak_probs = [0.0,0.2,0.2,0.4,0.6]
+    act_leak_probs = [0.2]
 
     hist_eqs = [False]
 
-    clahe_kwargss = [None, {"clipLimit": 2.0,"tileGridSize":(8,8)}, {"clipLimit": 2.0,"tileGridSize":(4,4)},
-                     {"clipLimit": 2.0,"tileGridSize":(16,16)}, {"clipLimit": 20.0, "tileGridSize": (8, 8)},
-                     {"clipLimit": 60.0, "tileGridSize": (8, 8)}]
+    clahe_kwargss = [None]
 
     per_image_normalizations = [False, True]
-    gammas = [1.0,2.0,6.0]
+    gammas = [1.0]
 
     seqs = [None]
 
@@ -84,15 +96,14 @@ def get_hyp_opts(all_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
     return all_hyps_opts, all_hyps
 
 if __name__ == '__main__':
-    EXPERIMENTS_DIR_PATH = "/Users/arvind.m.vepa/Documents/vessel segmentation/second round hyp results/overall results"
-    OUTPUT_DIR_PATH = "/Users/arvind.m.vepa/Documents/vessel segmentation/second round hyp results/overall_output"
-    TOP_EXPERIMENTS_DIR_PATH = "/Users/arvind.m.vepa/Documents/vessel segmentation/second round hyp results/top overall results"
-    TOP_OUTPUT_DIR_PATH = "/Users/arvind.m.vepa/Documents/vessel segmentation/second round hyp results/top overall output"
+    EXPERIMENTS_DIR_PATH = "/Users/arvind.m.vepa/Documents/vessel segmentation/round6_1/overall results"
+    OUTPUT_DIR_PATH = "/Users/arvind.m.vepa/Documents/vessel segmentation/round6_1/overall output"
+    TOP_EXPERIMENTS_DIR_PATH = "/Users/arvind.m.vepa/Documents/vessel segmentation/round6_1/top overall results"
+    TOP_OUTPUT_DIR_PATH = "/Users/arvind.m.vepa/Documents/vessel segmentation/round6_1/top overall output"
 
     jobs = analyze(EXPERIMENTS_DIR_PATH=EXPERIMENTS_DIR_PATH, OUTPUT_DIR_PATH=OUTPUT_DIR_PATH, get_hyp_opts=get_hyp_opts)
     copy_jobs(jobs, EXPERIMENTS_DIR_PATH, TOP_EXPERIMENTS_DIR_PATH)
     analyze(EXPERIMENTS_DIR_PATH=TOP_EXPERIMENTS_DIR_PATH, OUTPUT_DIR_PATH=TOP_OUTPUT_DIR_PATH, get_hyp_opts=get_hyp_opts)
-
 
 
 

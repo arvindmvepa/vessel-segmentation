@@ -57,6 +57,10 @@ def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_
 
 if __name__ == '__main__':
 
+    ### DEBUG THIS TO CHECK EPOCH COUNTS
+    ### WAS A BUG WHEN CALCULATING MEAN OF SCORE SHEETS
+    ### AT MINIMUM SHOULD CHANGE SCORING FOR MORE ENTRIES (THOUGH THAT SHOULD BE FOR THE RESULST ANALYZER, NOT SURE ISSUE)
+
     num_searches = 40
     EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/aug_exp1"
     # EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\aug_exp1"
