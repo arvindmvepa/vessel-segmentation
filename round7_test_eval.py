@@ -51,7 +51,7 @@ def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_
 
 if __name__ == '__main__':
 
-    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments6_1"
+    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments7_test_eval"
     # EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\experiments6_1"
 
     metrics_epoch_freq = 1
