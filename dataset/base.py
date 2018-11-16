@@ -84,7 +84,10 @@ class Dataset(object):
         raise NotImplementedError("Method Not Implemented")
 
     def get_tuned_pos_ce_weight(self, tuning_constant=1.0, *args):
-        return tuning_constant*self.get_inverse_pos_freq(*args)[0]
+        if tuning_constant is not None:
+            return tuning_constant*self.get_inverse_pos_freq(*args)[0]
+        else:
+            return 0.0
 
     def get_inverse_pos_freq(self, images, targets, **kwargs):
         raise NotImplementedError("Method Not Implemented")

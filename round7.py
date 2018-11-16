@@ -67,7 +67,7 @@ if __name__ == '__main__':
         csv_reader = csv.reader(csv_file, delimiter=',')
         job_opts_all = [row for row in csv_reader]
 
-    for job_opts in job_opts_all:
+    for job_opts in sorted(job_opts_all, key=lambda x: x[0]):
         job_kwargs = get_job_kwargs_from_job_opts(job_opts)
 
         EXPERIMENT_NAME = get_experiment_string(**job_kwargs)
