@@ -183,7 +183,7 @@ def copy_jobs(jobs, EXPERIMENTS_DIR_PATH, TOP_EXPERIMENTS_DIR_PATH, top=None):
 def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regularizer_argss",
                              "op_fun_and_kwargss","learning_rate_and_kwargss","weight_inits","act_fns","act_leak_probs",
                              "seqs","hist_eqs","clahe_kwargss", "per_image_normalizations","gammas"), mof_metric="mad",
-            n_metric_intervals=20, EXPERIMENTS_DIR_PATH=".", OUTPUT_DIR_PATH=".", rt_jobs_score = None,
+            n_metric_intervals=20, EXPERIMENTS_DIR_PATH=".", OUTPUT_DIR_PATH=".", rt_jobs_score = None, file_char = "mof",
             rt_jobs_metric_interval=None, get_hyp_opts = lambda *args, **kwargs: None):
 
     if not os.path.exists(OUTPUT_DIR_PATH):
@@ -208,7 +208,7 @@ def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
     for job_file in job_files:
         JOB_PATH = os.path.join(EXPERIMENTS_DIR_PATH, job_file)
         # get the file with the combined metrics score
-        job_metrics_file = [file for file in os.listdir(JOB_PATH) if "mof" in file][0]
+        job_metrics_file = [file for file in os.listdir(JOB_PATH) if file_char in file][0]
         JOB_METRICS_PATH = os.path.join(JOB_PATH, job_metrics_file)
         # parse the hyper-parameter options from the file name
         job_opts = get_job_opts(job_file)
@@ -288,7 +288,10 @@ def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
             i_job_results = i_job_results.items()
             i_job_results = sorted(i_job_results, key = lambda x: x[1][0], reverse=True)
             i_jobs, i_results = zip(*i_job_results)
-            mean_results, _ = zip(*i_results)
+            if file_char == "mof":
+                mean_results, _ = zip(*i_results)
+            else:
+                mean_results = zip(*i_results)
             if rt_jobs_score is not None and (rt_jobs_metric_interval is None or i == rt_jobs_metric_interval):
                 for i_job, i_result in zip(i_jobs, i_results):
                     if i_result[0] > rt_jobs_score:
