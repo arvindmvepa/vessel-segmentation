@@ -107,9 +107,9 @@ if __name__ == '__main__':
     TOP_EXPERIMENTS_DIR_PATH = "/Users/arvind.m.vepa/Documents/vessel segmentation/round0_4_and_6_1/top overall results"
     TOP_OUTPUT_DIR_PATH = "/Users/arvind.m.vepa/Documents/vessel segmentation/round0_4_and_6_1/top overall output"
 
-    jobs = analyze(EXPERIMENTS_DIR_PATH=EXPERIMENTS_DIR_PATH, OUTPUT_DIR_PATH=OUTPUT_DIR_PATH, get_hyp_opts=get_hyp_opts, rt_jobs_score=.97)
+    jobs = analyze(EXPERIMENTS_DIR_PATH=EXPERIMENTS_DIR_PATH, OUTPUT_DIR_PATH=OUTPUT_DIR_PATH, get_hyp_opts=get_hyp_opts, rt_jobs_score=.971)
     copy_jobs(jobs, EXPERIMENTS_DIR_PATH, TOP_EXPERIMENTS_DIR_PATH)
-
+    """
     # save jobs that score above .970 AUC
     with open("top_job_opts.csv", "a") as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
@@ -117,6 +117,7 @@ if __name__ == '__main__':
             job_opts = get_job_opts(job)
             print(get_job_kwargs_from_job_opts(job_opts))
             writer.writerow(job_opts)
+    """
 
     analyze(EXPERIMENTS_DIR_PATH=TOP_EXPERIMENTS_DIR_PATH, OUTPUT_DIR_PATH=TOP_OUTPUT_DIR_PATH, get_hyp_opts=get_hyp_opts)
 
