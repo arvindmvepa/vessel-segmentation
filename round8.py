@@ -68,8 +68,8 @@ if __name__ == '__main__':
                             iaa.Fliplr(0.5, name="Flipper")]),
             iaa.Sequential([iaa.Affine(rotate=(-10, 10), mode='constant', cval=0, name="rotate_small")])
             ]
-    for n_epochs, learning_rate_and_kwargs in [((.001, {"decay_epochs": 25, "decay_rate": .1, "staircase": True}), 100),
-                                              ((.001, {"decay_epochs": 50, "decay_rate": .1, "staircase": True}), 200)]:
+    for learning_rate_and_kwargs, n_epochs in [((.001, {"decay_epochs": 25, "decay_rate": .1, "staircase": True}), 100),
+                                               ((.001, {"decay_epochs": 50, "decay_rate": .1, "staircase": True}), 200)]:
         for seq in seqs:
 
             EXPERIMENT_NAME = get_experiment_string(seq, n_epochs)
