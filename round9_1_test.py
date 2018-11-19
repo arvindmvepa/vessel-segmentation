@@ -31,13 +31,13 @@ if __name__ == '__main__':
     ### WAS A BUG WHEN CALCULATING MEAN OF SCORE SHEETS
     ### AT MINIMUM SHOULD CHANGE SCORING FOR MORE ENTRIES (THOUGH THAT SHOULD BE FOR THE RESULST ANALYZER, NOT SURE ISSUE)
 
-    EXPERIMENTS_DIR_PATH = "/root/vessel-segmentation1/experiments9_1_test_eval"
+    EXPERIMENTS_DIR_PATH = "/root/vessel-segmentation/experiments9_1_test_eval"
     # EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\aug_exp1"
 
     metrics_epoch_freq = 5
     viz_layer_epoch_freq = 10001
 
-    WRK_DIR_PATH = "/root/vessel-segmentation1/DRIVE"
+    WRK_DIR_PATH = "/root/vessel-segmentation/DRIVE"
     #WRK_DIR_PATH = "C:\\vessel-segmentation\\drive"
     n_epochs = 200
 
