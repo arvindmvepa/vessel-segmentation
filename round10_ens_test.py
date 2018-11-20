@@ -66,7 +66,7 @@ if __name__ == '__main__':
 
     job = DriveJob(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
     job.run_ensemble(WRK_DIR_PATH=WRK_DIR_PATH, early_stopping=False, early_stopping_metric="auc",
-                     save_model=False, save_sample_test_images=False, metrics_epoch_freq=metrics_epoch_freq,
+                     save_sample_test_images=False, metrics_epoch_freq=metrics_epoch_freq,
                      viz_layer_epoch_freq=viz_layer_epoch_freq, n_epochs=n_epochs, objective_fn=objective_fn,
                      wce_start_tuning_constant=tuning_constant, wce_end_tuning_constant=None,
                      regularizer_args=regularizer_args, op_fun_and_kwargs=op_fun_and_kwargs,
