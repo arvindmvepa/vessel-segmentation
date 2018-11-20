@@ -19,7 +19,7 @@ def get_experiment_string(**kwargs):
         exp_string += str(kwargs["regularizer_args"])
     if "op_fun_and_kwargs" in kwargs:
         exp_string += str(kwargs["op_fun_and_kwargs"])
-    if "op_fun_and_kwargs" in kwargs:
+    if "learning_rate_and_kwargs" in kwargs:
         learning_rate_and_kwargs = deepcopy(kwargs["learning_rate_and_kwargs"])
         learning_rate_kwargs = learning_rate_and_kwargs[1]
         if "decay_epochs" in learning_rate_kwargs:
