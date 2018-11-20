@@ -10,15 +10,15 @@ from imgaug import parameters as iap
 def get_experiment_string(**kwargs):
     exp_string = ""
     if "objective_fn" in kwargs:
-        exp_string += kwargs["objective_fn"]
+        exp_string += "objective_fn"+kwargs["objective_fn"]
     if "tuning_constant" in kwargs:
-        exp_string += (str(kwargs["tuning_constant"]))
+        exp_string += "tuning_constant" + (str(kwargs["tuning_constant"]))
     if "ss_r" in kwargs:
-        exp_string += str(kwargs["ss_r"])
+        exp_string += "ss_r" + str(kwargs["ss_r"])
     if "regularizer_args" in kwargs:
-        exp_string += str(kwargs["regularizer_args"])
+        exp_string += "regularizer_args" + str(kwargs["regularizer_args"])
     if "op_fun_and_kwargs" in kwargs:
-        exp_string += str(kwargs["op_fun_and_kwargs"])
+        exp_string += "op_fun_and_kwargs" + str(kwargs["op_fun_and_kwargs"])
     if "learning_rate_and_kwargs" in kwargs:
         learning_rate_and_kwargs = deepcopy(kwargs["learning_rate_and_kwargs"])
         learning_rate_kwargs = learning_rate_and_kwargs[1]
@@ -28,28 +28,28 @@ def get_experiment_string(**kwargs):
             learning_rate_kwargs["d_r"] = learning_rate_kwargs.pop("decay_rate")
         if "staircase" in learning_rate_kwargs:
             learning_rate_kwargs["s_c"] = learning_rate_kwargs.pop("staircase")
-        exp_string += "("+str(learning_rate_and_kwargs[0]) +","+json.dumps(learning_rate_kwargs, sort_keys=True) + ")"
+        exp_string += "learning_rate_and_kwargs" + "("+str(learning_rate_and_kwargs[0]) +","+json.dumps(learning_rate_kwargs, sort_keys=True) + ")"
     if "weight_init" in kwargs:
-        exp_string += kwargs["weight_init"]
+        exp_string += "weight_init"+kwargs["weight_init"]
     if "act_fn" in kwargs:
-        exp_string += kwargs["act_fn"]
+        exp_string += "act_fn"+kwargs["act_fn"]
     if "act_leak_prob" in kwargs:
-        exp_string += str(kwargs["act_leak_prob"])
+        exp_string += "act_leak_prob"+str(kwargs["act_leak_prob"])
     if "hist_eq" in kwargs:
-        exp_string += str(kwargs["hist_eq"])
+        exp_string += "hist_eq"+str(kwargs["hist_eq"])
 
     if "clahe_kwargs" in kwargs:
         clahe_kwargs = deepcopy(kwargs["clahe_kwargs"])
         if clahe_kwargs is None:
-            exp_string += str(None)
+            exp_string += "clahe_kwargs"+str(None)
         else:
             clahe_kwargs["cl"] = clahe_kwargs.pop("clipLimit")
             clahe_kwargs["tgs"] = clahe_kwargs.pop("tileGridSize")
-            exp_string += json.dumps(clahe_kwargs, sort_keys=True)
+            exp_string += "clahe_kwargs"+json.dumps(clahe_kwargs, sort_keys=True)
     if "per_image_normalization" in kwargs:
-        exp_string += str(kwargs["per_image_normalization"])
+        exp_string += "per_image_normalization"+str(kwargs["per_image_normalization"])
     if "gamma" in kwargs:
-        exp_string += str(kwargs["gamma"])
+        exp_string += "gamma"+str(kwargs["gamma"])
     exp_string = exp_string.replace("\'","").replace("\"","").replace(",","").replace(" ","-").\
         replace("{","(").replace("}",")").replace("[","(").replace("]",")").replace(":","-")
 
