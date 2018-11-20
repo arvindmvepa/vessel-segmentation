@@ -34,7 +34,7 @@ def get_experiment_string(**kwargs):
     if "act_fn" in kwargs:
         exp_string += kwargs["act_fn"]
     if "act_leak_prob" in kwargs:
-        exp_string += kwargs["act_leak_prob"]
+        exp_string += str(kwargs["act_leak_prob"])
     if "hist_eq" in kwargs:
         exp_string += str(kwargs["hist_eq"])
 
