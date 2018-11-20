@@ -98,7 +98,7 @@ if __name__ == '__main__':
         for key, value in kwarg_option.items():
             current_job_kwargs[key] = value
 
-        EXPERIMENT_NAME = get_experiment_string(kwarg_option)
+        EXPERIMENT_NAME = get_experiment_string(**kwarg_option)
         OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
 
 
