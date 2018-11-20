@@ -223,9 +223,14 @@ def analyze(relevant_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
                 auc_results = row[auc_col]
                 auc_results = [float(result) for result in p.findall(auc_results)][0:2]
                 job_results[i][job_file] = auc_results
-                for hyp_name,job_opt in zip(all_hyps, job_opts):
+                for hyp_name, job_opt in zip(all_hyps, job_opts):
+                    #print('debug')
+                    #print(hyp_name)
+                    #print(job_opt)
+
                     check = False
                     hyp_opts = all_hyps_opts[hyp_name]
+                    #print(hyp_opts)
                     for hyp_opt in hyp_opts:
                         if str(hyp_opt) in job_opt or job_opt in str(hyp_opt):
                             auc_roc_marg_scores[i][hyp_name][str(hyp_opt)] = \
