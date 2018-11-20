@@ -58,9 +58,9 @@ if __name__ == '__main__':
     per_image_normalization = True
     gamma = 2.0
 
-    seqs = [iaa.Sequential([iaa.Affine(rotate=(-45, 45), mode='constant', cval=0, name="rotate")]),
-            iaa.Sequential([iaa.Affine(rotate=(-135, 135), mode='constant', cval=0, name="rotate")]),
-            iaa.Sequential([iaa.Affine(rotate=(-180, 180), mode='constant', cval=0, name="rotate")]),
+    seqs = [iaa.Sequential([iaa.Affine(rotate=(-45, 45), mode='constant', cval=0, name="rotate45")]),
+            iaa.Sequential([iaa.Affine(rotate=(-135, 135), mode='constant', cval=0, name="rotate135")]),
+            iaa.Sequential([iaa.Affine(rotate=(-180, 180), mode='constant', cval=0, name="rotate180")]),
             ]
 
     for seq in seqs:
