@@ -81,29 +81,29 @@ if __name__ == '__main__':
     n_epochs = 200
 
 
-    job_kwargs = {"tuning_constant":1.5, "objective_fn": "wce", "regularizer_args": ("L1",1E-8),
-                  "op_fun_and_kwargs": ("rmsprop", {}),
+    job_kwargs = {"objective_fn": "wce", "regularizer_args": ("L1",1E-8), "op_fun_and_kwargs": ("rmsprop", {}),
                   "learning_rate_and_kwargs": (.001, {"decay_epochs": 50, "decay_rate": .1, "staircase": True}),
                   "weight_init": "default", "act_fn": "lrelu", "act_leak_prob": 0.2, "hist_eq": False,
                   "clahe_kwargs": {"clipLimit": 2.0,"tileGridSize":(8,8)}, "per_image_normalization": True,
-                  "gamma": 2.0,
-                  "seq": iaa.Sequential([iaa.Affine(rotate=(-90, 90), mode='constant', cval=0, name="rotate")])}
+                  "gamma": 2.0}
 
-    kwarg_options = [{"tuning_constant": 1.75},  {"tuning_constant": 2.25}, {"tuning_constant": 2.5},
-                     {"seq": iaa.Sequential([iaa.Affine(rotate=(-27.5, 27.5), mode='constant', cval=0, name="rotate27_5")])},
-                     {"seq": iaa.Sequential([iaa.Affine(rotate=(-67.5, 67.5), mode='constant', cval=0, name="rotate67_ 5")])}
-                     ]
+    tuning_constants = [1.5, 1.75, 2.0, 2.25, 2.5]
 
-    for kwarg_option in kwarg_options:
-        current_job_kwargs = deepcopy(job_kwargs)
-        for key, value in kwarg_option.items():
-            current_job_kwargs[key] = value
+    seqs = [iaa.Sequential([iaa.Affine(rotate=(-27.5, 27.5), mode='constant', cval=0, name="rotate27_5")]),
+            iaa.Sequential([iaa.Affine(rotate=(-45, 45), mode='constant', cval=0, name="rotate45")]),
+            iaa.Sequential([iaa.Affine(rotate=(-67.5, 67.5), mode='constant', cval=0, name="rotate67_ 5")]),
+            iaa.Sequential([iaa.Affine(rotate=(-90, 90), mode='constant', cval=0, name="rotate90")])]
 
-        EXPERIMENT_NAME = get_experiment_string(**kwarg_option)
+    hyper_parameter_combos = list(product(tuning_constants, seqs))
+
+    for tuning_constant, seq in hyper_parameter_combos:
+
+        EXPERIMENT_NAME = get_experiment_string(**{"tuning_constant": tuning_constant, "seq": seq})
         OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
 
 
         job = DriveJob(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
         job.run_single_model(WRK_DIR_PATH=WRK_DIR_PATH, early_stopping=False, early_stopping_metric="auc",
                              save_model=False, save_sample_test_images=False, metrics_epoch_freq=metrics_epoch_freq,
-                             viz_layer_epoch_freq=viz_layer_epoch_freq, n_epochs=n_epochs, **current_job_kwargs)
+                             viz_layer_epoch_freq=viz_layer_epoch_freq, n_epochs=n_epochs,
+                             tuning_constant=tuning_constant, seq=seq,**job_kwargs)
