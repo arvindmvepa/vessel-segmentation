@@ -208,7 +208,12 @@ class Job(object):
         # kwargs are applied to dataset class
         if dataset is None:
             dataset = self.dataset_cls(early_stopping=early_stopping,**kwargs)
-        pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant, *dataset.train_data[1:])
+
+        if objective_fn == "ss":
+            pos_weight = dataset.get_tuned_pos_ce_weight(pos_weight=ss_r, neg_weight=1-ss_r,*dataset.train_data[1:])
+        else:
+            pos_weight = dataset.get_tuned_pos_ce_weight(pos_weight=tuning_constant, neg_weight=1,
+                                                         *dataset.train_data[1:])
 
         # initialize network object
         if gpu_device is not None:
