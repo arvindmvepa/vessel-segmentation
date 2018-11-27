@@ -83,7 +83,8 @@ class Dataset(object):
     def next_batch(self):
         raise NotImplementedError("Method Not Implemented")
 
-    def get_tuned_pos_ce_weight(self, tuning_constant=1.0, *args):
+    def get_tuned_pos_ce_weight(self, pos_weight=1.0, neg_weight=1.0, *args):
+        tuning_constant = pos_weight/neg_weight
         return tuning_constant*self.get_inverse_pos_freq(*args)[0]
 
     def get_inverse_pos_freq(self, images, targets, **kwargs):
