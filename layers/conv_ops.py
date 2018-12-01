@@ -56,5 +56,5 @@ class ConvT2d(Conv2d):
         return tf.nn.atrous_conv2d_transpose(input, W, tf.stack([self.input_shape[0],
                                                                  self.input_shape[1],
                                                                  self.input_shape[2],
-                                                                 self.output_channels]),
-                                      rate=rate, padding=padding)
+                                                                 tf.constant(self.output_channels)]),
+                                             rate=rate, padding=padding)
