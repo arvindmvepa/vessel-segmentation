@@ -72,7 +72,7 @@ class ConvT2d(Conv2d):
                                          self.input_shape[1],
                                          self.input_shape[2],
                                          self.output_channels]))
-        output = tf.nn.conv2d_transpose(input, W, tf.stack([1,
+        output = tf.nn.conv2d_transpose(input, W, tf.stack([None,
                                                             self.input_shape[1],
                                                             self.input_shape[2],
                                                             self.output_channels]),
