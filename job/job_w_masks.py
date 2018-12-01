@@ -18,7 +18,7 @@ class JobWMasks(Job):
         super(JobWMasks, self).__init__(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
 
     def get_network_dict(self, network, input_data, train=True):
-        net_dict = super(JobWMasks, self).get_network_dict(network, input_data, train=True)
+        net_dict = super(JobWMasks, self).get_network_dict(network, input_data, train=train)
         net_dict.update({network.inputs: input_data[0], network.masks: input_data[1], network.targets: input_data[2]})
         return net_dict
 
