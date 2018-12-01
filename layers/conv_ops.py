@@ -20,8 +20,6 @@ class Conv2d(Layer):
         if self.add_to_input:
             input = tf.add(input, add_w_input)
         self.input_shape = get_incoming_shape(input)
-        print("layer")
-        print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
         self.number_of_input_channels = number_of_input_channels
         with tf.variable_scope('conv', reuse=False):
@@ -36,11 +34,8 @@ class Conv2d(Layer):
             b = tf.Variable(tf.zeros([self.output_channels]))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
         output = tf.nn.atrous_conv2d(input, W, rate=self.dilation, padding='SAME')
-        print(get_incoming_shape(output))
         output = tf.nn.dropout(output, self.keep_prob)
-        print(get_incoming_shape(output))
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
-        print(get_incoming_shape(output))
         return output
 
     def get_description(self):
@@ -52,8 +47,6 @@ class ConvT2d(Conv2d):
         if self.add_to_input:
             input = tf.add(input, add_w_input)
         self.input_shape = get_incoming_shape(input)
-        print("layer")
-        print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
         self.number_of_input_channels = number_of_input_channels
         with tf.variable_scope('conv', reuse=False):
@@ -67,19 +60,11 @@ class ConvT2d(Conv2d):
                                 initializer=initializer)
             b = tf.Variable(tf.zeros([self.output_channels]))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
-        print("Weights shape: {}".format(W.get_shape().as_list()))
-        print("Output shape: {}".format([tf.shape(input)[0],
-                                         self.input_shape[1],
-                                         self.input_shape[2],
-                                         self.output_channels]))
-        output = tf.nn.conv2d_transpose(input, W, tf.stack([-1,
+        output = tf.nn.conv2d_transpose(input, W, tf.stack([tf.shape(input)[0],
                                                             self.input_shape[1],
                                                             self.input_shape[2],
                                                             self.output_channels]),
                                         strides=[1, 1, 1, 1], padding='SAME')
-        print(get_incoming_shape(output))
         output = tf.nn.dropout(output, self.keep_prob)
-        print(get_incoming_shape(output))
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
-        print(get_incoming_shape(output))
         return output
