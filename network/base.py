@@ -57,7 +57,7 @@ class Network(object):
         net = tf.image.resize_image_with_crop_or_pad(net, self.IMAGE_HEIGHT, self.IMAGE_WIDTH)
         if self.mask:
             net = self.mask_results(net)
-        self.segmentation_result = tf.sigmoid(net)
+        self.segmentation_result = tf.sigmoid(net + 0.00001)
         self.calculate_loss(net, **loss_kwargs)
         self.train_op = self.cur_op_fn.minimize(self.cost, global_step=self._global_step)
 
