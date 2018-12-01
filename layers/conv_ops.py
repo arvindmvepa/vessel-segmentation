@@ -35,7 +35,7 @@ class Conv2d(Layer):
                                 initializer=initializer)
             b = tf.Variable(tf.zeros([self.output_channels]))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
-        output = self.apply_conv(input, W, rate=self.dilation, padding='SAME')
+        output = tf.nn.atrous_conv2d(input, W, rate=self.dilation, padding='SAME')
         print(get_incoming_shape(output))
         output = tf.nn.dropout(output, self.keep_prob)
         print(get_incoming_shape(output))
@@ -43,19 +43,38 @@ class Conv2d(Layer):
         print(get_incoming_shape(output))
         return output
 
-    def apply_conv(self, input, W, rate, padding):
-        return tf.nn.atrous_conv2d(input, W, rate=rate, padding=padding)
-
     def get_description(self):
         return "C{},{},{}".format(self.kernel_size, self.output_channels, self.dilation)
 
 class ConvT2d(Conv2d):
 
-    def apply_conv(self, input, W, rate, padding):
-        print("output shape [ {}, {}, {}, {}]".format(tf.shape(input)[0], self.input_shape[1], self.input_shape[2],
-                                                      self.output_channels))
-        return tf.nn.atrous_conv2d_transpose(input, W, tf.stack([tf.shape(input)[0],
-                                                                 self.input_shape[1],
-                                                                 self.input_shape[2],
-                                                                 self.output_channels]),
-                                             rate=rate, padding=padding)
+    def create_layer(self, input, add_w_input=None, **kwargs):
+        if self.add_to_input:
+            input = tf.add(input, add_w_input)
+        self.input_shape = get_incoming_shape(input)
+        print("layer")
+        print(self.input_shape)
+        number_of_input_channels = self.input_shape[3]
+        self.number_of_input_channels = number_of_input_channels
+        with tf.variable_scope('conv', reuse=False):
+            initializer=None
+            if self.weight_init == 'He':
+                initializer = tf.contrib.layers.variance_scaling_initializer(factor=2.0, mode='FAN_IN', uniform=False)
+            elif self.weight_init == 'Xnormal':
+                initializer=tf.contrib.layers.xavier_initializer(uniform=False,seed=None)
+            W = tf.get_variable(('W{}'.format(self.name[-3:])), shape=(self.kernel_size, self.kernel_size,
+                                                                       self.output_channels, number_of_input_channels),
+                                initializer=initializer)
+            b = tf.Variable(tf.zeros([self.output_channels]))
+        tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
+        output = tf.nn.atrous_conv2d_transpose(input, W, tf.stack([tf.shape(input)[0],
+                                                                   self.input_shape[1],
+                                                                   self.input_shape[2],
+                                                                   self.output_channels]),
+                                               rate=self.dilation, padding='SAME')
+        print(get_incoming_shape(output))
+        output = tf.nn.dropout(output, self.keep_prob)
+        print(get_incoming_shape(output))
+        output = tf.add(tf.contrib.layers.batch_norm(output), b)
+        print(get_incoming_shape(output))
+        return output
