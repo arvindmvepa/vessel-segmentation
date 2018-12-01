@@ -63,18 +63,15 @@ class ConvT2d(Conv2d):
             elif self.weight_init == 'Xnormal':
                 initializer=tf.contrib.layers.xavier_initializer(uniform=False,seed=None)
             W = tf.get_variable(('W{}'.format(self.name[-3:])), shape=(self.kernel_size, self.kernel_size,
-                                                                       number_of_input_channels, self.output_channels),
+                                                                       self.output_channels, number_of_input_channels),
                                 initializer=initializer)
             b = tf.Variable(tf.zeros([self.output_channels]))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
-        """
         output = tf.nn.atrous_conv2d_transpose(input, W, tf.stack([tf.shape(input)[0],
                                                                    self.input_shape[1],
                                                                    self.input_shape[2],
                                                                    self.output_channels]),
-                                               rate=self.dilation, padding='SAME')
-        """
-        output = tf.nn.atrous_conv2d(input, W, rate=self.dilation, padding='SAME')
+                                               padding='SAME')
         print(get_incoming_shape(output))
         output = tf.nn.dropout(output, self.keep_prob)
         print(get_incoming_shape(output))
