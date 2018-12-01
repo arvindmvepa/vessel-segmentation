@@ -51,7 +51,7 @@ class Network(object):
 
             # DECODER
             for i, layer in enumerate(layers[num_decoder_layers:], start=1):
-                net = layer.create_layer(net, prev_layer=self.layers[num_decoder_layers-i])
+                net = layer.create_layer(net, add_w_input=self.layers[num_decoder_layers-i])
                 self.layer_outputs.append(net)
 
         print("Number of layers: ", len(layers))
