@@ -67,11 +67,11 @@ class ConvT2d(Conv2d):
                                 initializer=initializer)
             b = tf.Variable(tf.zeros([self.output_channels]))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
-        print("Weighs shape: {}".format(W.get_shape().as_list()))
+        print("Weights shape: {}".format(W.get_shape().as_list()))
         print("Output shape: {}".format(tf.stack([tf.shape(input)[0],
                                                   self.input_shape[1],
                                                   self.input_shape[2],
-                                                  self.output_channels]).get_shape().as_list()))
+                                                  self.output_channels]).as_list()))
         output = tf.nn.conv2d_transpose(input, W, tf.stack([tf.shape(input)[0],
                                                             self.input_shape[1],
                                                             self.input_shape[2],
