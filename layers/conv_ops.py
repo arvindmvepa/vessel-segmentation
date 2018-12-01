@@ -65,7 +65,7 @@ class ConvT2d(Conv2d):
             W = tf.get_variable(('W{}'.format(self.name[-3:])), shape=(self.kernel_size, self.kernel_size,
                                                                        self.output_channels, number_of_input_channels),
                                 initializer=initializer)
-            b = tf.Variable(tf.zeros([self.output_channels]))
+            #b = tf.Variable(tf.zeros([self.output_channels]))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
         output = tf.nn.atrous_conv2d_transpose(input, W, tf.stack([tf.shape(input)[0],
                                                                    self.input_shape[1],
