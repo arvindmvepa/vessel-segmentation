@@ -17,7 +17,7 @@ class Conv2d(Layer):
         self.dilation = dilation
  
     def create_layer(self, input, add_w_input=None, **kwargs):
-        if self.add_to_input is not None:
+        if not self.add_to_input:
             input = tf.add(input, add_w_input)
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
