@@ -53,4 +53,9 @@ class ConvT2d(Conv2d):
 
     def apply_conv(self, input, W, rate, padding):
         #return tf.nn.atrous_conv2d_transpose(input, W, tf.shape(input), rate=rate, padding=padding)
-        return tf.nn.atrous_conv2d(input, W, rate=rate, padding=padding)
+        #return tf.nn.atrous_conv2d(input, W, rate=rate, padding=padding)
+        return tf.nn.atrous_conv2d_transpose(input, W, tf.stack([self.input_shape[0],
+                                                                 self.input_shape[1],
+                                                                 self.input_shape[2],
+                                                                 tf.convert_to_tensor(self.output_channels)]),
+                                      rate=rate, padding=padding)
