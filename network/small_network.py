@@ -132,6 +132,6 @@ class SmallNetwork(Network):
                               output_channels=self.layer_params['convt_8_1']['output_channels'],
                               keep_prob=self.layer_params['convt_8_1']['keep_prob'], name='convt_8_1'))
 
-        num_decoder_layers = int(len(self.layers)/2)+1
+        num_decoder_layers = int(len(layers)/2)+1
 
         super(SmallNetwork, self).__init__(layers=layers, num_decoder_layers=num_decoder_layers, **kwargs)

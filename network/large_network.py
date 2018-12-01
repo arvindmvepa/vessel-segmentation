@@ -200,6 +200,6 @@ class LargeNetwork(Network):
                               output_channels=self.layer_params['convt_12_1']['output_channels'],
                               keep_prob=self.layer_params['convt_12_1']['keep_prob'], name='convt_12_1'))
 
-        num_decoder_layers = int(len(self.layers)/2)+1
+        num_decoder_layers = int(len(layers)/2)+1
 
         super(LargeNetwork, self).__init__(layers=layers, num_decoder_layers=num_decoder_layers, **kwargs)
