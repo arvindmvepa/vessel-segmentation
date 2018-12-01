@@ -63,13 +63,13 @@ class Network(object):
         net = tf.image.resize_image_with_crop_or_pad(net, self.IMAGE_HEIGHT, self.IMAGE_WIDTH)
         if self.mask:
             net = self.mask_results(net)
-        self.segmentation_result = net = tf.sigmoid(net)
+        self.segmentation_result = tf.sigmoid(net)
+        print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
+                                                                        self.targets.get_shape()))
         self.calculate_loss(net, **loss_kwargs)
         self.train_op = self.cur_op_fn.minimize(self.cost, global_step=self._global_step)
 
     def calculate_loss(self, net, **kwargs):
-        print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
-                                                                        self.targets.get_shape()))
         self.cost = self.cur_objective_fn(self.targets, net, **kwargs) + self.regularization
         self.cost_unweighted = self.get_objective_fn("ce")(self.targets, net) + self.regularization
 
@@ -127,8 +127,8 @@ class Network(object):
     # TODO: add options including u-net loss
     def get_objective_fn(self, objective_fn):
         if objective_fn == "ce":
-            return lambda targets, net, **kwargs: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
-                targets, net, pos_weight=1))
+            return lambda targets, net, **kwargs: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(targets, net,
+                                                                                                          pos_weight=1))
         if objective_fn == "wce":
             return lambda targets, net, pos_weight, **kwargs: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
                 targets, net, pos_weight=pos_weight))

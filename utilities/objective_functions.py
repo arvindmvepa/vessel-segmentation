@@ -17,6 +17,7 @@ def generalised_dice_loss(prediction, ground_truth, weight_map=None, type_weight
         Simple (inverse of volume) and Uniform (no weighting))
     :return: the loss
     """
+    # need to convert logits to probabilities
     # convert binary label probabilities to categorical probabilities
     prediction = tf.concat([1 - prediction, prediction], axis=3)
     prediction = tf.cast(prediction, tf.float32)
