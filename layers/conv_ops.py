@@ -48,4 +48,4 @@ class Conv2d(Layer):
 class ConvT2d(Conv2d):
 
     def apply_conv(self, input, W, rate, padding):
-        return tf.nn.atrous_conv2d_transpose(input, W, output_shape=self.input_shape, rate=rate, padding=padding)
+        return tf.nn.atrous_conv2d_transpose(input, W, output_shape=input.get_shape(), rate=rate, padding=padding)
