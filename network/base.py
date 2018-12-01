@@ -12,8 +12,9 @@ from utilities.objective_functions import generalised_dice_loss, sensitivity_spe
 class Network(object):
 
     def __init__(self, objective_fn="wce", regularizer_args=None, learning_rate_and_kwargs=(.001, {}),
-                 op_fun_and_kwargs=("adam", {}), mask=False, layers=None, num_decoder_layers=None,
-                 num_batches_in_epoch = 1, **kwargs):
+                 op_fun_and_kwargs=("adam", {}), mask=False, center=False, pooling_method="MAX",
+                 unpooling_method="nearest_neighbor", layers=None, num_decoder_layers=None, num_batches_in_epoch = 1,
+                 **kwargs):
         self.num_batches_in_epoch = num_batches_in_epoch
         self.cur_objective_fn = objective_fn
         self.cur_learning_rate = learning_rate_and_kwargs
@@ -39,19 +40,24 @@ class Network(object):
 
         if num_decoder_layers is None:
             for i, layer in enumerate(layers):
-                self.layers[i] = net = layer.create_layer(net)
+                self.layers[i] = net = layer.create_layer(net, is_training=self.is_training, center=center,
+                                                          pooling_method=pooling_method,
+                                                          unpooling_method=unpooling_method)
                 self.description += "{}".format(layer.get_description())
                 self.layer_outputs.append(net)
         else:
             # ENCODER
             for i, layer in enumerate(layers[:num_decoder_layers]):
-                self.layers[i] = net = layer.create_layer(net)
+                self.layers[i] = net = layer.create_layer(net, is_training=self.is_training, center=center,
+                                                          pooling_method=pooling_method)
                 self.description += "{}".format(layer.get_description())
                 self.layer_outputs.append(net)
 
             # DECODER
             for i, layer in enumerate(layers[num_decoder_layers:], start=1):
-                net = layer.create_layer(net, add_w_input=self.layers[num_decoder_layers-i])
+                net = layer.create_layer(net, add_w_input=self.layers[num_decoder_layers-i],
+                                         is_training=self.is_training,
+                                         center=center, unpooling_method=unpooling_method)
                 self.layer_outputs.append(net)
 
         print("Number of layers: ", len(layers))
@@ -64,12 +70,12 @@ class Network(object):
         if self.mask:
             net = self.mask_results(net)
         self.segmentation_result = tf.sigmoid(net)
-        print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
-                                                                        self.targets.get_shape()))
         self.calculate_loss(net, **loss_kwargs)
         self.train_op = self.cur_op_fn.minimize(self.cost, global_step=self._global_step)
 
     def calculate_loss(self, net, **kwargs):
+        print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
+                                                                        self.targets.get_shape()))
         self.cost = self.cur_objective_fn(self.targets, net, **kwargs) + self.regularization
         self.cost_unweighted = self.get_objective_fn("ce")(self.targets, net) + self.regularization
 
@@ -127,8 +133,8 @@ class Network(object):
     # TODO: add options including u-net loss
     def get_objective_fn(self, objective_fn):
         if objective_fn == "ce":
-            return lambda targets, net, **kwargs: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(targets, net,
-                                                                                                          pos_weight=1))
+            return lambda targets, net, **kwargs: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
+                targets, net, pos_weight=1))
         if objective_fn == "wce":
             return lambda targets, net, pos_weight, **kwargs: tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(
                 targets, net, pos_weight=pos_weight))

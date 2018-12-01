@@ -6,6 +6,7 @@ import os
 from sklearn.model_selection import train_test_split
 from imgaug import imgaug
 from utilities.augmentation import apply_image_aug
+from utilities.image_preprocessing import apply_normalization
 
 
 class Dataset(object):
@@ -14,7 +15,9 @@ class Dataset(object):
 
     def __init__(self, batch_size=1, WRK_DIR_PATH =".", TRAIN_SUBDIR="train", TEST_SUBDIR="test", early_stopping=False,
                  early_stopping_val_prop = .1, sgd = True, cv_train_inds = None, cv_test_inds = None, seq = None,
-                 hist_eq=None, clahe_kwargs=None, per_image_normalization=False, gamma=None, **kwargs):
+                 hist_eq=None, clahe_kwargs=None, gamma=None, zero_center=False, per_image_z_score_norm=False,
+                 per_image_zero_center=False, per_image_zero_center_scale=False, zero_center_scale=False,
+                 z_score_norm=False, **kwargs):
 
         self.WRK_DIR_PATH = WRK_DIR_PATH
         self.batch_size = batch_size
@@ -28,16 +31,28 @@ class Dataset(object):
         self.seq = seq
 
         self.train_data = self.get_images_from_file(self.TRAIN_DIR_PATH, cv_train_inds, hist_eq=hist_eq,
-                                                    clahe_kwargs=clahe_kwargs,
-                                                    per_image_normalization=per_image_normalization, gamma=gamma)
+                                                    clahe_kwargs=clahe_kwargs, gamma=gamma,
+                                                    per_image_z_score_norm=per_image_z_score_norm,
+                                                    per_image_zero_center=per_image_zero_center,
+                                                    per_image_zero_center_scale=per_image_zero_center_scale)
+        self.train_data = list(self.train_data)
+        self.train_data[0], train_params = apply_normalization(self.train_data[0], zero_center=zero_center,
+                                                               zero_center_scale=zero_center_scale,
+                                                               z_score_norm=z_score_norm)
+
         if early_stopping:
             data = train_test_split(*self.train_data, test_size=early_stopping_val_prop)
             self.train_data = data[::2]
             self.val_data = data[1::2]
         self.test_data = self.get_images_from_file(self.TEST_DIR_PATH, cv_test_inds, hist_eq=hist_eq,
-                                                   clahe_kwargs=clahe_kwargs,
-                                                   per_image_normalization=per_image_normalization, gamma=gamma)
-
+                                                   clahe_kwargs=clahe_kwargs, gamma=gamma,
+                                                   per_image_z_score_norm=per_image_z_score_norm,
+                                                   per_image_zero_center=per_image_zero_center,
+                                                   per_image_zero_center_scale=per_image_zero_center_scale)
+        self.test_data = list(self.test_data)
+        self.test_data[0], _ = apply_normalization(self.test_data[0], zero_center=zero_center,
+                                                   zero_center_scale=zero_center_scale, z_score_norm=z_score_norm,
+                                                   train_params=train_params)
 
         self.pointer = 0
 
@@ -69,7 +84,7 @@ class Dataset(object):
         return tuple(reshaped_arrs)
 
     def apply_img_normalization(self, images):
-        return np.array([image*1.0/(np.max(image)-np.min(image)) for image in images])
+        return np.array([(image-np.min(image))*1.0/(np.max(image)-np.min(image)) for image in images])
 
     def apply_aug(self, *args, **kwargs):
         return apply_image_aug(*args, **kwargs)
