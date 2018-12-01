@@ -12,7 +12,8 @@ from utilities.objective_functions import generalised_dice_loss, sensitivity_spe
 class Network(object):
 
     def __init__(self, objective_fn="wce", regularizer_args=None, learning_rate_and_kwargs=(.001, {}),
-                 op_fun_and_kwargs=("adam", {}), mask=False, layers=None, num_batches_in_epoch = 1, **kwargs):
+                 op_fun_and_kwargs=("adam", {}), mask=False, layers=None, num_batches_in_epoch = 1, center=False,
+                 pooling_method="MAX", unpooling_method="nearest_neighbor", **kwargs):
         self.num_batches_in_epoch = num_batches_in_epoch
         self.cur_objective_fn = objective_fn
         self.cur_learning_rate = learning_rate_and_kwargs
@@ -37,7 +38,8 @@ class Network(object):
         net = self.inputs
         # ENCODER
         for i, layer in enumerate(layers):
-            self.layers[layer.name] = net = layer.create_layer(net)
+            self.layers[layer.name] = net = layer.create_layer(net, is_training=self.is_training, center=center,
+                                                               pooling_method=pooling_method)
             self.description += "{}".format(layer.get_description())
             self.layer_outputs.append(net)
 
@@ -48,7 +50,8 @@ class Network(object):
 
         # DECODER
         for i, layer in enumerate(layers):
-            net=layer.create_layer_reversed(net, prev_layer=self.layers[layer.name])
+            net=layer.create_layer_reversed(net, prev_layer=self.layers[layer.name], is_training=self.is_training,
+                                            center=center, unpooling_method=unpooling_method)
             self.layer_outputs.append(net)
 
         self.calculate_net_output(net, **kwargs)

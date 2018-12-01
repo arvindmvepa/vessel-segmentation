@@ -1,6 +1,11 @@
 import tensorflow as tf
 import numpy as np
 
+upsample_methods = {"bilinear": tf.image.ResizeMethod.BILINEAR,
+                    "nearest_neighbor": tf.image.ResizeMethod.NEAREST_NEIGHBOR,
+                    "bicubic": tf.image.ResizeMethod.BICUBIC,
+                    "area": tf.image.ResizeMethod.AREA}
+
 # Auto format padding
 def autoformat_padding(padding):
     if padding in ['same', 'SAME', 'valid', 'VALID']:
@@ -34,8 +39,8 @@ def autoformat_kernel_2d(strides):
         raise Exception("strides format error: " + str(type(strides)))
 
 
-def max_pool_2d(incoming, kernel_size, strides=None, padding='same',
-                name="MaxPool2D"):
+def pool_2d(incoming, kernel_size, strides=None, padding='same', method="MAX",
+            name="Pool2D"):
     """ Max Pooling 2D.
     Input:
         4-D Tensor [batch, height, width, in_channels].
@@ -60,7 +65,7 @@ def max_pool_2d(incoming, kernel_size, strides=None, padding='same',
     padding = autoformat_padding(padding)
 
     with tf.name_scope(name) as scope:
-        inference = tf.nn.max_pool(incoming, kernel, strides, padding)
+        inference = tf.nn.pool(incoming, kernel, pooling_type=method, padding=padding, strides=strides)
 
         # Track activations.
         tf.add_to_collection(tf.GraphKeys.ACTIVATIONS, inference)
@@ -74,7 +79,7 @@ def max_pool_2d(incoming, kernel_size, strides=None, padding='same',
     return inference
 
 
-def upsample_2d(incoming, kernel_size, name="UpSample2D"):
+def upsample_2d(incoming, kernel_size, method="nearest_neighbor", name="UpSample2D"):
     """ UpSample 2D.
     Input:
         4-D Tensor [batch, height, width, in_channels].
@@ -92,10 +97,9 @@ def upsample_2d(incoming, kernel_size, name="UpSample2D"):
     kernel = autoformat_kernel_2d(kernel_size)
 
     with tf.name_scope(name) as scope:
-        inference = tf.image.resize_nearest_neighbor(
-            incoming, size=input_shape[1:3] * tf.constant(kernel[1:3]))
-        inference.set_shape((None, input_shape[1] * kernel[1],
-                             input_shape[2] * kernel[2], None))
+        inference = tf.image.resize_images(incoming, size=input_shape[1:3]*tf.constant(kernel[1:3]),
+                                           method=upsample_methods[method])
+        inference.set_shape((None, input_shape[1]*kernel[1], input_shape[2]*kernel[2], None))
 
     # Add attributes to Tensor to easy access weights
     inference.scope = scope

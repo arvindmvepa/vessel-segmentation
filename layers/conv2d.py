@@ -9,7 +9,7 @@ class Conv2d(Layer):
     # global things...
     layer_index = 0
     def __init__(self, kernel_size, output_channels, name, act_fn="lrelu", act_leak_prob=.2, weight_init=None,
-                 keep_prob=None, dilation = 1):
+                 keep_prob=None, dilation = 1, batch_norm=True, skip_connection=False):
         self.kernel_size = kernel_size
         self.output_channels = output_channels
         self.name = name
@@ -18,12 +18,14 @@ class Conv2d(Layer):
         self.weight_init= weight_init
         self.keep_prob=keep_prob
         self.dilation = dilation
+        self.batch_norm = batch_norm
+        self.skip_connection = skip_connection
         
     @staticmethod
     def reverse_global_variables():
         Conv2d.layer_index = 0
  
-    def create_layer(self, input):
+    def create_layer(self, input, is_training=True, center=False):
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
@@ -43,17 +45,33 @@ class Conv2d(Layer):
 
         output = tf.nn.atrous_conv2d(input, W, rate=self.dilation, padding='SAME')
         output = tf.nn.dropout(output, self.keep_prob)
+        output = tf.add(output, b)
 
+        # apply batch-norm
+        if self.batch_norm:
+            output = tf.contrib.layers.batch_norm(output, is_training=is_training)
+
+        # apply activation functions
         if self.act_fn =="relu":
-            output=tf.nn.relu(tf.add(tf.contrib.layers.batch_norm(output), b))
+            output=tf.nn.relu(output)
         elif self.act_fn =="lrelu":
-            output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b), self.act_leak_prob)
+            output = lrelu(output, self.act_leak_prob)
+        elif self.act_fn =="elu":
+            output = tf.nn.elu(output)
+        elif self.act_fn =="maxout":
+            output = tf.contrib.layers.maxout(output, number_of_input_channels)
         else:
             raise ValueError("Activation function {} not recognized".format(self.act_fn))
+
+        # zero-center activations
+        if center:
+            output = output - tf.reduce_mean(output)
         return output
 
-    def create_layer_reversed(self, input, prev_layer=None, reuse=False):
+    def create_layer_reversed(self, input, prev_layer=None, reuse=False, is_training=True, center=False, **kwargs):
         with tf.variable_scope('conv', reuse=reuse):
+            if self.skip_connection:
+                input = tf.add(input, prev_layer)
             initializer=None
             if self.weight_init == 'He':
                 initializer = tf.contrib.layers.variance_scaling_initializer(factor=2.0, mode='FAN_IN', uniform=False)
@@ -73,12 +91,18 @@ class Conv2d(Layer):
         Conv2d.layer_index += 1
         output.set_shape([None, self.input_shape[1], self.input_shape[2], self.input_shape[3]])
 
+        if self.batch_norm:
+            output = tf.contrib.layers.batch_norm(output, is_training=is_training)
         if self.act_fn =="relu":
-            output = tf.nn.relu(tf.add(tf.contrib.layers.batch_norm(output), b))
+            output = tf.nn.relu(tf.add(output, b))
         elif self.act_fn =="lrelu":
-            output = lrelu(tf.add(tf.contrib.layers.batch_norm(output), b), self.act_leak_prob)
+            output = lrelu(tf.add(output, b), self.act_leak_prob)
+        elif self.act_fn =="elu":
+            output = tf.nn.elu(tf.add(output, b))
         else:
             raise ValueError("Activation function {} not recognized".format(self.act_fn))
+        if center:
+            output = output - tf.reduce_mean(output)
         return output
 
     def get_description(self):
