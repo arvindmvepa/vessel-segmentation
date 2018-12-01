@@ -63,7 +63,7 @@ class ConvT2d(Conv2d):
             elif self.weight_init == 'Xnormal':
                 initializer=tf.contrib.layers.xavier_initializer(uniform=False,seed=None)
             W = tf.get_variable(('W{}'.format(self.name[-3:])), shape=(self.kernel_size, self.kernel_size,
-                                                                       self.output_channels, number_of_input_channels),
+                                                                       number_of_input_channels, self.output_channels),
                                 initializer=initializer)
             b = tf.Variable(tf.zeros([self.output_channels]))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
