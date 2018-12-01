@@ -35,11 +35,11 @@ class Conv2d(Layer):
             b = tf.Variable(tf.zeros([self.output_channels]))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
         output = self.apply_conv(input, W, rate=self.dilation, padding='SAME')
-        print(tf.shape(output))
+        print(get_incoming_shape(output))
         output = tf.nn.dropout(output, self.keep_prob)
-        print(tf.shape(output))
+        print(get_incoming_shape(output))
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
-        print(tf.shape(output))
+        print(get_incoming_shape(output))
         return output
 
     def apply_conv(self, input, W, rate, padding):
