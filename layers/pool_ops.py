@@ -23,7 +23,7 @@ class MaxPool2d(Layer):
     def get_description(self):
         return "P{}".format(self.kernel_size)
 
-class UnPool2d(Layer):
+class UnPool2d(MaxPool2d):
 
     def apply_pool(self, input, kernel_size):
         return upsample_2d(input, kernel_size)

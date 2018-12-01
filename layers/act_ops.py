@@ -1,18 +1,16 @@
 import tensorflow as tf
 
 from utilities.activations import lrelu
+from layers.base import Layer
 
-class ReLUOp():
-    def __init__(self):
-        pass
-
+class ReLUOp(Layer):
     def create_layer(self, input, **kwargs):
         return tf.nn.relu(input)
 
     def get_description(self):
         return "R"
 
-class LReLUOp():
+class LReLUOp(Layer):
     def __init__(self, act_leak_prob):
         self.act_leak_prob = act_leak_prob
 
