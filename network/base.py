@@ -45,7 +45,7 @@ class Network(object):
         else:
             # ENCODER
             for i, layer in enumerate(layers[:num_decoder_layers]):
-                self.layers[layer.name] = net = layer.create_layer(net)
+                self.layers[i] = net = layer.create_layer(net)
                 self.description += "{}".format(layer.get_description())
                 self.layer_outputs.append(net)
 
