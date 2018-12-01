@@ -17,10 +17,10 @@ class Conv2d(Layer):
         self.dilation = dilation
  
     def create_layer(self, input, add_w_input=None, **kwargs):
-        print(self.input_shape)
         if self.add_to_input:
             input = tf.add(input, add_w_input)
         self.input_shape = get_incoming_shape(input)
+        print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
         self.number_of_input_channels = number_of_input_channels
         with tf.variable_scope('conv', reuse=False):
@@ -45,10 +45,10 @@ class Conv2d(Layer):
 class ConvT2d(Conv2d):
 
     def create_layer(self, input, add_w_input=None, **kwargs):
-        print(self.input_shape)
         if self.add_to_input:
             input = tf.add(input, add_w_input)
         self.input_shape = get_incoming_shape(input)
+        print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
         self.number_of_input_channels = number_of_input_channels
         with tf.variable_scope('conv', reuse=False):
