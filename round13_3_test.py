@@ -52,7 +52,7 @@ def get_experiment_string(objective_fn,tuning_constant,ss_r,regularizer_args,op_
 
 if __name__ == '__main__':
 
-    EXPERIMENTS_DIR_PATH = "/root/vessel-segmentation/experiments13_1_test_eval"
+    EXPERIMENTS_DIR_PATH = "/root/vessel-segmentation2/experiments13_3_test_eval"
     # EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\experiments6_1"
 
     metrics_epoch_freq = 5
@@ -68,8 +68,8 @@ if __name__ == '__main__':
         job_opts_all = [row for row in csv_reader]
 
     num_jobs = len(job_opts_all)
-    first_index = 0
-    last_index = int(math.ceil(num_jobs/6.0))
+    first_index = int(math.ceil(num_jobs/6.0))*2
+    last_index = int(math.ceil(num_jobs/6.0))*3
 
     for job_opts in job_opts_all[first_index:last_index]:
         job_kwargs = get_job_kwargs_from_job_opts(job_opts)
