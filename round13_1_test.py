@@ -69,7 +69,7 @@ if __name__ == '__main__':
 
     num_jobs = len(job_opts_all)
     first_index = 0
-    last_index = int(math.ceil(num_jobs/6.0))
+    last_index = int(math.ceil(num_jobs/2.0))
 
     for job_opts in job_opts_all[first_index:last_index]:
         job_kwargs = get_job_kwargs_from_job_opts(job_opts)
