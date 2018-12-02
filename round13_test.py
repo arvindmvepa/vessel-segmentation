@@ -58,7 +58,7 @@ if __name__ == '__main__':
     viz_layer_epoch_freq = 1000
     n_epochs = 100
 
-    WRK_DIR_PATH = "C:\\vessel-segmentation\\"
+    WRK_DIR_PATH = "C:\\vessel-segmentation\\DRIVE"
     #WRK_DIR_PATH = "C:\\vessel-segmentation\\drive"
 
     job_opts_all = None
