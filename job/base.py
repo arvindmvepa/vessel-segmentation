@@ -226,6 +226,7 @@ class Job(object):
                                        learning_rate_and_kwargs=learning_rate_and_kwargs,
                                        op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params,
                                        num_batches_in_epoch=dataset.num_batches_in_epoch())
+        return
 
         # create metrics log file
         metric_log_file_path = os.path.join(self.OUTPUTS_DIR_PATH, metrics_log)
