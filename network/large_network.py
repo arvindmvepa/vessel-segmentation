@@ -2,7 +2,6 @@
 from network.base import Network
 from layers.conv_ops import Conv2d, ConvT2d
 from layers.pool_ops import MaxPool2d, UnPool2d
-from layers.act_ops import LReLUOp
 
 
 class LargeNetwork(Network):
