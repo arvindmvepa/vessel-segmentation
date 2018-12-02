@@ -2,15 +2,17 @@ import tensorflow as tf
 
 from layers.base import Layer
 from utilities.layer_ops import get_incoming_shape
+from utilities.activations import lrelu
 
 
 class Conv2d(Layer):
-    def __init__(self, kernel_size, output_channels, name, act_fn="lrelu", add_to_input=False, weight_init=None,
-                 keep_prob=None, dilation = 1):
+    def __init__(self, kernel_size, output_channels, name, act_fn="lrelu", act_leak_prob=.2, add_to_input=False,
+                 weight_init=None, keep_prob=None, dilation = 1):
         self.kernel_size = kernel_size
         self.output_channels = output_channels
         self.name = name
         self.act_fn = act_fn
+        self.act_leak_prob = act_leak_prob
         self.add_to_input = add_to_input
         self.weight_init = weight_init
         self.keep_prob = keep_prob
@@ -37,7 +39,18 @@ class Conv2d(Layer):
         output = tf.nn.atrous_conv2d(input, W, rate=self.dilation, padding='SAME')
         output = tf.nn.dropout(output, self.keep_prob)
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
-        return output
+
+        return self.get_act_values(output)
+
+    def get_act_values(self, input):
+        if self.act_fn =="relu":
+            return tf.nn.relu(input)
+        elif self.act_fn =="lrelu":
+            return lrelu(input, self.act_leak_prob)
+        elif self.act_fn is None:
+            return input
+        else:
+            raise ValueError("Activation function {} not recognized".format(self.act_fn))
 
     def get_description(self):
         return "C{},{},{}".format(self.kernel_size, self.output_channels, self.dilation)
@@ -70,4 +83,5 @@ class ConvT2d(Conv2d):
                                                rate=self.dilation, padding='SAME')
         output = tf.nn.dropout(output, self.keep_prob)
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
-        return output
+
+        return self.get_act_values(output)

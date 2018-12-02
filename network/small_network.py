@@ -45,93 +45,82 @@ class SmallNetwork(Network):
 
         layers = list()
         layers.append(Conv2d(kernel_size=self.layer_params['conv_1_1']['ks'],
-                             dilation=self.layer_params['conv_1_1']['dilation'], act_fn=act_fn,
-                             weight_init=weight_init,
+                             dilation=self.layer_params['conv_1_1']['dilation'],
+                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
                              output_channels=self.layer_params['conv_1_1']['output_channels'],
                              keep_prob=self.layer_params['conv_1_1']['keep_prob'], name='conv_1_1'))
-        layers.append(LReLUOp(act_leak_prob=act_leak_prob))
         layers.append(MaxPool2d(kernel_size=self.layer_params['max_1']['ks'], name='max_1'))
 
         layers.append(Conv2d(kernel_size=self.layer_params['conv_2_1']['ks'],
-                             dilation=self.layer_params['conv_2_1']['dilation'], act_fn=act_fn,
-                             weight_init=weight_init,
+                             dilation=self.layer_params['conv_2_1']['dilation'],
+                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
                              output_channels=self.layer_params['conv_2_1']['output_channels'],
                              keep_prob=self.layer_params['conv_2_1']['keep_prob'], name='conv_2_1'))
-        layers.append(LReLUOp(act_leak_prob=act_leak_prob))
         layers.append(MaxPool2d(kernel_size=self.layer_params['max_2']['ks'], name='max_2'))
 
         layers.append(Conv2d(kernel_size=self.layer_params['conv_3_1']['ks'],
-                             dilation=self.layer_params['conv_3_1']['dilation'], act_fn=act_fn,
-                             weight_init=weight_init,
+                             dilation=self.layer_params['conv_3_1']['dilation'],
+                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
                              output_channels=self.layer_params['conv_3_1']['output_channels'],
                              keep_prob=self.layer_params['conv_3_1']['keep_prob'], name='conv_3_1'))
-        layers.append(LReLUOp(act_leak_prob=act_leak_prob))
         layers.append(Conv2d(kernel_size=self.layer_params['conv_3_2']['ks'],
-                             dilation=self.layer_params['conv_3_2']['dilation'], act_fn=act_fn,
-                             weight_init=weight_init,
+                             dilation=self.layer_params['conv_3_2']['dilation'],
+                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
                              output_channels=self.layer_params['conv_3_2']['output_channels'],
                              keep_prob=self.layer_params['conv_3_2']['keep_prob'], name='conv_3_2'))
-        layers.append(LReLUOp(act_leak_prob=act_leak_prob))
         layers.append(MaxPool2d(kernel_size=self.layer_params['max_3']['ks'], name='max_3'))
 
         layers.append(Conv2d(kernel_size=self.layer_params['conv_4_1']['ks'],
-                             dilation=self.layer_params['conv_4_1']['dilation'], act_fn=act_fn,
-                             weight_init=weight_init,
+                             dilation=self.layer_params['conv_4_1']['dilation'],
+                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
                              output_channels=self.layer_params['conv_4_1']['output_channels'],
                              keep_prob=self.layer_params['conv_4_1']['keep_prob'], name='conv_4_1'))
-        layers.append(LReLUOp(act_leak_prob=act_leak_prob))
         layers.append(Conv2d(kernel_size=self.layer_params['conv_4_2']['ks'],
-                             dilation=self.layer_params['conv_4_2']['dilation'], act_fn=act_fn,
-                             weight_init=weight_init,
+                             dilation=self.layer_params['conv_4_2']['dilation'],
+                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
                              output_channels=self.layer_params['conv_4_2']['output_channels'],
                              keep_prob=self.layer_params['conv_4_2']['keep_prob'], name='conv_4_2'))
-        layers.append(LReLUOp(act_leak_prob=act_leak_prob))
 
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_5_1']['ks'],
-                              dilation=self.layer_params['convt_5_1']['dilation'], act_fn=act_fn,
-                              weight_init=weight_init,
+                              dilation=self.layer_params['convt_5_1']['dilation'],
+                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
                               output_channels=self.layer_params['convt_5_1']['output_channels'],
                               keep_prob=self.layer_params['convt_5_1']['keep_prob'], name='convt_5_1'))
-        layers.append(LReLUOp(act_leak_prob=act_leak_prob))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_5_2']['ks'],
-                              dilation=self.layer_params['convt_5_2']['dilation'], act_fn=act_fn,
-                              weight_init=weight_init,
+                              dilation=self.layer_params['convt_5_2']['dilation'],
+                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
                               output_channels=self.layer_params['convt_5_2']['output_channels'],
                               keep_prob=self.layer_params['convt_5_2']['keep_prob'], name='convt_5_2'))
-        layers.append(LReLUOp(act_leak_prob=act_leak_prob))
 
         layers.append(UnPool2d(kernel_size=self.layer_params['up_6']['ks'], name='up_6',
                                add_to_input=self.layer_params['up_6']["add_to_input"]))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_6_1']['ks'],
-                              dilation=self.layer_params['convt_6_1']['dilation'], act_fn=act_fn,
-                              weight_init=weight_init,
+                              dilation=self.layer_params['convt_6_1']['dilation'],
+                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
                               output_channels=self.layer_params['convt_6_1']['output_channels'],
                               keep_prob=self.layer_params['convt_6_1']['keep_prob'], name='convt_6_1'))
-        layers.append(LReLUOp(act_leak_prob=act_leak_prob))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_6_2']['ks'],
-                              dilation=self.layer_params['convt_6_2']['dilation'], act_fn=act_fn,
-                              weight_init=weight_init,
+                              dilation=self.layer_params['convt_6_2']['dilation'],
+                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
                               output_channels=self.layer_params['convt_6_2']['output_channels'],
                               keep_prob=self.layer_params['convt_6_2']['keep_prob'], name='convt_6_2'))
-        layers.append(LReLUOp(act_leak_prob=act_leak_prob))
 
         layers.append(UnPool2d(kernel_size=self.layer_params['up_7']['ks'], name='up_7',
                                add_to_input=self.layer_params['up_7']["add_to_input"]))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_7_1']['ks'],
-                              dilation=self.layer_params['convt_7_1']['dilation'], act_fn=act_fn,
-                              weight_init=weight_init,
+                              dilation=self.layer_params['convt_7_1']['dilation'],
+                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
                               output_channels=self.layer_params['convt_7_1']['output_channels'],
                               keep_prob=self.layer_params['convt_7_1']['keep_prob'], name='convt_7_1'))
-        layers.append(LReLUOp(act_leak_prob=act_leak_prob))
 
         layers.append(UnPool2d(kernel_size=self.layer_params['up_8']['ks'], name='up_8',
                                add_to_input=self.layer_params['up_8']["add_to_input"]))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_8_1']['ks'],
-                              dilation=self.layer_params['convt_8_1']['dilation'], act_fn=act_fn,
-                              weight_init=weight_init,
+                              dilation=self.layer_params['convt_8_1']['dilation'],
+                              weight_init=weight_init, act_fn=None,
                               output_channels=self.layer_params['convt_8_1']['output_channels'],
                               keep_prob=self.layer_params['convt_8_1']['keep_prob'], name='convt_8_1'))
 
-        num_decoder_layers = int(len(layers)/2)+1
+        num_decoder_layers = int(len(layers)/2)
 
         super(SmallNetwork, self).__init__(layers=layers, num_decoder_layers=num_decoder_layers, **kwargs)
