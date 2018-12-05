@@ -8,6 +8,8 @@ from tensorflow.python.training.rmsprop import RMSPropOptimizer
 from tensorflow.python.training.gradient_descent import GradientDescentOptimizer
 
 from utilities.objective_functions import generalised_dice_loss, sensitivity_specificity_loss, cross_entropy, dice
+from layers.conv_ops import Conv2d
+from layers.pool_ops import Pool3d
 
 class Network(object):
 
@@ -79,10 +81,22 @@ class Network(object):
         self.cost = self.cur_objective_fn(self.targets, net, **kwargs) + self.regularization
         self.cost_unweighted = self.get_objective_fn("ce")(self.targets, net) + self.regularization
 
+    def apply_last_layer_op(self, net, **kwargs):
+        return self.last_layer_op.create_layer(net, **kwargs)
+
+
     def mask_results(self, net):
         net = tf.multiply(net, self.masks)
         self.targets = tf.multiply(self.targets, self.masks)
         return net
+
+    def set_layer_op(self, weight_init=None, op="AVG"):
+        if op == "AVG" or op == "MAX":
+            self.last_layer_op = Pool3d(kernel_size=1, dilation=1,  weight_init=weight_init, act_fn=None, output_channels=1, name='last_conv')
+        if op == "CONV":
+            self.last_layer_op = Conv2d(kernel_size=1, dilation=1,  weight_init=weight_init, act_fn=None,
+                                        output_channels=1, name='last_conv')
+
 
     @property
     def cur_learning_rate(self):

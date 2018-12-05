@@ -4,10 +4,9 @@ from layers.base import Layer
 from utilities.layer_ops import get_incoming_shape
 from utilities.activations import lrelu
 
-
 class Conv2d(Layer):
     def __init__(self, kernel_size, output_channels, name, batch_norm=True, act_fn="lrelu", act_leak_prob=.2, add_to_input=False,
-                 weight_init=None, keep_prob=None, dilation=1):
+                 weight_init=None, keep_prob=1.0, dilation=1):
         self.kernel_size = kernel_size
         self.output_channels = output_channels
         self.name = name
