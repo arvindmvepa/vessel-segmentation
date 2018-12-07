@@ -51,18 +51,20 @@ class UnPool2d(Pool):
 # Uses 1x1xC pooling
 class Pool3d(Pool):
 
+    def __init__(self, name, kernel_size=1, pooling_method="AVG", add_to_input=False):
+        self.kernel_size = kernel_size
+        self.name = name
+        self.add_to_input = add_to_input
+        self.pooling_method = pooling_method
+
     def apply_pool(self, input, *args, **kwargs):
         return self.pool_3d(input, *args, **kwargs)
 
-    def pool_3d(self, input, pooling_method):
-        if pooling_method == "AVG":
+    def pool_3d(self, input, *args, **kwargs):
+        if self.pooling_method == "AVG":
             return tf.math.reduce_mean(input, axis=[0,1,2])
-        if pooling_method == "MAX":
+        if self.pooling_method == "MAX":
             return tf.math.reduce_max(input, axis=[0,1,2])
-
-    def get_description(self):
-        return "P_3D{}".format(self.kernel_size)
-
 
     def get_description(self):
         return "P_3D{}".format(self.kernel_size)

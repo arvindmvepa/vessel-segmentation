@@ -1,6 +1,6 @@
 from network.base import Network
 from layers.conv_ops import Conv2d, ConvT2d
-from layers.pool_ops import MaxPool2d, UnPool2d
+from layers.pool_ops import Pool2d, UnPool2d
 
 class SmallNetwork(Network):
 
@@ -18,15 +18,15 @@ class SmallNetwork(Network):
                  **kwargs):
         self.layer_params = {"conv_1_1":{"ks":3, "dilation":1 , "output_channels":64, "keep_prob":1.0,
                                          "batch_norm": batch_norm},
-                             "max_1": {"ks":2},
+                             "pool_1": {"ks":2},
                              "conv_2_1": {"ks":3, "dilation":1 , "output_channels":128, "keep_prob":1.0,
                                           "batch_norm": batch_norm},
-                             "max_2": {"ks":2},
+                             "pool_2": {"ks":2},
                              "conv_3_1": {"ks":3, "dilation":1 , "output_channels":256, "keep_prob":1.0,
                                           "batch_norm": batch_norm},
                              "conv_3_2": {"ks":3, "dilation":1 , "output_channels":256, "keep_prob":1.0,
                                           "batch_norm": batch_norm},
-                             "max_3": {"ks":2},
+                             "pool_3": {"ks":2},
                              "conv_4_1": {"ks":7, "dilation":1 , "output_channels":4096, "keep_prob":1.0,
                                           "batch_norm": batch_norm},
                              "conv_4_2": {"ks":1, "dilation":1 , "output_channels":4096, "keep_prob":1.0,
@@ -60,7 +60,7 @@ class SmallNetwork(Network):
                              output_channels=self.layer_params['conv_1_1']['output_channels'],
                              keep_prob=self.layer_params['conv_1_1']['keep_prob'],
                              batch_norm=self.layer_params['conv_1_1']['batch_norm'], name='conv_1_1'))
-        layers.append(MaxPool2d(kernel_size=self.layer_params['max_1']['ks'], name='max_1'))
+        layers.append(Pool2d(kernel_size=self.layer_params['pool_1']['ks'], name='pool_1'))
 
         layers.append(Conv2d(kernel_size=self.layer_params['conv_2_1']['ks'],
                              dilation=self.layer_params['conv_2_1']['dilation'],
@@ -68,7 +68,7 @@ class SmallNetwork(Network):
                              output_channels=self.layer_params['conv_2_1']['output_channels'],
                              keep_prob=self.layer_params['conv_2_1']['keep_prob'],
                              batch_norm=self.layer_params['conv_2_1']['batch_norm'], name='conv_2_1'))
-        layers.append(MaxPool2d(kernel_size=self.layer_params['max_2']['ks'], name='max_2'))
+        layers.append(Pool2d(kernel_size=self.layer_params['pool_2']['ks'], name='pool_2'))
 
         layers.append(Conv2d(kernel_size=self.layer_params['conv_3_1']['ks'],
                              dilation=self.layer_params['conv_3_1']['dilation'],
@@ -82,7 +82,7 @@ class SmallNetwork(Network):
                              output_channels=self.layer_params['conv_3_2']['output_channels'],
                              keep_prob=self.layer_params['conv_3_2']['keep_prob'],
                              batch_norm=self.layer_params['conv_3_2']['batch_norm'], name='conv_3_2'))
-        layers.append(MaxPool2d(kernel_size=self.layer_params['max_3']['ks'], name='max_3'))
+        layers.append(Pool2d(kernel_size=self.layer_params['pool_3']['ks'], name='pool_3'))
 
         layers.append(Conv2d(kernel_size=self.layer_params['conv_4_1']['ks'],
                              dilation=self.layer_params['conv_4_1']['dilation'],
@@ -145,4 +145,5 @@ class SmallNetwork(Network):
 
         num_decoder_layers = int(len(layers)/2)
 
-        super(SmallNetwork, self).__init__(layers=layers, num_decoder_layers=num_decoder_layers, **kwargs)
+        super(SmallNetwork, self).__init__(layers=layers, weight_init=weight_init,
+                                           num_decoder_layers=num_decoder_layers, **kwargs)

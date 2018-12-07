@@ -13,10 +13,10 @@ from layers.pool_ops import Pool3d
 
 class Network(object):
 
-    def __init__(self, objective_fn="wce", regularizer_args=None, learning_rate_and_kwargs=(.001, {}),
-                 op_fun_and_kwargs=("adam", {}), mask=False, center=False, pooling_method="MAX",
-                 unpooling_method="nearest_neighbor", layers=None, num_decoder_layers=None, num_batches_in_epoch = 1,
-                 **kwargs):
+    def __init__(self, objective_fn="wce", weight_init = None, regularizer_args=None,
+                 learning_rate_and_kwargs=(.001, {}), op_fun_and_kwargs=("adam", {}), mask=False, center=False,
+                 pooling_method="MAX", unpooling_method="nearest_neighbor", last_layer_op=None, layers=None,
+                 num_decoder_layers=None, num_batches_in_epoch = 1, **kwargs):
         self.num_batches_in_epoch = num_batches_in_epoch
         self.cur_objective_fn = objective_fn
         self.cur_learning_rate = learning_rate_and_kwargs
@@ -65,6 +65,10 @@ class Network(object):
         print("Number of layers: ", len(layers))
         print("Current output shape: ", net.get_shape())
 
+        if last_layer_op:
+            self.set_layer_op(weight_init, last_layer_op)
+            net = self.apply_last_layer_op(net, is_training=self.is_training)
+
         self.calculate_net_output(net, **kwargs)
 
     def calculate_net_output(self, net,  **loss_kwargs):
@@ -84,19 +88,17 @@ class Network(object):
     def apply_last_layer_op(self, net, **kwargs):
         return self.last_layer_op.create_layer(net, **kwargs)
 
-
     def mask_results(self, net):
         net = tf.multiply(net, self.masks)
         self.targets = tf.multiply(self.targets, self.masks)
         return net
 
-    def set_layer_op(self, weight_init=None, op="AVG"):
-        if op == "AVG" or op == "MAX":
-            self.last_layer_op = Pool3d(kernel_size=1, dilation=1,  weight_init=weight_init, act_fn=None, output_channels=1, name='last_conv')
-        if op == "CONV":
+    def set_layer_op(self, weight_init=None, method="AVG"):
+        if method == "AVG" or method == "MAX":
+            self.last_layer_op = Pool3d(pooling_method=method, name='last_pool')
+        if method == "CONV":
             self.last_layer_op = Conv2d(kernel_size=1, dilation=1,  weight_init=weight_init, act_fn=None,
                                         output_channels=1, name='last_conv')
-
 
     @property
     def cur_learning_rate(self):
