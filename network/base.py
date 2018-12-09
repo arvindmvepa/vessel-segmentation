@@ -16,14 +16,14 @@ class Network(object):
     def __init__(self, objective_fn="wce", weight_init = None, regularizer_args=None,
                  learning_rate_and_kwargs=(.001, {}), op_fun_and_kwargs=("adam", {}), mask=False, center=False,
                  pooling_method="MAX", unpooling_method="nearest_neighbor", last_layer_op=None, layers=None,
-                 num_decoder_layers=None, num_batches_in_epoch = 1, **kwargs):
+                 encoder_decoder=True, num_batches_in_epoch = 1, **kwargs):
         self.num_batches_in_epoch = num_batches_in_epoch
         self.cur_objective_fn = objective_fn
         self.cur_learning_rate = learning_rate_and_kwargs
         self.cur_op_fn = op_fun_and_kwargs
         self.regularization = regularizer_args
-        self.mask = mask
 
+        self.mask = mask
         self.inputs = tf.placeholder(tf.float32, [None, self.FIT_IMAGE_HEIGHT, self.FIT_IMAGE_WIDTH,
                                                   self.IMAGE_CHANNELS], name='inputs')
         self.targets = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='targets')
@@ -38,28 +38,19 @@ class Network(object):
         self.description = ""
         self.layers = {}
         self.debug1 = self.inputs
-        net = self.inputs
 
-        if num_decoder_layers is None:
+        if encoder_decoder:
+            self.init_encoder(**kwargs)
+            self.init_decoder(**kwargs)
+
+            net = self.encode(self.inputs, is_training=self.is_training, center=center, pooling_method=pooling_method)
+            net = self.decode(net, is_training=self.is_training, center=center, unpooling_method=unpooling_method)
+        else:
             for i, layer in enumerate(layers):
                 self.layers[i] = net = layer.create_layer(net, is_training=self.is_training, center=center,
                                                           pooling_method=pooling_method,
                                                           unpooling_method=unpooling_method)
                 self.description += "{}".format(layer.get_description())
-                self.layer_outputs.append(net)
-        else:
-            # ENCODER
-            for i, layer in enumerate(layers[:num_decoder_layers]):
-                self.layers[i] = net = layer.create_layer(net, is_training=self.is_training, center=center,
-                                                          pooling_method=pooling_method)
-                self.description += "{}".format(layer.get_description())
-                self.layer_outputs.append(net)
-
-            # DECODER
-            for i, layer in enumerate(layers[num_decoder_layers:], start=1):
-                net = layer.create_layer(net, add_w_input=self.layers[num_decoder_layers-i],
-                                         is_training=self.is_training,
-                                         center=center, unpooling_method=unpooling_method)
                 self.layer_outputs.append(net)
 
         print("Number of layers: ", len(layers))
@@ -78,6 +69,18 @@ class Network(object):
         self.segmentation_result = tf.sigmoid(net)
         self.calculate_loss(net, **loss_kwargs)
         self.train_op = self.cur_op_fn.minimize(self.cost, global_step=self._global_step)
+
+    def init_encoder(self, **encoder_kwargs):
+        raise NotImplementedError("Method Not Implemented")
+
+    def init_decoder(self, **decoder_kwargs):
+        raise NotImplementedError("Method Not Implemented")
+
+    def encode(self, input):
+        raise NotImplementedError("Method Not Implemented")
+
+    def decode(self, net):
+        raise NotImplementedError("Method Not Implemented")
 
     def calculate_loss(self, net, **kwargs):
         print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),

@@ -16,7 +16,11 @@ class LargeNetwork(Network):
 
     IMAGE_CHANNELS = 1
 
-    def __init__(self, weight_init=None, act_fn="lrelu", act_leak_prob=.2, layer_params=None, batch_norm=True, **kwargs):
+    def __init__(self, weight_init=None, act_fn="lrelu", act_leak_prob=.2, batch_norm=True, layer_params=None,
+                 **kwargs):
+        self.weight_init = weight_init
+        self.act_fn = act_fn
+        self.act_leak_prob = act_leak_prob
         self.layer_params = {"conv_1_1":{"ks":3, "dilation":1 , "output_channels":64, "keep_prob":1.0,
                                          "batch_norm": batch_norm},
                              "pool_1": {"ks":2},
@@ -70,12 +74,15 @@ class LargeNetwork(Network):
                                             "batch_norm": batch_norm},
                              }
         if layer_params:
-            self.layer_params.update(layer_params)
+            update(self.layer_params.update,layer_params)
 
-        layers = list()
+        super(LargeNetwork, self).__init__(weight_init=weight_init, **kwargs)
+
+    def init_encoder(self, **kwargs):
+        layers = []
         layers.append(Conv2d(kernel_size=self.layer_params['conv_1_1']['ks'],
                              dilation=self.layer_params['conv_1_1']['dilation'],
-                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                             weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              output_channels=self.layer_params['conv_1_1']['output_channels'],
                              keep_prob=self.layer_params['conv_1_1']['keep_prob'],
                              batch_norm=self.layer_params['conv_1_1']['batch_norm'], name='conv_1_1'))
@@ -83,7 +90,7 @@ class LargeNetwork(Network):
 
         layers.append(Conv2d(kernel_size=self.layer_params['conv_2_1']['ks'],
                              dilation=self.layer_params['conv_2_1']['dilation'],
-                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                             weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              output_channels=self.layer_params['conv_2_1']['output_channels'],
                              keep_prob=self.layer_params['conv_2_1']['keep_prob'],
                              batch_norm=self.layer_params['conv_2_1']['batch_norm'], name='conv_2_1'))
@@ -91,13 +98,13 @@ class LargeNetwork(Network):
 
         layers.append(Conv2d(kernel_size=self.layer_params['conv_3_1']['ks'],
                              dilation=self.layer_params['conv_3_1']['dilation'],
-                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                             weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              output_channels=self.layer_params['conv_3_1']['output_channels'],
                              keep_prob=self.layer_params['conv_3_1']['keep_prob'],
                              batch_norm=self.layer_params['conv_3_1']['batch_norm'], name='conv_3_1'))
         layers.append(Conv2d(kernel_size=self.layer_params['conv_3_2']['ks'],
-                             dilation=self.layer_params['conv_3_2']['dilation'], act_fn=act_fn,
-                             weight_init=weight_init,
+                             dilation=self.layer_params['conv_3_2']['dilation'], act_fn=self.act_fn,
+                             weight_init=self.weight_init,
                              output_channels=self.layer_params['conv_3_2']['output_channels'],
                              keep_prob=self.layer_params['conv_3_2']['keep_prob'],
                              batch_norm=self.layer_params['conv_3_2']['batch_norm'], name='conv_3_2'))
@@ -105,13 +112,13 @@ class LargeNetwork(Network):
 
         layers.append(Conv2d(kernel_size=self.layer_params['conv_4_1']['ks'],
                              dilation=self.layer_params['conv_4_1']['dilation'],
-                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                             weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              output_channels=self.layer_params['conv_4_1']['output_channels'],
                              keep_prob=self.layer_params['conv_4_1']['keep_prob'],
                              batch_norm=self.layer_params['conv_4_1']['batch_norm'], name='conv_4_1'))
         layers.append(Conv2d(kernel_size=self.layer_params['conv_4_2']['ks'],
                              dilation=self.layer_params['conv_4_2']['dilation'],
-                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                             weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              output_channels=self.layer_params['conv_4_2']['output_channels'],
                              keep_prob=self.layer_params['conv_4_2']['keep_prob'],
                              batch_norm=self.layer_params['conv_4_2']['batch_norm'], name='conv_4_2'))
@@ -119,13 +126,13 @@ class LargeNetwork(Network):
 
         layers.append(Conv2d(kernel_size=self.layer_params['conv_5_1']['ks'],
                              dilation=self.layer_params['conv_5_1']['dilation'],
-                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                             weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              output_channels=self.layer_params['conv_5_1']['output_channels'],
                              keep_prob=self.layer_params['conv_5_1']['keep_prob'],
                              batch_norm=self.layer_params['conv_5_1']['batch_norm'], name='conv_5_1'))
         layers.append(Conv2d(kernel_size=self.layer_params['conv_5_2']['ks'],
                              dilation=self.layer_params['conv_5_2']['dilation'],
-                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                             weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              output_channels=self.layer_params['conv_5_2']['output_channels'],
                              keep_prob=self.layer_params['conv_5_2']['keep_prob'],
                              batch_norm=self.layer_params['conv_5_2']['batch_norm'], name='conv_5_2'))
@@ -133,26 +140,29 @@ class LargeNetwork(Network):
 
         layers.append(Conv2d(kernel_size=self.layer_params['conv_6_1']['ks'],
                              dilation=self.layer_params['conv_6_1']['dilation'],
-                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                             weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              output_channels=self.layer_params['conv_6_1']['output_channels'],
                              keep_prob=self.layer_params['conv_6_1']['keep_prob'],
                              batch_norm=self.layer_params['conv_6_1']['batch_norm'], name='conv_6_1'))
         layers.append(Conv2d(kernel_size=self.layer_params['conv_6_2']['ks'],
                              dilation=self.layer_params['conv_6_2']['dilation'],
-                             weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                             weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              output_channels=self.layer_params['conv_6_2']['output_channels'],
                              keep_prob=self.layer_params['conv_6_2']['keep_prob'],
                              batch_norm=self.layer_params['conv_6_2']['batch_norm'], name='conv_6_2'))
+        self.encoder = layers
 
+    def init_decoder(self, **kwargs):
+        layers = []
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_7_1']['ks'],
                               dilation=self.layer_params['convt_7_1']['dilation'],
-                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                              weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               output_channels=self.layer_params['convt_7_1']['output_channels'],
                               keep_prob=self.layer_params['convt_7_1']['keep_prob'],
                               batch_norm=self.layer_params['convt_7_1']['batch_norm'], name='convt_7_1'))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_7_2']['ks'],
                               dilation=self.layer_params['convt_7_2']['dilation'],
-                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                              weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               output_channels=self.layer_params['convt_7_2']['output_channels'],
                               keep_prob=self.layer_params['convt_7_2']['keep_prob'],
                               batch_norm=self.layer_params['convt_7_2']['batch_norm'], name='convt_7_2'))
@@ -161,13 +171,13 @@ class LargeNetwork(Network):
                                add_to_input=self.layer_params['up_8']["add_to_input"]))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_8_1']['ks'],
                               dilation=self.layer_params['convt_8_1']['dilation'],
-                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                              weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               output_channels=self.layer_params['convt_8_1']['output_channels'],
                               keep_prob=self.layer_params['convt_8_1']['keep_prob'],
                               batch_norm=self.layer_params['convt_8_1']['batch_norm'], name='convt_8_1'))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_8_2']['ks'],
                               dilation=self.layer_params['convt_8_2']['dilation'],
-                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                              weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               output_channels=self.layer_params['convt_8_2']['output_channels'],
                               keep_prob=self.layer_params['convt_8_2']['keep_prob'],
                               batch_norm=self.layer_params['convt_8_2']['batch_norm'], name='convt_8_2'))
@@ -176,13 +186,13 @@ class LargeNetwork(Network):
                                add_to_input=self.layer_params['up_9']["add_to_input"]))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_9_1']['ks'],
                               dilation=self.layer_params['convt_9_1']['dilation'],
-                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                              weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               output_channels=self.layer_params['convt_9_1']['output_channels'],
                               keep_prob=self.layer_params['convt_9_1']['keep_prob'],
                               batch_norm=self.layer_params['convt_9_1']['batch_norm'], name='convt_9_1'))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_9_2']['ks'],
                               dilation=self.layer_params['convt_9_2']['dilation'],
-                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                              weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               output_channels=self.layer_params['convt_9_2']['output_channels'],
                               keep_prob=self.layer_params['convt_9_2']['keep_prob'],
                               batch_norm=self.layer_params['convt_9_2']['batch_norm'], name='convt_9_2'))
@@ -191,13 +201,13 @@ class LargeNetwork(Network):
                                add_to_input=self.layer_params['up_10']["add_to_input"]))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_10_1']['ks'],
                               dilation=self.layer_params['convt_10_1']['dilation'],
-                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                              weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               output_channels=self.layer_params['convt_10_1']['output_channels'],
                               keep_prob=self.layer_params['convt_10_1']['keep_prob'],
                               batch_norm=self.layer_params['convt_10_1']['batch_norm'], name='convt_10_1'))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_10_2']['ks'],
                               dilation=self.layer_params['convt_10_2']['dilation'],
-                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                              weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               output_channels=self.layer_params['convt_10_2']['output_channels'],
                               keep_prob=self.layer_params['convt_10_2']['keep_prob'],
                               batch_norm=self.layer_params['convt_10_2']['batch_norm'], name='convt_10_2'))
@@ -206,7 +216,7 @@ class LargeNetwork(Network):
                                add_to_input=self.layer_params['up_11']["add_to_input"]))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_11_1']['ks'],
                               dilation=self.layer_params['convt_11_1']['dilation'],
-                              weight_init=weight_init, act_fn=act_fn, act_leak_prob=act_leak_prob,
+                              weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               output_channels=self.layer_params['convt_11_1']['output_channels'],
                               keep_prob=self.layer_params['convt_11_1']['keep_prob'],
                               batch_norm=self.layer_params['convt_11_1']['batch_norm'], name='convt_11_1'))
@@ -215,12 +225,21 @@ class LargeNetwork(Network):
                                add_to_input=self.layer_params['up_12']["add_to_input"]))
         layers.append(ConvT2d(kernel_size=self.layer_params['convt_12_1']['ks'],
                               dilation=self.layer_params['convt_12_1']['dilation'],
-                              weight_init=weight_init, act_fn=None,
+                              weight_init=self.weight_init, act_fn=None,
                               output_channels=self.layer_params['convt_12_1']['output_channels'],
                               keep_prob=self.layer_params['convt_12_1']['keep_prob'],
                               batch_norm=self.layer_params['convt_12_1']['batch_norm'], name='convt_12_1'))
+        self.decoder = layers
 
-        num_decoder_layers = int(len(layers)/2)
+    def encode(self, input, center=False, pooling_method="MAX"):
+        for i, layer in enumerate(self.encoder):
+            self.layers[i] = input = layer.create_layer(input, is_training=self.is_training, center=center,
+                                                        pooling_method=pooling_method)
+            self.description += "{}".format(layer.get_description())
+            self.layer_outputs.append(input)
 
-        super(LargeNetwork, self).__init__(layers=layers, weight_init=weight_init,
-                                           num_decoder_layers=num_decoder_layers, **kwargs)
+    def decode(self, net, center=False, unpooling_method="MAX"):
+        for i, layer in enumerate(self.decoder, start=1):
+            net = layer.create_layer(net, add_w_input=self.layers[len(self.decoder) - i],
+                                     is_training=self.is_training, center=center, unpooling_method=unpooling_method)
+            self.layer_outputs.append(net)
