@@ -31,7 +31,7 @@ class Pool(Layer):
     def get_description(self):
         return "P{}".format(self.kernel_size)
 
-class Pool2d(Layer):
+class Pool2d(Pool):
 
     def apply_pool(self, input, *args, **kwargs):
         return pool_2d(input,  *args, **kwargs)
