@@ -26,15 +26,13 @@ def get_incoming_shape(incoming):
 # Auto format kernel
 def autoformat_kernel_2d(strides):
     if isinstance(strides, int):
-        return [1, strides, strides, 1]
+        return [strides, strides]
     elif isinstance(strides, (tuple, list)):
         if len(strides) == 2:
-            return [1, strides[0], strides[1], 1]
-        elif len(strides) == 4:
-            return [strides[0], strides[1], strides[2], strides[3]]
+            return strides
         else:
             raise Exception("strides length error: " + str(len(strides))
-                            + ", only a length of 2 or 4 is supported.")
+                            + ", only a length of 2 is supported.")
     else:
         raise Exception("strides format error: " + str(type(strides)))
 
@@ -97,9 +95,9 @@ def upsample_2d(incoming, kernel_size, method="nearest_neighbor", name="UpSample
     kernel = autoformat_kernel_2d(kernel_size)
 
     with tf.name_scope(name) as scope:
-        inference = tf.image.resize_images(incoming, size=input_shape[1:3]*tf.constant(kernel[1:3]),
+        inference = tf.image.resize_images(incoming, size=input_shape[1:3]*tf.constant(kernel),
                                            method=upsample_methods[method])
-        inference.set_shape((None, input_shape[1]*kernel[1], input_shape[2]*kernel[2], None))
+        inference.set_shape((None, input_shape[1]*kernel[0], input_shape[2]*kernel[1], None))
 
     # Add attributes to Tensor to easy access weights
     inference.scope = scope
