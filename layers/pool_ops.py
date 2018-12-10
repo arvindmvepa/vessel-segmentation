@@ -33,8 +33,8 @@ class Pool(Layer):
 
 class Pool2d(Pool):
 
-    def apply_pool(self, input, *args, **kwargs):
-        return pool_2d(input,  *args, **kwargs)
+    def apply_pool(self, input, kernel_size, method="MAX", *args, **kwargs):
+        return pool_2d(input, kernel_size, method=method, *args, **kwargs)
 
     def get_description(self):
         return "P_2D{}".format(self.kernel_size)
@@ -42,8 +42,8 @@ class Pool2d(Pool):
 
 class UnPool2d(Pool):
 
-    def apply_pool(self, input, *args, **kwargs):
-        return upsample_2d(input, *args, **kwargs)
+    def apply_pool(self, input, kernel_size, method="nearest_neighbor", *args, **kwargs):
+        return upsample_2d(input, kernel_size, method=method, *args, **kwargs)
 
     def get_description(self):
         return "UP_2D{}".format(self.kernel_size)
