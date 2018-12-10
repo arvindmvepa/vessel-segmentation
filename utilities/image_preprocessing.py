@@ -65,13 +65,12 @@ def apply_normalization(imgs, zero_center=False, zero_center_scale=False, z_scor
             return 2*(zero_centered - min_vals)/(max_vals-min_vals)-1, mu
         else:
             return zero_centered, mu
-    else:
-        return imgs, None
-
-    if z_score_norm:
+    elif z_score_norm:
         # normalize by z-score from train data
         if not train_params:
             mu, std = np.mean(imgs), np.std(imgs)
         else:
             mu, std = train_params
         return (imgs - mu)/std, (mu, std)
+    else:
+        return imgs, None
