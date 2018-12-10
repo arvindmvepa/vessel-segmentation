@@ -43,8 +43,8 @@ class Network(object):
             print("Number of Encoder Layers: ", len(self.encoder))
             print("Number of Decoder Layers: ", len(self.decoder))
 
-            net = self.encode(self.inputs, is_training=self.is_training, center=center, pooling_method=pooling_method)
-            net = self.decode(net, is_training=self.is_training, center=center, unpooling_method=unpooling_method)
+            net = self.encode(self.inputs, center=center, pooling_method=pooling_method)
+            net = self.decode(net, center=center, unpooling_method=unpooling_method)
         else:
             if layers == None:
                 raise ValueError("No Layers Defined.")
