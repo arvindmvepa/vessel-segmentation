@@ -101,7 +101,8 @@ class SmallNetwork(Network):
                              output_channels=self.layer_params['conv_4_2']['output_channels'],
                              keep_prob=self.layer_params['conv_4_2']['keep_prob'],
                              batch_norm=self.layer_params['conv_4_2']['batch_norm'], name='conv_4_2'))
-        return layers
+        self.encoder = layers
+
 
 
     def init_decoder(self, **kwargs):
@@ -151,19 +152,4 @@ class SmallNetwork(Network):
                               output_channels=self.layer_params['convt_8_1']['output_channels'],
                               keep_prob=self.layer_params['convt_8_1']['keep_prob'],
                               batch_norm=self.layer_params['convt_8_1']['batch_norm'], name='convt_8_1'))
-        return layers
-
-
-    def encode(self, input, center=False, pooling_method="MAX"):
-        for i, layer in enumerate(self.encoder):
-            self.layers[i] = input = layer.create_layer(input, is_training=self.is_training, center=center,
-                                                        pooling_method=pooling_method)
-            self.description += "{}".format(layer.get_description())
-            self.layer_outputs.append(input)
-
-
-    def decode(self, net, center=False, unpooling_method="MAX"):
-        for i, layer in enumerate(self.decoder, start=1):
-            net = layer.create_layer(net, add_w_input=self.layers[len(self.decoder)-i],
-                                     is_training=self.is_training, center=center, unpooling_method=unpooling_method)
-            self.layer_outputs.append(net)
+        self.decoder = layers

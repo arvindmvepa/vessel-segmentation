@@ -30,9 +30,6 @@ class Network(object):
         if self.mask:
             self.masks = tf.placeholder(tf.float32, [None, self.IMAGE_HEIGHT, self.IMAGE_WIDTH, 1], name='masks')
 
-        if layers == None :
-            raise ValueError("No Layers Defined.")
-
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
         self.layer_outputs = []
         self.description = ""
@@ -43,9 +40,15 @@ class Network(object):
             self.init_encoder(**kwargs)
             self.init_decoder(**kwargs)
 
+            print("Number of Encoder Layers: ", len(self.encoder))
+            print("Number of Decoder Layers: ", len(self.decoder))
+
             net = self.encode(self.inputs, is_training=self.is_training, center=center, pooling_method=pooling_method)
             net = self.decode(net, is_training=self.is_training, center=center, unpooling_method=unpooling_method)
         else:
+            if layers == None:
+                raise ValueError("No Layers Defined.")
+            print("Number of layers: ", len(layers))
             for i, layer in enumerate(layers):
                 self.layers[i] = net = layer.create_layer(net, is_training=self.is_training, center=center,
                                                           pooling_method=pooling_method,
@@ -53,7 +56,6 @@ class Network(object):
                 self.description += "{}".format(layer.get_description())
                 self.layer_outputs.append(net)
 
-        print("Number of layers: ", len(layers))
         print("Current output shape: ", net.get_shape())
 
         if last_layer_op:
@@ -76,11 +78,22 @@ class Network(object):
     def init_decoder(self, **decoder_kwargs):
         raise NotImplementedError("Method Not Implemented")
 
-    def encode(self, input):
-        raise NotImplementedError("Method Not Implemented")
+    def encode(self, net, center=False, pooling_method="MAX"):
+        for i, layer in enumerate(self.encoder):
+            self.layers[i] = net = layer.create_layer(net, is_training=self.is_training, center=center,
+                                                      pooling_method=pooling_method)
+            self.description += "{}".format(layer.get_description())
+            self.layer_outputs.append(net)
+        return net
 
-    def decode(self, net):
-        raise NotImplementedError("Method Not Implemented")
+
+    def decode(self, net, center=False, unpooling_method="MAX"):
+        for i, layer in enumerate(self.decoder, start=1):
+            net = layer.create_layer(net, add_w_input=self.layers[len(self.decoder) - i], is_training=self.is_training,
+                                     center=center, unpooling_method=unpooling_method)
+            self.description += "{}".format(layer.get_description())
+            self.layer_outputs.append(net)
+        return net
 
     def calculate_loss(self, net, **kwargs):
         print('segmentation_result.shape: {}, targets.shape: {}'.format(self.segmentation_result.get_shape(),
