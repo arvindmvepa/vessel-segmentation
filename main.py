@@ -33,11 +33,11 @@ if __name__ == '__main__':
 
     ### JOB INFO
     Job_cls = DriveJob
-    WRK_DIR_PATH = "C:\\vessel-segmentation\\DRIVE"
+    WRK_DIR_PATH = "C:\\Users\\arvin\\dev\\vessel-segmentation\\DRIVE"
     n_splits = 4
 
     ### OUTPUT INFO
-    EXPERIMENTS_DIR_PATH = "C:\\vessel-segmentation\\arch_tests"
+    EXPERIMENTS_DIR_PATH = "C:\\Users\\arvin\\dev\\vessel-segmentation\\arch_tests"
 
     EXPERIMENT_NAME = "test"
     OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
