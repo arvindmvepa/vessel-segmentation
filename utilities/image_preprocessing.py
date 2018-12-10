@@ -53,7 +53,7 @@ def per_image_zero_center_scale(img):
 def apply_normalization(imgs, zero_center=False, zero_center_scale=False, z_score_norm=False, train_params=None):
     """If training, calculate results on train data. otherwise use test data"""
     print("apply normalization condition statement")
-    if zero_center:
+    if zero_center or zero_center_scale:
         print("apply zero_center")
         # zero center by train mean and scale by [-1,1]
         if not train_params:
