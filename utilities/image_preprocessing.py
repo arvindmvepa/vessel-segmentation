@@ -57,23 +57,23 @@ def apply_normalization(imgs, zero_center=False, zero_center_scale=False, z_scor
         print("apply zero_center")
         # zero center by train mean and scale by [-1,1]
         if not train_params:
-            print("zc train: re-calculate mean")
             mu = np.mean(imgs)
+            print("zc train: re-calculate mean {}".format(mu))
         else:
-            print("zc test: use train params")
             mu = train_params[0]
+            print("zc test: use train params mu {}".format(mu))
         zero_centered = imgs - mu
         if zero_center_scale:
             print("apply zero_center scale")
             if not train_params:
-                print("zcs train: re-calculate values")
                 min_val = np.min(zero_centered)
                 max_val = np.max(zero_centered)
-                return 2*(zero_centered - min_val)/(max_val-min_val)-1, (mu, min_val, max_val)
+                print("zcs train: re-calculate min {} max {}".format(min_val, max_val))
             else:
-                print("zcs test: use train params")
-                return 2 * (zero_centered - train_params[1]) / (train_params[2] - train_params[1]) - 1, \
-                       (mu, train_params[1], train_params[2])
+                min_val = train_params[1]
+                max_val = train_params[2]
+                print("zcs test: use train params min {} max {}".format(min_val, max_val))
+            return 2*(zero_centered-min_val)/(max_val-min_val)-1, (mu, min_val, max_val)
         else:
             print("don't apply zero_center scale")
             return zero_centered, (mu,)
@@ -81,11 +81,11 @@ def apply_normalization(imgs, zero_center=False, zero_center_scale=False, z_scor
         print("apply z score norm")
         # normalize by z-score from train data
         if not train_params:
-            print("zcn train: re-calculate values")
             mu, std = np.mean(imgs), np.std(imgs)
+            print("zcn train: re-calculate values mean {} std {}".format(mu,std))
         else:
-            print("zcn test: use train params")
             mu, std = train_params
+            print("zcn test: use train params mean {} std {}".format(mu,std))
         return (imgs - mu)/std, (mu, std)
     else:
         print("no normalization applied")
