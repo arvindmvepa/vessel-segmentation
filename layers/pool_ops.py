@@ -11,14 +11,16 @@ class Pool(Layer):
         self.name = name
         self.add_to_input = add_to_input
 
-    def create_layer(self, input, add_w_input=None, pooling_method="MAX", center=False, **kwargs):
+    def create_layer(self, input, add_w_input=None, pooling_method="MAX", unpooling_method="nearest_neighbor",
+                     center=False, **kwargs):
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
 
         if self.add_to_input:
             input = tf.add(input, add_w_input)
 
-        output = self.apply_pool(input, self.kernel_size, method=pooling_method)
+        output = self.apply_pool(input, self.kernel_size, pooling_method=pooling_method,
+                                 unpooling_method=unpooling_method)
 
         # zero-center activations
         if center:
@@ -33,8 +35,8 @@ class Pool(Layer):
 
 class Pool2d(Pool):
 
-    def apply_pool(self, input, kernel_size, method="MAX", *args, **kwargs):
-        return pool_2d(input, kernel_size, method=method, *args, **kwargs)
+    def apply_pool(self, input, kernel_size, pooling_method="MAX", *args, **kwargs):
+        return pool_2d(input, kernel_size, method=pooling_method, *args, **kwargs)
 
     def get_description(self):
         return "P_2D{}".format(self.kernel_size)
@@ -42,8 +44,8 @@ class Pool2d(Pool):
 
 class UnPool2d(Pool):
 
-    def apply_pool(self, input, kernel_size, method="nearest_neighbor", *args, **kwargs):
-        return upsample_2d(input, kernel_size, method=method, *args, **kwargs)
+    def apply_pool(self, input, kernel_size, unpooling_method="nearest_neighbor", *args, **kwargs):
+        return upsample_2d(input, kernel_size, method=unpooling_method, *args, **kwargs)
 
     def get_description(self):
         return "UP_2D{}".format(self.kernel_size)
