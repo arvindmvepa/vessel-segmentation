@@ -67,9 +67,9 @@ def apply_normalization(imgs, zero_center=False, zero_center_scale=False, z_scor
             print("apply zero_center scale")
             if not train_params:
                 print("zcs train: re-calculate values")
-                min_vals = np.min(zero_centered,axis=(1,2))
-                max_vals = np.max(zero_centered,axis=(1,2))
-                return 2*(zero_centered - min_vals)/(max_vals-min_vals)-1, (mu, min_vals, max_vals)
+                min_val = np.min(zero_centered,axis=(0,1,2))
+                max_val = np.max(zero_centered,axis=(0,1,2))
+                return 2*(zero_centered - min_val)/(max_val-min_val)-1, (mu, min_val, max_val)
             else:
                 print("zcs test: use train params")
                 return 2 * (zero_centered - train_params[1]) / (train_params[2] - train_params[1]) - 1, \
