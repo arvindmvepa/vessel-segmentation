@@ -52,25 +52,41 @@ def per_image_zero_center_scale(img):
 
 def apply_normalization(imgs, zero_center=False, zero_center_scale=False, z_score_norm=False, train_params=None):
     """If training, calculate results on train data. otherwise use test data"""
+    print("apply normalization condition statement")
     if zero_center:
+        print("apply zero_center")
         # zero center by train mean and scale by [-1,1]
         if not train_params:
+            print("zc train: re-calculate mean")
             mu = np.mean(imgs)
         else:
-            mu = train_params
+            print("zc train: use train params")
+            mu = train_params[0]
         zero_centered = imgs - mu
         if zero_center_scale:
-            min_vals = np.min(zero_centered,axis=(1,2))
-            max_vals = np.max(zero_centered,axis=(1,2))
-            return 2*(zero_centered - min_vals)/(max_vals-min_vals)-1, mu
+            print("apply zero_center scale")
+            if not train_params:
+                print("zcs train: re-calculate values")
+                min_vals = np.min(zero_centered,axis=(1,2))
+                max_vals = np.max(zero_centered,axis=(1,2))
+                return 2*(zero_centered - min_vals)/(max_vals-min_vals)-1, (mu, min_vals, max_vals)
+            else:
+                print("zcs test: use train params")
+                return 2 * (zero_centered - train_params[1]) / (train_params[2] - train_params[1]) - 1, \
+                       (mu, train_params[1], train_params[2])
         else:
-            return zero_centered, mu
+            print("don't apply zero_center scale")
+            return zero_centered, (mu,)
     elif z_score_norm:
+        print("apply z score norm")
         # normalize by z-score from train data
         if not train_params:
+            print("zcn train: re-calculate values")
             mu, std = np.mean(imgs), np.std(imgs)
         else:
+            print("zcn test: use train params")
             mu, std = train_params
         return (imgs - mu)/std, (mu, std)
     else:
+        print("no normalization applied")
         return imgs, None
