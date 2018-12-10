@@ -83,8 +83,10 @@ class Dataset(object):
                 reshaped_arrs += [np.reshape(arr, (arr.shape[0], arr.shape[1], arr.shape[2], 1))]
         return tuple(reshaped_arrs)
 
+    """
     def apply_img_normalization(self, images):
         return np.array([(image-np.min(image))*1.0/(np.max(image)-np.min(image)) for image in images])
+    """
 
     def apply_aug(self, *args, **kwargs):
         return apply_image_aug(*args, **kwargs)

@@ -10,10 +10,13 @@ def preprocessing(img, histo_eq=False, clahe_kwargs=None, gamma=None, per_image_
     if gamma:
         img = adjust_gamma(img, gamma)
     if per_image_z_score_norm:
+        print("per image z score norm")
         img = per_image_z_score_norm(img)
     if per_image_zero_center:
+        print("per image zero center")
         img = per_image_zero_center(img)
     if per_image_zero_center_scale:
+        print("per image zero center scale")
         img = per_image_zero_center_scale(img)
     return img
 
@@ -36,11 +39,13 @@ def adjust_gamma(img, gamma=1.0):
 def per_image_z_score_norm(img):
     img_std = np.std(img)
     img_mean = np.mean(img)
+    print("per image z score norm mean {} std {}".format(img_mean, img_std))
     img_normalized = (img - img_mean) / img_std
     return img_normalized
 
 def per_image_zero_center(img):
     img_mean = np.mean(img)
+    print("per image zero center mean {}".format(img_mean))
     return img - img_mean
 
 def per_image_zero_center_scale(img):
@@ -48,6 +53,7 @@ def per_image_zero_center_scale(img):
     img = img - img_mean
     min_val = np.min(img)
     max_val = np.max(img)
+    print("per image zero center scale mean {} min {} max {}".format(img_mean, min_val, max_val))
     return 2*(img - min_val)/(max_val-min_val)-1
 
 def apply_normalization(imgs, zero_center=False, zero_center_scale=False, z_score_norm=False, train_params=None):
