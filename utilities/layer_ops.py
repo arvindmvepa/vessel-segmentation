@@ -38,7 +38,7 @@ def autoformat_kernel_2d(strides):
 
 
 def pool_2d(incoming, kernel_size, strides=None, padding='same', method="MAX",
-            name="Pool2D"):
+            name="Pool2D", *args, **kwargs):
     """ Max Pooling 2D.
     Input:
         4-D Tensor [batch, height, width, in_channels].
@@ -77,7 +77,7 @@ def pool_2d(incoming, kernel_size, strides=None, padding='same', method="MAX",
     return inference
 
 
-def upsample_2d(incoming, kernel_size, method="nearest_neighbor", name="UpSample2D"):
+def upsample_2d(incoming, kernel_size, method="nearest_neighbor", name="UpSample2D", *args, **kwargs):
     """ UpSample 2D.
     Input:
         4-D Tensor [batch, height, width, in_channels].
