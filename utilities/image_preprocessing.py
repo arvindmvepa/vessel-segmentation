@@ -11,13 +11,13 @@ def preprocessing(img, histo_eq=False, clahe_kwargs=None, gamma=None, per_image_
         img = adjust_gamma(img, gamma)
     if per_image_z_score_norm:
         print("per image z score norm")
-        img = per_image_z_score_norm(img)
+        img = apply_per_image_z_score_norm(img)
     if per_image_zero_center:
         print("per image zero center")
-        img = per_image_zero_center(img)
+        img = apply_per_image_zero_center(img)
     if per_image_zero_center_scale:
         print("per image zero center scale")
-        img = per_image_zero_center_scale(img)
+        img = apply_per_image_zero_center_scale(img)
     return img
 
 def histo_equalized(img):
@@ -36,19 +36,19 @@ def adjust_gamma(img, gamma=1.0):
     new_img = cv2.LUT(np.array(img, dtype = np.uint8), table)
     return new_img
 
-def per_image_z_score_norm(img):
+def apply_per_image_z_score_norm(img):
     img_std = np.std(img)
     img_mean = np.mean(img)
     print("per image z score norm mean {} std {}".format(img_mean, img_std))
     img_normalized = (img - img_mean) / img_std
     return img_normalized
 
-def per_image_zero_center(img):
+def apply_per_image_zero_center(img):
     img_mean = np.mean(img)
     print("per image zero center mean {}".format(img_mean))
     return img - img_mean
 
-def per_image_zero_center_scale(img):
+def apply_per_image_zero_center_scale(img):
     img_mean = np.mean(img)
     img = img - img_mean
     min_val = np.min(img)
@@ -56,7 +56,7 @@ def per_image_zero_center_scale(img):
     print("per image zero center scale mean {} min {} max {}".format(img_mean, min_val, max_val))
     return 2*(img - min_val)/(max_val-min_val)-1
 
-def apply_normalization(imgs, zero_center=False, zero_center_scale=False, z_score_norm=False, train_params=None):
+def apply_dataset_normalization(imgs, zero_center=False, zero_center_scale=False, z_score_norm=False, train_params=None):
     """If training, calculate results on train data. otherwise use test data"""
     print("apply normalization condition statement")
     if zero_center or zero_center_scale:

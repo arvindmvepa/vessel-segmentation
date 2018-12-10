@@ -6,7 +6,7 @@ import os
 from sklearn.model_selection import train_test_split
 from imgaug import imgaug
 from utilities.augmentation import apply_image_aug
-from utilities.image_preprocessing import apply_normalization
+from utilities.image_preprocessing import apply_dataset_normalization
 
 
 class Dataset(object):
@@ -36,9 +36,9 @@ class Dataset(object):
                                                     per_image_zero_center=per_image_zero_center,
                                                     per_image_zero_center_scale=per_image_zero_center_scale)
         self.train_data = list(self.train_data)
-        self.train_data[0], train_params = apply_normalization(self.train_data[0], zero_center=zero_center,
-                                                               zero_center_scale=zero_center_scale,
-                                                               z_score_norm=z_score_norm)
+        self.train_data[0], train_params = apply_dataset_normalization(self.train_data[0], zero_center=zero_center,
+                                                                       zero_center_scale=zero_center_scale,
+                                                                       z_score_norm=z_score_norm)
 
         if early_stopping:
             data = train_test_split(*self.train_data, test_size=early_stopping_val_prop)
@@ -50,9 +50,9 @@ class Dataset(object):
                                                    per_image_zero_center=per_image_zero_center,
                                                    per_image_zero_center_scale=per_image_zero_center_scale)
         self.test_data = list(self.test_data)
-        self.test_data[0], _ = apply_normalization(self.test_data[0], zero_center=zero_center,
-                                                   zero_center_scale=zero_center_scale, z_score_norm=z_score_norm,
-                                                   train_params=train_params)
+        self.test_data[0], _ = apply_dataset_normalization(self.test_data[0], zero_center=zero_center,
+                                                           zero_center_scale=zero_center_scale,
+                                                           z_score_norm=z_score_norm, train_params=train_params)
 
         self.pointer = 0
 
