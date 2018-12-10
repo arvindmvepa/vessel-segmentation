@@ -42,7 +42,7 @@ if __name__ == '__main__':
     EXPERIMENT_NAME = "test"
     OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
     metrics_epoch_freq = 1
-    viz_layer_epoch_freq = 1
+    viz_layer_epoch_freq = None
     n_epochs = 5
 
     job = Job_cls(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)

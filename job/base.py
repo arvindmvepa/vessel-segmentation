@@ -293,7 +293,8 @@ class Job(object):
                         self.save_debug3(batch_data,debug1,viz_layer_outputs_path_train)
 
                     # create network visualization output
-                    if (epoch_i + 1) % viz_layer_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch()-1:
+                    if viz_layer_epoch_freq is not None and (epoch_i + 1) % viz_layer_epoch_freq == 0 and \
+                                    batch_i == dataset.num_batches_in_epoch()-1:
                         self.create_viz_layer_output(layer_outputs, self.decision_threshold,
                                                      viz_layer_outputs_path_train)
 
@@ -355,7 +356,7 @@ class Job(object):
                                                                test_pos_class_frac, *test_data[1:])
             max_thresh_accuracy += thresh_max
 
-            if i == sample_test_image and (epoch_i + 1) % viz_layer_epoch_freq == 0:
+            if viz_layer_epoch_freq is not None and i == sample_test_image and (epoch_i + 1) % viz_layer_epoch_freq == 0:
                 self.create_viz_layer_output(layer_outputs, decision_threshold, viz_layer_outputs_path_test)
 
         # combine test results to produce overall metric scores
