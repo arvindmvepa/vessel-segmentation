@@ -36,6 +36,9 @@ class Dataset(object):
                                                     per_image_zero_center=per_image_zero_center,
                                                     per_image_zero_center_scale=per_image_zero_center_scale)
         self.train_data = list(self.train_data)
+        print("debug")
+        print(self.train_data)
+        print("debug end")
         self.train_data[0], train_params = apply_normalization(self.train_data[0], zero_center=zero_center,
                                                                zero_center_scale=zero_center_scale,
                                                                z_score_norm=z_score_norm)
