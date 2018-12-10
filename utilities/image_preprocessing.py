@@ -60,7 +60,7 @@ def apply_normalization(imgs, zero_center=False, zero_center_scale=False, z_scor
             print("zc train: re-calculate mean")
             mu = np.mean(imgs)
         else:
-            print("zc train: use train params")
+            print("zc test: use train params")
             mu = train_params[0]
         zero_centered = imgs - mu
         if zero_center_scale:
