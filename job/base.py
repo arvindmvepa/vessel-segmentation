@@ -280,7 +280,7 @@ class Job(object):
                         self.save_debug2(batch_data, viz_layer_outputs_path_train)
 
                     print('training dict')
-                    print(self.get_network_dict(network, batch_data))
+                    print(self.get_network_dict(network, batch_data).pop(network.is_training))
                     # train on batch
                     cost, cost_unweighted, layer_outputs, debug1, _, cur_learning_rate = sess.run(
                         [network.cost, network.cost_unweighted, network.layer_outputs, network.debug1,
@@ -342,7 +342,7 @@ class Job(object):
             test_data = dataset.tf_reshape(test_data)
             # get network results on test image
             print("testing dict")
-            print(self.get_network_dict(network, test_data, False))
+            print(self.get_network_dict(network, test_data, False).pop(network.is_training))
             test_cost_, test_cost_unweighted_, segmentation_test_result, layer_outputs = \
                 sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
                           network.layer_outputs],
