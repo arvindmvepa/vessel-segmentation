@@ -243,6 +243,7 @@ class Job(object):
         if save_model:
             os.makedirs(os.path.join(self.OUTPUTS_DIR_PATH, 'save', network.description, timestamp))
 
+        viz_layer_outputs_path_test = None
         if viz_layer_epoch_freq is not None:
             viz_layer_outputs_path_train, viz_layer_outputs_path_test = \
                 self.create_viz_dirs(network, timestamp)
@@ -278,6 +279,8 @@ class Job(object):
                     if viz_layer_epoch_freq is not None and debug_net_output:
                         self.save_debug2(batch_data, viz_layer_outputs_path_train)
 
+                    print('training dict')
+                    print(self.get_network_dict(network, batch_data))
                     # train on batch
                     cost, cost_unweighted, layer_outputs, debug1, _, cur_learning_rate = sess.run(
                         [network.cost, network.cost_unweighted, network.layer_outputs, network.debug1,
@@ -338,6 +341,8 @@ class Job(object):
         for i, test_data in enumerate(zip(*dataset.test_data)):
             test_data = dataset.tf_reshape(test_data)
             # get network results on test image
+            print("testing dict")
+            print(self.get_network_dict(network, test_data, False))
             test_cost_, test_cost_unweighted_, segmentation_test_result, layer_outputs = \
                 sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
                           network.layer_outputs],

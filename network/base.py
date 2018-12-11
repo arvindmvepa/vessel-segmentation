@@ -36,6 +36,8 @@ class Network(object):
         self.layers = {}
         self.debug1 = self.inputs
 
+        print("networking training: {}".format(self.is_training))
+
         if encoder_decoder:
             self.init_encoder(**kwargs)
             self.init_decoder(**kwargs)
