@@ -24,7 +24,10 @@ class Pool(Layer):
 
         # zero-center activations
         if center:
+            print("zero center activation")
             output = output - tf.reduce_mean(output)
+        else:
+            print("don't zero center activation")
         return output
 
     def apply_pool(self, input, *args, **kwargs):
