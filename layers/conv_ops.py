@@ -116,7 +116,10 @@ class ConvT2d(Conv2d):
 
         # zero-center activations
         if center:
+            print("zero center activation")
             output = output - tf.reduce_mean(output)
+        else:
+            print("don't zero center activation")
         return output
 
         return self.get_act_values(output)
