@@ -102,6 +102,7 @@ class ConvT2d(Conv2d):
         # apply batch-norm
         if self.batch_norm:
             print("apply batch norm")
+            print("training {}".format(is_training))
             output = tf.contrib.layers.batch_norm(output, is_training=is_training)
 
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
