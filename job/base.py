@@ -218,14 +218,14 @@ class Job(object):
                                            regularizer_args=regularizer_args, act_fn=act_fn, act_leak_prob=act_leak_prob,
                                            learning_rate_and_kwargs=learning_rate_and_kwargs,
                                            op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params,
-                                           num_batches_in_epoch = dataset.num_batches_in_epoch())
+                                           num_batches_in_epoch = dataset.num_batches_in_epoch(), **kwargs)
         else:
             network = self.network_cls(pos_weight=pos_weight, objective_fn=objective_fn, weight_map=weight_map,
                                        type_weight=type_weight, r=ss_r, weight_init=weight_init,
                                        regularizer_args=regularizer_args, act_fn=act_fn, act_leak_prob=act_leak_prob,
                                        learning_rate_and_kwargs=learning_rate_and_kwargs,
                                        op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params,
-                                       num_batches_in_epoch=dataset.num_batches_in_epoch())
+                                       num_batches_in_epoch=dataset.num_batches_in_epoch(), **kwargs)
 
         # create metrics log file
         metric_log_file_path = os.path.join(self.OUTPUTS_DIR_PATH, metrics_log)
