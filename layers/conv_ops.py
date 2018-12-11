@@ -41,6 +41,8 @@ class Conv2d(Layer):
 
         # apply batch-norm
         if self.batch_norm:
+            print("apply batch norm")
+            print("training {}".format(is_training))
             output = tf.contrib.layers.batch_norm(output, is_training=is_training)
 
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
@@ -99,6 +101,7 @@ class ConvT2d(Conv2d):
         output = tf.nn.dropout(output, self.keep_prob)
         # apply batch-norm
         if self.batch_norm:
+            print("apply batch norm")
             output = tf.contrib.layers.batch_norm(output, is_training=is_training)
 
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
