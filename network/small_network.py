@@ -89,7 +89,7 @@ class SmallNetwork(Network):
 
         layers.append(UnPool2d(**self.layer_params['up_6']))
         layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
-                              **self.layer_params['convt_6_1']['ks']))
+                              **self.layer_params['convt_6_1']))
         layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               **self.layer_params['convt_6_2']))
 
