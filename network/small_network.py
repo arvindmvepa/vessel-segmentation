@@ -51,7 +51,7 @@ class SmallNetwork(Network):
                              "convt_8_1": {"kernel_size": 3, "dilation": 1, "output_channels": 1, "keep_prob": 1.0,
                                            "batch_norm": batch_norm, "name": "convt_8_1"}}
         if layer_params:
-            update(self.layer_params.update,layer_params)
+            self.layer_params = update(self.layer_params, layer_params)
 
         super(SmallNetwork, self).__init__(weight_init=weight_init, **kwargs)
 

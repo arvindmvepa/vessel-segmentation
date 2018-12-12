@@ -73,7 +73,7 @@ class LargeNetwork(Network):
                                             "batch_norm": batch_norm, "name": "convt_12_1"},
                              }
         if layer_params:
-            update(self.layer_params.update,layer_params)
+            self.layer_params = update(self.layer_params,layer_params)
 
         super(LargeNetwork, self).__init__(weight_init=weight_init, **kwargs)
 
