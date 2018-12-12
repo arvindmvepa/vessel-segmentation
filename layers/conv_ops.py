@@ -6,7 +6,8 @@ from utilities.activations import lrelu
 
 class Conv2d(Layer):
     def __init__(self, kernel_size, output_channels, name, batch_norm=True, act_fn="lrelu", act_leak_prob=.2, add_to_input=False,
-                 weight_init=None, keep_prob=1.0, dilation=1):
+                 weight_init=None, keep_prob=1.0, dilation=1, **kwargs):
+        super(Conv2d, self).__init__(**kwargs)
         self.kernel_size = kernel_size
         self.output_channels = output_channels
         self.name = name
@@ -48,15 +49,8 @@ class Conv2d(Layer):
             print("not applying batch norm")
 
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
-
         output = self.get_act_values(output)
-
-        # zero-center activations
-        if center:
-            print("zero center activation")
-            output = output - tf.reduce_mean(output)
-        else:
-            print("don't zero center activation")
+        output = self.zero_center_output(output)
         return output
 
 
@@ -111,15 +105,6 @@ class ConvT2d(Conv2d):
             output = tf.contrib.layers.batch_norm(output, is_training=is_training)
 
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
-
         output = self.get_act_values(output)
-
-        # zero-center activations
-        if center:
-            print("zero center activation")
-            output = output - tf.reduce_mean(output)
-        else:
-            print("don't zero center activation")
+        output = self.zero_center_output(output)
         return output
-
-        return self.get_act_values(output)

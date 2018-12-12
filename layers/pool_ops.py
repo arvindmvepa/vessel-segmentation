@@ -6,7 +6,8 @@ from utilities.layer_ops import get_incoming_shape, pool_2d, upsample_2d
 
 class Pool(Layer):
 
-    def __init__(self, kernel_size, name, add_to_input=False):
+    def __init__(self, kernel_size, name, add_to_input=False, **kwargs):
+        super(Pool, self).__init__(**kwargs)
         self.kernel_size = kernel_size
         self.name = name
         self.add_to_input = add_to_input
@@ -21,13 +22,7 @@ class Pool(Layer):
 
         output = self.apply_pool(input, self.kernel_size, pooling_method=pooling_method,
                                  unpooling_method=unpooling_method)
-
-        # zero-center activations
-        if center:
-            print("zero center activation")
-            output = output - tf.reduce_mean(output)
-        else:
-            print("don't zero center activation")
+        output = self.zero_center_output(output)
         return output
 
     def apply_pool(self, input, *args, **kwargs):
@@ -56,7 +51,8 @@ class UnPool2d(Pool):
 # Uses 1x1xC pooling
 class Pool3d(Pool):
 
-    def __init__(self, name, kernel_size=1, pooling_method="AVG", add_to_input=False):
+    def __init__(self, name, kernel_size=1, pooling_method="AVG", add_to_input=False, **kwargs):
+        super(Pool3d, self).__init__(**kwargs)
         self.kernel_size = kernel_size
         self.name = name
         self.add_to_input = add_to_input
