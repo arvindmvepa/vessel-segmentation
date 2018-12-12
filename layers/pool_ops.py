@@ -22,7 +22,7 @@ class Pool(Layer):
 
         output = self.apply_pool(input, self.kernel_size, pooling_method=pooling_method,
                                  unpooling_method=unpooling_method)
-        output = self.zero_center_output(output)
+        output = self.zero_center_output(output, center)
         return output
 
     def apply_pool(self, input, *args, **kwargs):

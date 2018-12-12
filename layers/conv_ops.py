@@ -50,7 +50,7 @@ class Conv2d(Layer):
 
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
         output = self.get_act_values(output)
-        output = self.zero_center_output(output)
+        output = self.zero_center_output(output, center)
         return output
 
 
@@ -106,5 +106,5 @@ class ConvT2d(Conv2d):
 
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
         output = self.get_act_values(output)
-        output = self.zero_center_output(output)
+        output = self.zero_center_output(output, center)
         return output
