@@ -61,6 +61,8 @@ class Conv2d(Layer):
             else:
                 print("dropout normal")
                 input = tf.nn.dropout(input, keep_prob)
+        else:
+            print("no drop out applied - test time")
         return input
 
     def zero_center_output(self, input, center):
