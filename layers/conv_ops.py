@@ -56,10 +56,10 @@ class Conv2d(Layer):
     def apply_dropout(self, input, keep_prob=1.0, is_training=True):
         if is_training:
             if self.keep_prob is not None:
-                print("dropout override")
+                print("dropout override: {}".format(self.keep_prob))
                 input = tf.nn.dropout(input, self.keep_prob)
             else:
-                print("dropout normal")
+                print("dropout normal: {}".format(keep_prob))
                 input = tf.nn.dropout(input, keep_prob)
         else:
             print("no drop out applied - test time")
