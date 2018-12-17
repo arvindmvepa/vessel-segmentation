@@ -19,7 +19,7 @@ class Conv2d(Layer):
         self.keep_prob = keep_prob
         self.dilation = dilation
 
-    def create_layer(self, input, is_training=True, add_w_input=None, center=False, keep_prob=1.0, **kwargs):
+    def create_layer(self, input, is_training=True, add_w_input=None, center=False, keep_prob=0.0, **kwargs):
         if self.add_to_input:
             input = tf.add(input, add_w_input)
         self.input_shape = get_incoming_shape(input)
@@ -53,7 +53,7 @@ class Conv2d(Layer):
         output = self.zero_center_output(output, center)
         return output
 
-    def apply_dropout(self, input, keep_prob=1.0, is_training=True):
+    def apply_dropout(self, input, keep_prob=0.0, is_training=True):
         if self.keep_prob is not None:
             print("dropout override: {}".format(self.keep_prob))
             return tf.layers.dropout(input, self.keep_prob, training=is_training)
@@ -95,7 +95,7 @@ class Conv2d(Layer):
 
 
 class ConvT2d(Conv2d):
-    def create_layer(self, input, is_training=True, add_w_input=None, center=False, keep_prob=1.0, **kwargs):
+    def create_layer(self, input, is_training=True, add_w_input=None, center=False, keep_prob=0.0, **kwargs):
         if self.add_to_input:
             input = tf.add(input, add_w_input)
         self.input_shape = get_incoming_shape(input)
