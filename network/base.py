@@ -14,9 +14,9 @@ from layers.pool_ops import Pool3d
 class Network(object):
 
     def __init__(self, objective_fn="wce", weight_init = None, regularizer_args=None,
-                 learning_rate_and_kwargs=(.001, {}), op_fun_and_kwargs=("adam", {}), mask=False, center=False,
-                 pooling_method="MAX", unpooling_method="nearest_neighbor", last_layer_op=None, layers=None,
-                 encoder_decoder=True, num_batches_in_epoch = 1, **kwargs):
+                 learning_rate_and_kwargs=(.001, {}), op_fun_and_kwargs=("adam", {}), mask=False, dp_rate=0.0,
+                 center=False, pooling_method="MAX", unpooling_method="nearest_neighbor", last_layer_op=None,
+                 layers=None, encoder_decoder=True, num_batches_in_epoch = 1, **kwargs):
         self.num_batches_in_epoch = num_batches_in_epoch
         self.cur_objective_fn = objective_fn
         self.cur_learning_rate = learning_rate_and_kwargs
@@ -45,8 +45,8 @@ class Network(object):
             print("Number of Encoder Layers: ", len(self.encoder))
             print("Number of Decoder Layers: ", len(self.decoder))
 
-            net = self.encode(self.inputs, center=center, pooling_method=pooling_method)
-            net = self.decode(net, center=center, unpooling_method=unpooling_method)
+            net = self.encode(self.inputs, center=center, pooling_method=pooling_method, dp_rate=dp_rate)
+            net = self.decode(net, center=center, unpooling_method=unpooling_method, dp_rate=dp_rate)
         else:
             if layers == None:
                 raise ValueError("No Layers Defined.")
@@ -80,19 +80,19 @@ class Network(object):
     def init_decoder(self, **decoder_kwargs):
         raise NotImplementedError("Method Not Implemented")
 
-    def encode(self, net, center=False, pooling_method="MAX"):
+    def encode(self, net, center=False, pooling_method="MAX", dp_rate=0.0):
         for i, layer in enumerate(self.encoder):
             self.layers[i] = net = layer.create_layer(net, is_training=self.is_training, center=center,
-                                                      pooling_method=pooling_method)
+                                                      pooling_method=pooling_method, dp_rate=dp_rate)
             self.description += "{}".format(layer.get_description())
             self.layer_outputs.append(net)
         return net
 
 
-    def decode(self, net, center=False, unpooling_method="MAX"):
+    def decode(self, net, center=False, unpooling_method="MAX", dp_rate=0.0):
         for i, layer in enumerate(self.decoder, start=1):
             net = layer.create_layer(net, add_w_input=self.layers[len(self.decoder) - i], is_training=self.is_training,
-                                     center=center, unpooling_method=unpooling_method)
+                                     center=center, unpooling_method=unpooling_method, dp_rate=dp_rate)
             self.description += "{}".format(layer.get_description())
             self.layer_outputs.append(net)
         return net
