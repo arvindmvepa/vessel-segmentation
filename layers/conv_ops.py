@@ -54,16 +54,12 @@ class Conv2d(Layer):
         return output
 
     def apply_dropout(self, input, keep_prob=1.0, is_training=True):
-        if is_training:
-            if self.keep_prob is not None:
-                print("dropout override: {}".format(self.keep_prob))
-                input = tf.nn.dropout(input, self.keep_prob)
-            else:
-                print("dropout normal: {}".format(keep_prob))
-                input = tf.nn.dropout(input, keep_prob)
+        if self.keep_prob is not None:
+            print("dropout override: {}".format(self.keep_prob))
+            return tf.layers.dropout(input, self.keep_prob, training=is_training)
         else:
-            print("no drop out applied - test time")
-        return input
+            print("dropout normal: {}".format(keep_prob))
+            return tf.layers.dropout(input, keep_prob, training=is_training)
 
     def zero_center_output(self, input, center):
         if self.center is not None:
