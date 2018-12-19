@@ -18,6 +18,7 @@ class Conv2d(Layer):
         self.weight_init = weight_init
         self.dp_rate = dp_rate
         self.dilation = dilation
+        print("Conv Dilation: {}".format(dilation))
 
     def create_layer(self, input, is_training=True, add_w_input=None, center=False, dp_rate=0.0, **kwargs):
         if self.add_to_input:
