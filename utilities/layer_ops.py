@@ -3,8 +3,7 @@ import numpy as np
 
 upsample_methods = {"bilinear": tf.image.ResizeMethod.BILINEAR,
                     "nearest_neighbor": tf.image.ResizeMethod.NEAREST_NEIGHBOR,
-                    "bicubic": tf.image.ResizeMethod.BICUBIC,
-                    "area": tf.image.ResizeMethod.AREA}
+                    "bicubic": tf.image.ResizeMethod.BICUBIC}
 
 # Auto format padding
 def autoformat_padding(padding):

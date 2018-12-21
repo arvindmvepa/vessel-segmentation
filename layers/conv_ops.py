@@ -20,10 +20,12 @@ class Conv2d(Layer):
         self.dilation = dilation
         print("Conv Dilation: {}".format(self.dilation))
         print("Activation Fn: {}".format(self.act_fn))
+        print("Skip Connection: {}".format(self.add_to_input))
 
     def create_layer(self, input, is_training=True, add_w_input=None, center=False, dp_rate=0.0, **kwargs):
         if self.add_to_input:
             input = tf.add(input, add_w_input)
+            print("Skip Connection Input: {}".format(get_incoming_shape(add_w_input)))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
@@ -100,6 +102,7 @@ class ConvT2d(Conv2d):
     def create_layer(self, input, is_training=True, add_w_input=None, center=False, dp_rate=0.0, **kwargs):
         if self.add_to_input:
             input = tf.add(input, add_w_input)
+            print("Skip Connection Input: {}".format(get_incoming_shape(add_w_input)))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
