@@ -34,6 +34,7 @@ class Pool(Layer):
 class Pool2d(Pool):
 
     def apply_pool(self, input, kernel_size, pooling_method="MAX", *args, **kwargs):
+        print("pooling_method: {}".format(pooling_method))
         return pool_2d(input, kernel_size, method=pooling_method, *args, **kwargs)
 
     def get_description(self):
@@ -43,6 +44,7 @@ class Pool2d(Pool):
 class UnPool2d(Pool):
 
     def apply_pool(self, input, kernel_size, unpooling_method="nearest_neighbor", *args, **kwargs):
+        print("unpooling_method: {}".format(unpooling_method))
         return upsample_2d(input, kernel_size, method=unpooling_method, *args, **kwargs)
 
     def get_description(self):
