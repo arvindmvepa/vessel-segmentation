@@ -18,6 +18,7 @@ class Conv2d(Layer):
         self.weight_init = weight_init
         self.dp_rate = dp_rate
         self.dilation = dilation
+        print("name: {}".format(self.name))
         print("Conv Dilation: {}".format(self.dilation))
         print("Activation Fn: {}".format(self.act_fn))
         print("Skip Connection: {}".format(self.add_to_input))
@@ -25,6 +26,7 @@ class Conv2d(Layer):
     def create_layer(self, input, is_training=True, add_w_input=None, center=False, dp_rate=0.0, **kwargs):
         if self.add_to_input:
             input = tf.add(input, add_w_input)
+            print("name: {}".format(self.name))
             print("Skip Connection Input: {}".format(get_incoming_shape(add_w_input)))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
@@ -102,6 +104,7 @@ class ConvT2d(Conv2d):
     def create_layer(self, input, is_training=True, add_w_input=None, center=False, dp_rate=0.0, **kwargs):
         if self.add_to_input:
             input = tf.add(input, add_w_input)
+            print("name: {}".format(self.name))
             print("Skip Connection Input: {}".format(get_incoming_shape(add_w_input)))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)

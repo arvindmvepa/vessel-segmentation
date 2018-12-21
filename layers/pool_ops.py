@@ -11,6 +11,7 @@ class Pool(Layer):
         self.kernel_size = kernel_size
         self.name = name
         self.add_to_input = add_to_input
+        print("name: {}".format(self.name))
         print("Skip Connection: {}".format(self.add_to_input))
 
     def create_layer(self, input, add_w_input=None, pooling_method="MAX", unpooling_method="nearest_neighbor",
