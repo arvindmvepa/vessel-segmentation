@@ -24,9 +24,9 @@ class Conv2d(Layer):
         print("Skip Connection: {}".format(self.add_to_input))
 
     def create_layer(self, input, is_training=True, add_w_input=None, center=False, dp_rate=0.0, **kwargs):
+        print("name: {}".format(self.name))
         if self.add_to_input:
             input = tf.add(input, add_w_input)
-            print("name: {}".format(self.name))
             print("Skip Connection Input: {}".format(get_incoming_shape(add_w_input)))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
@@ -102,9 +102,9 @@ class Conv2d(Layer):
 
 class ConvT2d(Conv2d):
     def create_layer(self, input, is_training=True, add_w_input=None, center=False, dp_rate=0.0, **kwargs):
+        print("name: {}".format(self.name))
         if self.add_to_input:
             input = tf.add(input, add_w_input)
-            print("name: {}".format(self.name))
             print("Skip Connection Input: {}".format(get_incoming_shape(add_w_input)))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)

@@ -16,6 +16,7 @@ class Pool(Layer):
 
     def create_layer(self, input, add_w_input=None, pooling_method="MAX", unpooling_method="nearest_neighbor",
                      center=False, **kwargs):
+        print("name: {}".format(self.name))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
 
