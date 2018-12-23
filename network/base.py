@@ -121,7 +121,7 @@ class Network(object):
     def set_layer_op(self, weight_init=None, method="AVG", *args, **kwargs):
         if method == "AVG" or method == "MAX":
             self.last_layer_op = Pool3d(pooling_method=method, name='last_pool')
-        if method == "CONV":
+        elif method == "CONV":
             self.last_layer_op = Conv2d(kernel_size=1, dilation=1,  weight_init=weight_init, act_fn=None,
                                         output_channels=1, name='last_conv')
         else:
