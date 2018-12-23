@@ -58,10 +58,7 @@ class UnPool2d(Pool):
 class Pool3d(Pool):
 
     def __init__(self, name, kernel_size=1, pooling_method="AVG", add_to_input=False, **kwargs):
-        super(Pool3d, self).__init__(**kwargs)
-        self.kernel_size = kernel_size
-        self.name = name
-        self.add_to_input = add_to_input
+        super(Pool3d, self).__init__(name, kernel_size, add_to_input=add_to_input, **kwargs)
         self.pooling_method = pooling_method
 
     def apply_pool(self, input, *args, **kwargs):
