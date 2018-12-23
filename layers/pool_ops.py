@@ -68,6 +68,7 @@ class Pool3d(Pool):
         return self.pool_3d(input, *args, **kwargs)
 
     def pool_3d(self, input, *args, **kwargs):
+        print("Pooling Method: {}".format(self.pooling_method))
         if self.pooling_method == "AVG":
             return tf.math.reduce_mean(input, axis=[0,1,2])
         if self.pooling_method == "MAX":

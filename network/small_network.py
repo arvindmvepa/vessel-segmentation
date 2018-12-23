@@ -100,3 +100,11 @@ class SmallNetwork(Network):
         layers.append(UnPool2d(**self.layer_params['up_8']))
         layers.append(ConvT2d(weight_init=self.weight_init, **self.layer_params['convt_8_1']))
         self.decoder = layers
+
+    def set_layer_op(self, method="AVG", num_prev_last_conv_output_channels=1, *args, **kwargs):
+        if num_prev_last_conv_output_channels > 1:
+            self.layer_params = update(self.layer_params, {"convt_8_1": {"output_channels":
+                                                                             num_prev_last_conv_output_channels}})
+        if method == "CONV":
+            self.layer_params = update(self.layer_params, {"convt_8_1": {"act_fn": self.act_fn}})
+        super(SmallNetwork, self).set_layer_op(method=method, *args, **kwargs)
