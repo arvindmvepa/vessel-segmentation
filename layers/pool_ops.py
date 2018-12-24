@@ -57,8 +57,8 @@ class UnPool2d(Pool):
 # Uses 1x1xC pooling
 class Pool3d(Pool):
 
-    def __init__(self, name, kernel_size=1, pooling_method="AVG", add_to_input=False, **kwargs):
-        super(Pool3d, self).__init__(name, kernel_size, add_to_input=add_to_input, **kwargs)
+    def __init__(self, kernel_size=1, name="pool", pooling_method="AVG", add_to_input=False, **kwargs):
+        super(Pool3d, self).__init__(kernel_size=kernel_size, name=name, add_to_input=add_to_input, **kwargs)
         self.pooling_method = pooling_method
 
     def apply_pool(self, input, *args, **kwargs):
