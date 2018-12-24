@@ -111,7 +111,10 @@ class Network(object):
 
     def apply_last_layer_op(self, net, **kwargs):
         print("apply last layer op")
-        return self.last_layer_op.create_layer(net, **kwargs)
+        net = self.last_layer_op.create_layer(net, **kwargs)
+        self.description += "{}".format(self.last_layer_op.get_description())
+        self.layer_outputs.append(net)
+        return net
 
     def mask_results(self, net):
         net = tf.multiply(net, self.masks)
