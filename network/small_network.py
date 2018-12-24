@@ -106,5 +106,6 @@ class SmallNetwork(Network):
             self.layer_params = update(self.layer_params, {"convt_8_1": {"output_channels":
                                                                              num_prev_last_conv_output_channels}})
         if method == "CONV":
-            self.layer_params = update(self.layer_params, {"convt_8_1": {"act_fn": self.act_fn}})
+            self.layer_params = update(self.layer_params, {"convt_8_1": {"act_fn": self.act_fn,
+                                                                         "act_leak_prob": self.act_leak_prob}})
         super(SmallNetwork, self).set_layer_op(method=method, *args, **kwargs)
