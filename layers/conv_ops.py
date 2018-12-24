@@ -21,6 +21,7 @@ class Conv2d(Layer):
         print("name: {}".format(self.name))
         print("Conv Dilation: {}".format(self.dilation))
         print("Activation Fn: {}".format(self.act_fn))
+        print("Activation Leak Prob: {}".format(self.act_leak_prob))
         print("Skip Connection: {}".format(self.add_to_input))
 
     def create_layer(self, input, is_training=True, add_w_input=None, center=False, dp_rate=0.0, **kwargs):
