@@ -1,5 +1,6 @@
 from job.dsa import DsaJob
 from job.drive import DriveJob
+from job.drive_custom import Drive, DriveCustomJob
 from job.stare import StareJob
 from job.chase import ChaseJob
 from imgaug import augmenters as iaa
