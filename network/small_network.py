@@ -2,9 +2,8 @@ from network.base import Network
 from layers.conv_ops import Conv2d, ConvT2d
 from layers.pool_ops import Pool2d, UnPool2d
 from utilities.misc import update
-from tensorflow.keras.applications import densenet, inception_resnet_v2, inception_v3, mobilenet, mobilenet_v2, \
-    nasnet, resnet, resnet_v2, resnext, vgg16, vgg19, xception
-
+from tensorflow.keras.applications import DenseNet121, DenseNet169, DenseNet201, InceptionResNetV2, InceptionV3, \
+    MobileNet, MobileNetV2, ResNet50, VGG16, VGG19, Xception, nasnet
 import tensorflow as tf
 
 class SmallNetwork(Network):
@@ -117,14 +116,9 @@ class SmallNetwork(Network):
 
 class SmallNetworkwKerasDecoder(SmallNetwork):
 
-    encoder_map = {"densenet121": densenet.DenseNet121, "densenet169": densenet.DenseNet169,
-                   "densenet201": densenet.DenseNet201, "incresv2": inception_resnet_v2.InceptionResNetV2,
-                   "incv3": inception_v3.InceptionV3, "mbnet": mobilenet.MobileNet, "mbnetv2": mobilenet_v2.MobileNetV2,
-                   "nasnet": nasnet.NASNet, "resnet50": resnet.ResNet50, "resnet101": resnet.ResNet101,
-                   "resnet152": resnet.ResNet152, "resnet50v2": resnet_v2.ResNet50V2,
-                   "resnet101v2": resnet_v2.ResNet101V2, "resnet152v2": resnet_v2.ResNet152V2,
-                   "resnext50": resnext.ResNeXt50, "resnext101": resnext.ResNeXt101, "vgg16": vgg16.VGG16,
-                   "vgg19": vgg19.VGG19, "xception": xception.Xception}
+    encoder_map = {"densenet121": DenseNet121, "densenet169": DenseNet169, "densenet201": DenseNet201,
+                   "incresv2": InceptionResNetV2, "incv3": InceptionV3, "mbnet": MobileNet, "mbnetv2": MobileNetV2,
+                   "nasnet": nasnet.NASNet, "resnet50": ResNet50, "vgg16": VGG16, "vgg19": VGG19, "xception": Xception}
 
     def __init__(self, encoder_model_key="resnet50", layer_params=None, **kwargs):
         updated_layer_params = {"up_6": {"add_to_input": False},
