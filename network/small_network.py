@@ -133,11 +133,12 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
 
     def init_encoder(self, encoder_layer_name=None, **kwargs):
         # have to multiply input image for 3 channels for ImageNet models
-        self.inputs = tf.concat([self.inputs, self.inputs, self.inputs], axis=-1)
+        self.keras_inputs = tf.concat([self.inputs, self.inputs, self.inputs], axis=-1)
         # tensor has to be added to keras model so graph isn't duplicated
         # weights are hard-coded to be random, don't want to deal with pre-trained being clobbered during initialization
         # http://zachmoshe.com/2017/11/11/use-keras-models-with-tf.html
-        base_model = self.encoder_map[self.encoder_model_key](weights=None, include_top=False, input_tensor=self.inputs)
+        base_model = self.encoder_map[self.encoder_model_key](weights=None, include_top=False,
+                                                              input_tensor=self.keras_inputs)
         if encoder_layer_name:
             layers = {l.name: l.output for l in base_model.layers}
             self.encoder = layers[encoder_layer_name]
