@@ -25,7 +25,7 @@ class DriveJob(JobWMasks):
 
 class DriveCustomJob(JobWMasks):
     def __init__(self, OUTPUTS_DIR_PATH="."):
-        super(DriveJob, self).__init__(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
+        super(DriveCustomJob, self).__init__(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
 
     @property
     def dataset_cls(self):
