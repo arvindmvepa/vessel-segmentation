@@ -48,8 +48,14 @@ class Network(object):
             self.init_encoder(**kwargs)
             self.init_decoder(**kwargs)
 
-            print("Number of Encoder Layers: ", len(self.encoder))
-            print("Number of Decoder Layers: ", len(self.decoder))
+            if hasattr(self.encoder, '__len__'):
+                print("Number of Encoder Layers: ", len(self.encoder))
+            else:
+                print("Encoder has no len attribute")
+            if hasattr(self.decoder, '__len__'):
+                print("Number of Decoder Layers: ", len(self.decoder))
+            else:
+                print("Decoder has no len attribute")
 
             net = self.encode(self.inputs, center=center, pooling_method=pooling_method, dp_rate=dp_rate)
             net = self.decode(net, center=center, unpooling_method=unpooling_method, dp_rate=dp_rate)
