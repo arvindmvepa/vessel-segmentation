@@ -139,6 +139,9 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
         # http://zachmoshe.com/2017/11/11/use-keras-models-with-tf.html
         base_model = self.encoder_map[self.encoder_model_key](weights=None, include_top=False,
                                                               input_tensor=self.keras_inputs)
+        for l in base_model.layers:
+            print(l.name)
+
         if encoder_layer_name:
             layers = {l.name: l.output for l in base_model.layers}
             self.encoder = layers[encoder_layer_name]
