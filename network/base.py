@@ -34,7 +34,6 @@ class Network(object):
         self.is_training = tf.placeholder_with_default(False, [], name='is_training')
         self.layer_outputs = []
         self.description = ""
-        self.layers = {}
         self.debug1 = self.inputs
 
         print("networking training: {}".format(self.is_training))
@@ -64,9 +63,8 @@ class Network(object):
                 raise ValueError("No Layers Defined.")
             print("Number of layers: ", len(layers))
             for i, layer in enumerate(layers):
-                self.layers[i] = net = layer.create_layer(net, is_training=self.is_training, center=center,
-                                                          pooling_method=pooling_method,
-                                                          unpooling_method=unpooling_method)
+                net = layer.create_layer(net, is_training=self.is_training, center=center,
+                                         pooling_method=pooling_method, unpooling_method=unpooling_method)
                 self.description += "{}".format(layer.get_description())
                 self.layer_outputs.append(net)
 
@@ -93,18 +91,19 @@ class Network(object):
         raise NotImplementedError("Method Not Implemented")
 
     def encode(self, net, center=False, pooling_method="MAX", dp_rate=0.0):
+        self.encoder_layers = {layer.name: layer for layer in self.encoder}
         for i, layer in enumerate(self.encoder):
-            self.layers[i] = net = layer.create_layer(net, is_training=self.is_training, center=center,
-                                                      pooling_method=pooling_method, dp_rate=dp_rate)
+            net = layer.create_layer(net, is_training=self.is_training, center=center, pooling_method=pooling_method,
+                                     dp_rate=dp_rate)
             self.description += "{}".format(layer.get_description())
             self.layer_outputs.append(net)
         return net
 
-
     def decode(self, net, center=False, unpooling_method="MAX", dp_rate=0.0):
         for i, layer in enumerate(self.decoder, start=1):
-            net = layer.create_layer(net, add_w_input=self.layers[len(self.decoder) - i], is_training=self.is_training,
-                                     center=center, unpooling_method=unpooling_method, dp_rate=dp_rate)
+            net = layer.create_layer(net, is_training=self.is_training, center=center,
+                                     add_to_input=self.encoder_layers[layer.add_to_input],
+                                     unpooling_method=unpooling_method, dp_rate=dp_rate)
             self.description += "{}".format(layer.get_description())
             self.layer_outputs.append(net)
         return net

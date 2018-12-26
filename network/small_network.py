@@ -42,15 +42,15 @@ class SmallNetwork(Network):
                                            "batch_norm": batch_norm, "name": "convt_5_1"},
                              "convt_5_2": {"kernel_size": 7, "dilation": 1, "output_channels": 256,
                                            "batch_norm": batch_norm, "name": "convt_5_2"},
-                             "up_6": {"kernel_size": 2, "add_to_input": True, "name": "up_6"},
+                             "up_6": {"kernel_size": 2, "add_to_input": "pool_3", "name": "up_6"},
                              "convt_6_1": {"kernel_size": 3, "dilation": 1, "output_channels": 256,
                                            "batch_norm": batch_norm, "name": "convt_6_1"},
                              "convt_6_2": {"kernel_size": 3, "dilation": 1, "output_channels": 128,
                                            "batch_norm": batch_norm, "name": "convt_6_2"},
-                             "up_7": {"kernel_size": 2, "add_to_input": True, "name": "up_7"},
+                             "up_7": {"kernel_size": 2, "add_to_input": "pool_2", "name": "up_7"},
                              "convt_7_1": {"kernel_size": 3, "dilation": 1, "output_channels": 64,
                                            "batch_norm": batch_norm, "name": "convt_7_1"},
-                             "up_8": {"kernel_size": 2, "add_to_input": True, "name": "up_8"},
+                             "up_8": {"kernel_size": 2, "add_to_input": "pool_1", "name": "up_8"},
                              "convt_8_1": {"kernel_size": 3, "dilation": 1, "output_channels": 1,
                                            "batch_norm": batch_norm, "name": "convt_8_1", "act_fn": None}}
         if layer_params:
@@ -116,19 +116,23 @@ class SmallNetwork(Network):
 
 class SmallNetworkwKerasDecoder(SmallNetwork):
 
-    encoder_map = {"densenet121": DenseNet121, "densenet169": DenseNet169, "densenet201": DenseNet201,
-                   "incresv2": InceptionResNetV2, "incv3": InceptionV3, "mbnet": MobileNet, "mbnetv2": MobileNetV2,
-                   "nasnet": NASNetLarge, "resnet50": ResNet50, "vgg16": VGG16, "vgg19": VGG19, "xception": Xception}
+    # the entry in the tuple is the model class, the second is the layer name
+    encoder_map = {"densenet121": (DenseNet121, None), "densenet169": (DenseNet169, None),
+                   "densenet201": (DenseNet201, None), "incresv2": (InceptionResNetV2, None),
+                   "incv3": (InceptionV3, None), "mbnet": (MobileNet, None), "mbnetv2": (MobileNetV2, None),
+                   "nasnet": (NASNetLarge, None), "resnet50": (ResNet50, "activation_21"), "vgg16": (VGG16, None),
+                   "vgg19": (VGG19, None), "xception": (Xception, None)}
 
     def __init__(self, encoder_model_key="resnet50", layer_params=None, **kwargs):
-        updated_layer_params = {"up_6": {"add_to_input": False},
-                                "up_7": {"add_to_input": False},
-                                "up_8": {"add_to_input": False}}
+        updated_layer_params = {"up_6": {"add_to_input": None},
+                                "up_7": {"add_to_input": None},
+                                "up_8": {"add_to_input": None}}
         if layer_params:
             layer_params = update(updated_layer_params, layer_params)
         else:
             layer_params = updated_layer_params
-        self.encoder_model_key = encoder_model_key
+        self.encoder_model, self.encoder_layer_name = self.encoder_map[self.encoder_model_key]
+
         super(SmallNetworkwKerasDecoder, self).__init__(layer_params=layer_params, **kwargs)
 
     def init_encoder(self, encoder_layer_name=None, **kwargs):
@@ -137,25 +141,15 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
         # tensor has to be added to keras model so graph isn't duplicated
         # weights are hard-coded to be random, don't want to deal with pre-trained being clobbered during initialization
         # http://zachmoshe.com/2017/11/11/use-keras-models-with-tf.html
-        base_model = self.encoder_map[self.encoder_model_key](weights=None, include_top=False,
-                                                              input_tensor=self.keras_inputs)
-        for l in base_model.layers:
-            print(l.name)
+        if encoder_layer_name is not None:
+            self.encoder_layer_name = encoder_layer_name
 
-        if encoder_layer_name:
-            layers = {l.name: l.output for l in base_model.layers}
-            self.encoder = layers[encoder_layer_name]
-        else:
-            self.encoder = base_model.output
+        base_model = self.encoder_model(weights=None, include_top=False, input_tensor=self.keras_inputs)
+
+        self.encoder_layers = {l.name: l.output for l in base_model.layers}
+        self.encoder = self.encoder_layers[self.encoder_layer_name]
+
+        # add skip connections in a certain
 
     def encode(self, *args, **kwargs):
         return self.encoder
-
-    def decode(self, net, center=False, unpooling_method="MAX", dp_rate=0.0):
-        for i, layer in enumerate(self.decoder, start=1):
-            print("debug decode output: {}".format(net))
-            net = layer.create_layer(net, is_training=self.is_training, center=center,
-                                     unpooling_method=unpooling_method, dp_rate=dp_rate)
-            self.description += "{}".format(layer.get_description())
-            self.layer_outputs.append(net)
-        return net

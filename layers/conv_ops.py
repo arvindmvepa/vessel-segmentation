@@ -6,7 +6,7 @@ from utilities.activations import lrelu
 
 class Conv2d(Layer):
     def __init__(self, kernel_size, output_channels, name, batch_norm=True, act_fn="lrelu", act_leak_prob=.2,
-                 add_to_input=False, weight_init=None, dp_rate=None, dilation=1, **kwargs):
+                 add_to_input=None, weight_init=None, dp_rate=None, dilation=1, **kwargs):
         super(Conv2d, self).__init__(**kwargs)
         self.kernel_size = kernel_size
         self.output_channels = output_channels
@@ -24,11 +24,11 @@ class Conv2d(Layer):
         print("Activation Leak Prob: {}".format(self.act_leak_prob))
         print("Skip Connection: {}".format(self.add_to_input))
 
-    def create_layer(self, input, is_training=True, add_w_input=None, center=False, dp_rate=0.0, **kwargs):
+    def create_layer(self, input, is_training=True, center=False, dp_rate=0.0, **kwargs):
         print("name: {}".format(self.name))
         if self.add_to_input:
-            input = tf.add(input, add_w_input)
-            print("Skip Connection Input: {}".format(get_incoming_shape(add_w_input)))
+            input = tf.add(input, self.add_to_input)
+            print("Skip Connection Input: {}".format(get_incoming_shape(self.add_to_input)))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
@@ -102,11 +102,11 @@ class Conv2d(Layer):
 
 
 class ConvT2d(Conv2d):
-    def create_layer(self, input, is_training=True, add_w_input=None, center=False, dp_rate=0.0, **kwargs):
+    def create_layer(self, input, is_training=True, add_to_input=None, center=False, dp_rate=0.0, **kwargs):
         print("name: {}".format(self.name))
         if self.add_to_input:
-            input = tf.add(input, add_w_input)
-            print("Skip Connection Input: {}".format(get_incoming_shape(add_w_input)))
+            input = tf.add(input, add_to_input)
+            print("Skip Connection Input: {}".format(get_incoming_shape(self.add_to_input)))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
