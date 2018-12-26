@@ -144,5 +144,5 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
         else:
             self.encoder = base_model
 
-    def encode(self, **kwargs):
+    def encode(self, *args, **kwargs):
         return self.encoder
