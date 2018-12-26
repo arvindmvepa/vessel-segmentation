@@ -128,10 +128,10 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
             layer_params = update(updated_layer_params, layer_params)
         else:
             layer_params = updated_layer_params
-        super(SmallNetworkwKerasDecoder, self).__init__(encoder_model_key=encoder_model_key, layer_params=layer_params,
-                                                        **kwargs)
+        self.encoder_model_key = encoder_model_key
+        super(SmallNetworkwKerasDecoder, self).__init__(layer_params=layer_params, **kwargs)
 
-    def init_encoder(self, encoder_model_key, encoder_layer_name=None, **kwargs):
+    def init_encoder(self, encoder_layer_name=None, **kwargs):
         # have to multiply input image for 3 channels for ImageNet models
         self.inputs = tf.concat([self.inputs, self.inputs, self.inputs], axis=-1)
         # tensor has to be added to keras model so graph isn't duplicated
