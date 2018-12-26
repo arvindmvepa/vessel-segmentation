@@ -142,7 +142,7 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
             layers = {l.name: l.output for l in base_model.layers}
             self.encoder = layers[encoder_layer_name]
         else:
-            self.encoder = base_model
+            self.encoder = base_model.output
 
     def encode(self, *args, **kwargs):
         return self.encoder
