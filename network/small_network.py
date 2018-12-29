@@ -2,9 +2,10 @@ from network.base import Network
 from layers.conv_ops import Conv2d, ConvT2d
 from layers.pool_ops import Pool2d, UnPool2d
 from utilities.misc import update
-from tensorflow.keras.applications import DenseNet121, DenseNet169, DenseNet201, InceptionResNetV2, InceptionV3, \
-    MobileNet, MobileNetV2, ResNet50, VGG16, VGG19, Xception, NASNetLarge
-import resnet
+from keras.applications import DenseNet121, DenseNet169, DenseNet201, InceptionResNetV2, InceptionV3, \
+    MobileNet, MobileNetV2, ResNet50, ResNet101, ResNet152, ResNet50V2, ResNet101V2, ResNet152V2, ResNeXt50, \
+    ResNeXt101, ResNeXt152, VGG16, VGG19, Xception, NASNetLarge
+
 import tensorflow as tf
 
 class SmallNetwork(Network):
@@ -121,9 +122,11 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
     encoder_map = {"densenet121": (DenseNet121, None), "densenet169": (DenseNet169, None),
                    "densenet201": (DenseNet201, None), "incresv2": (InceptionResNetV2, None),
                    "incv3": (InceptionV3, None), "mbnet": (MobileNet, None), "mbnetv2": (MobileNetV2, None),
-                   "nasnet": (NASNetLarge, None), "resnet50": (ResNet50, "activation_21"), "vgg16": (VGG16, None),
-                   "vgg19": (VGG19, None), "xception": (Xception, None), "resnet101": (resnet.ResNet101, None),
-                   "resnet152": (resnet.ResNet152, None)}
+                   "nasnet": (NASNetLarge, None), "resnet50": (ResNet50, "activation_21"),
+                   "resnet101": (ResNet101, None), "resnet152": (ResNet152, None), "resnet50v2": (ResNet50V2, None),
+                   "resnet101v2": (ResNet101V2, None), "resnet152v2": (ResNet152V2, None),
+                   "resnext50": (ResNeXt50, None), "resnext101": (ResNeXt101, None), "resnext152": (ResNeXt152, None),
+                   "vgg16": (VGG16, None), "vgg19": (VGG19, None), "xception": (Xception, None)}
 
     def __init__(self, encoder_model_key="resnet50", layer_params=None, **kwargs):
         updated_layer_params = {"up_6": {"add_to_input": None},

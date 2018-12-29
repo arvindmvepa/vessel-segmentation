@@ -1,1 +1,1 @@
-git+https://github.com/jmtatsch/resnet.git#egg=resnet
+git+https://github.com/keras-team/keras.git
