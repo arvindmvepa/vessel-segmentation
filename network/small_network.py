@@ -4,6 +4,7 @@ from layers.pool_ops import Pool2d, UnPool2d
 from utilities.misc import update
 from tensorflow.keras.applications import DenseNet121, DenseNet169, DenseNet201, InceptionResNetV2, InceptionV3, \
     MobileNet, MobileNetV2, ResNet50, VGG16, VGG19, Xception, NASNetLarge
+import resnet
 import tensorflow as tf
 
 class SmallNetwork(Network):
@@ -121,7 +122,8 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
                    "densenet201": (DenseNet201, None), "incresv2": (InceptionResNetV2, None),
                    "incv3": (InceptionV3, None), "mbnet": (MobileNet, None), "mbnetv2": (MobileNetV2, None),
                    "nasnet": (NASNetLarge, None), "resnet50": (ResNet50, "activation_21"), "vgg16": (VGG16, None),
-                   "vgg19": (VGG19, None), "xception": (Xception, None)}
+                   "vgg19": (VGG19, None), "xception": (Xception, None), "resnet101": (resnet.ResNet101, None),
+                   "resnet152": (resnet.ResNet152, None)}
 
     def __init__(self, encoder_model_key="resnet50", layer_params=None, **kwargs):
         updated_layer_params = {"up_6": {"add_to_input": None},
