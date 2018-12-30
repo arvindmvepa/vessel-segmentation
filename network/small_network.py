@@ -146,6 +146,8 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
         # tensor has to be added to keras model so graph isn't duplicated
         # weights are hard-coded to be random, don't want to deal with pre-trained being clobbered during initialization
         # http://zachmoshe.com/2017/11/11/use-keras-models-with-tf.html
+
+        # override defaults
         if encoder_layer_name is not None:
             self.encoder_layer_name = encoder_layer_name
 
@@ -153,7 +155,10 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
                                         input_shape=[self.FIT_IMAGE_HEIGHT, self.FIT_IMAGE_WIDTH, 3])
 
         self.encoder_layers = {l.name: l.output for l in base_model.layers}
-        self.encoder = self.encoder_layers[self.encoder_layer_name]
+        if self.encoder_layer_name:
+            self.encoder = self.encoder_layers[self.encoder_layer_name]
+        else:
+            self.encoder = base_model.output
 
     def encode(self, *args, **kwargs):
         return self.encoder
