@@ -14,15 +14,15 @@ class Pool(Layer):
         print("name: {}".format(self.name))
         print("Skip Connection: {}".format(self.add_to_input))
 
-    def create_layer(self, input, add_w_input=None, pooling_method="MAX", unpooling_method="nearest_neighbor",
+    def create_layer(self, input, add_to_input=None, pooling_method="MAX", unpooling_method="nearest_neighbor",
                      center=False, **kwargs):
         print("name: {}".format(self.name))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
 
         if self.add_to_input:
-            input = tf.add(input, add_w_input)
-            print("Skip Connection Input: {}".format(get_incoming_shape(add_w_input)))
+            input = tf.add(input, add_to_input)
+            print("Skip Connection Input: {}".format(get_incoming_shape(add_to_input)))
 
         output = self.apply_pool(input, self.kernel_size, pooling_method=pooling_method,
                                  unpooling_method=unpooling_method)

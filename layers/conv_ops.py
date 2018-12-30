@@ -28,7 +28,7 @@ class Conv2d(Layer):
         print("name: {}".format(self.name))
         if self.add_to_input:
             input = tf.add(input, add_to_input)
-            print("Skip Connection Input: {}".format(get_incoming_shape(self.add_to_input)))
+            print("Skip Connection Input: {}".format(get_incoming_shape(add_to_input)))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
@@ -107,8 +107,8 @@ class ConvT2d(Conv2d):
         print("convt debug1: {}".format(input))
         if self.add_to_input:
             input = tf.add(input, add_to_input)
-            print("Skip Connection Input: {}".format(get_incoming_shape(self.add_to_input)))
-        print("convt debug2: {}".format(input))
+            print("Skip Connection Input: {}".format(get_incoming_shape(add_to_input)))
+        print("convt debug3: {}".format(input))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
