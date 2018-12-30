@@ -122,7 +122,7 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
     encoder_map = {"densenet121": (DenseNet121, None), "densenet169": (DenseNet169, None),
                    "densenet201": (DenseNet201, None), "incresv2": (InceptionResNetV2, None),
                    "incv3": (InceptionV3, None), "mbnet": (MobileNet, None), "mbnetv2": (MobileNetV2, None),
-                   "nasnet": (NASNetLarge, None), "resnet50": (ResNet50, "activation_21"),
+                   "nasnet": (NASNetLarge, None), "resnet50": (ResNet50, None),
                    "resnet101": (ResNet101, None), "resnet152": (ResNet152, None), "resnet50v2": (ResNet50V2, None),
                    "resnet101v2": (ResNet101V2, None), "resnet152v2": (ResNet152V2, None),
                    "resnext50": (ResNeXt50, None), "resnext101": (ResNeXt101, None), "vgg16": (VGG16, None),
