@@ -3,8 +3,10 @@ from layers.conv_ops import Conv2d, ConvT2d
 from layers.pool_ops import Pool2d, UnPool2d
 from utilities.misc import update
 from keras.applications import DenseNet121, DenseNet169, DenseNet201, InceptionResNetV2, InceptionV3, \
-    MobileNet, MobileNetV2, ResNet50, ResNet101, ResNet152, ResNet50V2, ResNet101V2, ResNet152V2, ResNeXt50, \
+    MobileNet, MobileNetV2, ResNet101, ResNet152, ResNet50V2, ResNet101V2, ResNet152V2, ResNeXt50, \
     ResNeXt101, VGG16, VGG19, Xception, NASNetLarge
+
+from keras_applications.resnet_common import ResNet50
 
 import tensorflow as tf
 
@@ -122,7 +124,7 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
     encoder_map = {"densenet121": (DenseNet121, None), "densenet169": (DenseNet169, None),
                    "densenet201": (DenseNet201, None), "incresv2": (InceptionResNetV2, None),
                    "incv3": (InceptionV3, None), "mbnet": (MobileNet, None), "mbnetv2": (MobileNetV2, None),
-                   "nasnet": (NASNetLarge, None), "resnet50": (ResNet50, None),
+                   "nasnet": (NASNetLarge, None), "resnet50": (ResNet50, "activation_21"),
                    "resnet101": (ResNet101, None), "resnet152": (ResNet152, None), "resnet50v2": (ResNet50V2, None),
                    "resnet101v2": (ResNet101V2, None), "resnet152v2": (ResNet152V2, None),
                    "resnext50": (ResNeXt50, None), "resnext101": (ResNeXt101, None), "vgg16": (VGG16, None),
