@@ -3,10 +3,8 @@ from layers.conv_ops import Conv2d, ConvT2d
 from layers.pool_ops import Pool2d, UnPool2d
 from utilities.misc import update
 from keras.applications import DenseNet121, DenseNet169, DenseNet201, InceptionResNetV2, InceptionV3, \
-    MobileNet, MobileNetV2, ResNet101, ResNet152, ResNet50V2, ResNet101V2, ResNet152V2, ResNeXt50, \
+    MobileNet, MobileNetV2, ResNet50, ResNet101, ResNet152, ResNet50V2, ResNet101V2, ResNet152V2, ResNeXt50, \
     ResNeXt101, VGG16, VGG19, Xception, NASNetLarge
-
-from keras_applications.resnet_common import ResNet50
 
 import tensorflow as tf
 
