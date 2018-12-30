@@ -41,20 +41,21 @@ class SmallNetwork(Network):
                              "conv_4_2": {"kernel_size":1, "dilation":1 , "output_channels":4096,
                                           "batch_norm": batch_norm, "name": "conv_4_2"},
                              "convt_5_1": {"kernel_size": 1, "dilation": 1, "output_channels": 4096,
-                                           "batch_norm": batch_norm, "name": "convt_5_1"},
+                                           "batch_norm": batch_norm, "add_to_input": "conv_4_2", "name": "convt_5_1"},
                              "convt_5_2": {"kernel_size": 7, "dilation": 1, "output_channels": 256,
-                                           "batch_norm": batch_norm, "name": "convt_5_2"},
+                                           "batch_norm": batch_norm, "add_to_input": "conv_4_1", "name": "convt_5_2"},
                              "up_6": {"kernel_size": 2, "add_to_input": "pool_3", "name": "up_6"},
                              "convt_6_1": {"kernel_size": 3, "dilation": 1, "output_channels": 256,
-                                           "batch_norm": batch_norm, "name": "convt_6_1"},
+                                           "batch_norm": batch_norm, "add_to_input": "conv_3_2", "name": "convt_6_1"},
                              "convt_6_2": {"kernel_size": 3, "dilation": 1, "output_channels": 128,
-                                           "batch_norm": batch_norm, "name": "convt_6_2"},
+                                           "batch_norm": batch_norm, "add_to_input": "conv_3_1", "name": "convt_6_2"},
                              "up_7": {"kernel_size": 2, "add_to_input": "pool_2", "name": "up_7"},
                              "convt_7_1": {"kernel_size": 3, "dilation": 1, "output_channels": 64,
-                                           "batch_norm": batch_norm, "name": "convt_7_1"},
+                                           "batch_norm": batch_norm, "add_to_input": "conv_2_1", "name": "convt_7_1"},
                              "up_8": {"kernel_size": 2, "add_to_input": "pool_1", "name": "up_8"},
                              "convt_8_1": {"kernel_size": 3, "dilation": 1, "output_channels": 1,
-                                           "batch_norm": batch_norm, "name": "convt_8_1", "act_fn": None}}
+                                           "batch_norm": batch_norm, "add_to_input": "conv_1_1",
+                                           "name": "convt_8_1", "act_fn": None}}
         if layer_params:
             self.layer_params = update(self.layer_params, layer_params)
 
