@@ -155,7 +155,5 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
         self.encoder_layers = {l.name: l.output for l in base_model.layers}
         self.encoder = self.encoder_layers[self.encoder_layer_name]
 
-        # add skip connections in a certain
-
     def encode(self, *args, **kwargs):
         return self.encoder
