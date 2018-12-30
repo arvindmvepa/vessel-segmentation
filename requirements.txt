@@ -1,2 +1,2 @@
 git+https://github.com/arvindmvepa/keras.git
-git+https://github.com/keras-team/keras-applications.git
+git+https://github.com/arvindmvepa/keras-applications.git

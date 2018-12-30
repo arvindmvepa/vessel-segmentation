@@ -119,14 +119,17 @@ class SmallNetwork(Network):
 class SmallNetworkwKerasDecoder(SmallNetwork):
 
     # the entry in the tuple is the model class, the second is the layer name
-    encoder_map = {"densenet121": (DenseNet121, None), "densenet169": (DenseNet169, None),
-                   "densenet201": (DenseNet201, None), "incresv2": (InceptionResNetV2, None),
-                   "incv3": (InceptionV3, None), "mbnet": (MobileNet, None), "mbnetv2": (MobileNetV2, None),
+    encoder_map = {"densenet121": (DenseNet121, "conv3_block12_concat"),
+                   "densenet169": (DenseNet169, "conv3_block12_concat"),
+                   "densenet201": (DenseNet201, "conv3_block12_concat"),
+                   "incresv2": (InceptionResNetV2, "block35_11_ac"),
+                   "incv3": (InceptionV3, "mixed2"), "mbnet": (MobileNet, None), "mbnetv2": (MobileNetV2, None),
                    "nasnet": (NASNetLarge, None), "resnet50": (ResNet50, "conv3_block4_out"),
-                   "resnet101": (ResNet101, None), "resnet152": (ResNet152, None), "resnet50v2": (ResNet50V2, None),
-                   "resnet101v2": (ResNet101V2, None), "resnet152v2": (ResNet152V2, None),
-                   "resnext50": (ResNeXt50, None), "resnext101": (ResNeXt101, None), "vgg16": (VGG16, None),
-                   "vgg19": (VGG19, None), "xception": (Xception, None)}
+                   "resnet101": (ResNet101, "conv3_block4_out"), "resnet152": (ResNet152, "conv3_block4_out"),
+                   "resnet50v2": (ResNet50V2, "conv2_block3_out"),
+                   "resnet101v2": (ResNet101V2, "conv2_block3_out"), "resnet152v2": (ResNet152V2, "conv2_block3_out"),
+                   "resnext50": (ResNeXt50, "conv3_block4_out"), "resnext101": (ResNeXt101, "conv3_block4_out"),
+                   "vgg16": (VGG16, None), "vgg19": (VGG19, None), "xception": (Xception, "block3_sum")}
 
     def __init__(self, encoder_model_key="resnet50", layer_params=None, **kwargs):
         updated_layer_params = {"up_6": {"add_to_input": None},
