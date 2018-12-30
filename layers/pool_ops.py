@@ -6,7 +6,7 @@ from utilities.layer_ops import get_incoming_shape, pool_2d, upsample_2d
 
 class Pool(Layer):
 
-    def __init__(self, kernel_size, name, add_to_input=False, **kwargs):
+    def __init__(self, kernel_size, name, add_to_input=None, **kwargs):
         super(Pool, self).__init__(**kwargs)
         self.kernel_size = kernel_size
         self.name = name
