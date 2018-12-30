@@ -91,10 +91,11 @@ class Network(object):
         raise NotImplementedError("Method Not Implemented")
 
     def encode(self, net, center=False, pooling_method="MAX", dp_rate=0.0):
-        self.encoder_layers = {layer.name: layer for layer in self.encoder}
+        self.encoder_layers = {}
         for i, layer in enumerate(self.encoder):
             net = layer.create_layer(net, is_training=self.is_training, center=center, pooling_method=pooling_method,
                                      dp_rate=dp_rate)
+            self.encoder_layers[layer.name] = net
             self.description += "{}".format(layer.get_description())
             self.layer_outputs.append(net)
         return net
