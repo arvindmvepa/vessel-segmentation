@@ -101,7 +101,6 @@ class Network(object):
         return net
 
     def decode(self, net, center=False, unpooling_method="MAX", dp_rate=0.0):
-        print(self.encoder_layers)
         for i, layer in enumerate(self.decoder, start=1):
             net = layer.create_layer(net, is_training=self.is_training, center=center,
                                      include_w_input=self.encoder_layers.get(layer.add_to_input) or
