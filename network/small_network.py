@@ -119,10 +119,10 @@ class SmallNetwork(Network):
 class SmallNetworkwKerasDecoder(SmallNetwork):
 
     # the entry in the tuple is the model class, the second is the layer name
-    # `resnet\d+` have the same encoder
-    # `resnet\d+v2` have the same encoder
-    # `resnext\d+` have the same encoder
-    # `densenet*` have the same encoder
+    # `resnet\d+` have the same encoder for small network
+    # `resnet\d+v2` have the same encoder ```     ```
+    # `resnext\d+` have the same encoder ```      ```
+    # `densenet*` have the same encoder  ```      ```
 
     encoder_map = {"densenet121": (DenseNet121, "conv3_block12_concat"),
                    "densenet169": (DenseNet169, "conv3_block12_concat"),
