@@ -129,7 +129,7 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
                    "resnet50v2": (ResNet50V2, "conv2_block3_out"),
                    "resnet101v2": (ResNet101V2, "conv2_block3_out"), "resnet152v2": (ResNet152V2, "conv2_block3_out"),
                    "resnext50": (ResNeXt50, "conv3_block4_out"), "resnext101": (ResNeXt101, "conv3_block4_out"),
-                   "vgg16": (VGG16, None), "vgg19": (VGG19, None), "xception": (Xception, "add2")}
+                   "vgg16": (VGG16, None), "vgg19": (VGG19, None), "xception": (Xception, "add_2")}
 
     def __init__(self, encoder_model_key="resnet50", layer_params=None, **kwargs):
         updated_layer_params = {"up_6": {"add_to_input": None},
