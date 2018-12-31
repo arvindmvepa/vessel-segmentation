@@ -104,7 +104,8 @@ class Network(object):
         print(self.encoder_layers)
         for i, layer in enumerate(self.decoder, start=1):
             net = layer.create_layer(net, is_training=self.is_training, center=center,
-                                     include_w_input=self.encoder_layers.get(layer.add_to_input),
+                                     include_w_input=self.encoder_layers.get(layer.add_to_input) or
+                                                     self.encoder_layers.get(layer.concat_to_input),
                                      unpooling_method=unpooling_method, dp_rate=dp_rate)
             self.description += "{}".format(layer.get_description())
             self.layer_outputs.append(net)
