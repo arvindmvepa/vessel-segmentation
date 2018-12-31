@@ -6,23 +6,28 @@ from utilities.layer_ops import get_incoming_shape, pool_2d, upsample_2d
 
 class Pool(Layer):
 
-    def __init__(self, kernel_size, name, add_to_input=None, **kwargs):
+    def __init__(self, kernel_size, name, add_to_input=None, concat_to_input=None, **kwargs):
         super(Pool, self).__init__(**kwargs)
         self.kernel_size = kernel_size
         self.name = name
         self.add_to_input = add_to_input
+        self.concat_to_input = concat_to_input
         print("name: {}".format(self.name))
         print("Skip Connection: {}".format(self.add_to_input))
 
-    def create_layer(self, input, add_to_input=None, pooling_method="MAX", unpooling_method="nearest_neighbor",
+    def create_layer(self, input, include_w_input=None, pooling_method="MAX", unpooling_method="nearest_neighbor",
                      center=False, **kwargs):
         print("name: {}".format(self.name))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
 
+        print("name: {}".format(self.name))
         if self.add_to_input:
-            input = tf.add(input, add_to_input)
-            print("Skip Connection Input: {}".format(get_incoming_shape(add_to_input)))
+            input = tf.add(input, include_w_input)
+            print("Skip Connection Input (Add): {}".format(get_incoming_shape(include_w_input)))
+        if self.concat_to_input:
+            input = tf.concat([input, include_w_input],axis=-1)
+            print("Skip Connection Input (Concat): {}".format(get_incoming_shape(include_w_input)))
 
         output = self.apply_pool(input, self.kernel_size, pooling_method=pooling_method,
                                  unpooling_method=unpooling_method)
