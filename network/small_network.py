@@ -155,6 +155,8 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
             layer_params = update(updated_layer_params, layer_params)
         else:
             layer_params = updated_layer_params
+        print("keras decoder: {}, in self.encoder_map: {}".format(encoder_model_key, encoder_model_key in
+                                                                  self.encoder_map))
         self.encoder_model, self.encoder_layer_name = self.encoder_map[encoder_model_key]
 
         super(SmallNetworkwKerasDecoder, self).__init__(layer_params=layer_params, **kwargs)
