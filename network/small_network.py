@@ -155,7 +155,7 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
             layer_params = update(updated_layer_params, layer_params)
         else:
             layer_params = updated_layer_params
-        print("keras decoder: {}, in self.encoder_map: {}".format(encoder_model_key, encoder_model_key in
+        print("keras encoder: {}, in self.encoder_map: {}".format(encoder_model_key, encoder_model_key in
                                                                   self.encoder_map))
         self.encoder_model, self.encoder_layer_name = self.encoder_map[encoder_model_key]
 
@@ -172,6 +172,7 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
         # tensor has to be added to keras model so graph isn't duplicated
         # weights are hard-coded to be random, don't want to deal with pre-trained being clobbered during initialization
         # http://zachmoshe.com/2017/11/11/use-keras-models-with-tf.html
+        print("keras init encoder")
         base_model = self.encoder_model(weights=None, include_top=False, input_tensor=self.keras_inputs,
                                         input_shape=[self.FIT_IMAGE_HEIGHT, self.FIT_IMAGE_WIDTH, 3])
         self.encoder_layers = {l.name: l.output for l in base_model.layers}
@@ -181,4 +182,5 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
             self.encoder = base_model.output
 
     def encode(self, *args, **kwargs):
+        print("keras encode")
         return self.encoder
