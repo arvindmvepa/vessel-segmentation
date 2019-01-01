@@ -21,8 +21,6 @@ class Pool(Layer):
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
 
-        print("pool debug: {}, {}".format(self.add_to_input, self.concat_to_input))
-
         if self.add_to_input:
             input = tf.add(input, include_w_input)
             print("Skip Connection Input (Add): {}".format(get_incoming_shape(include_w_input)))
