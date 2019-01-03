@@ -175,10 +175,7 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
         print("keras init encoder")
         base_model = self.encoder_model(weights=None, include_top=False, input_tensor=self.keras_inputs,
                                         input_shape=[self.FIT_IMAGE_HEIGHT, self.FIT_IMAGE_WIDTH, 3])
-        for l in base_model.layers:
-            print(l.name)
         self.encoder_layers = {l.name: l.output for l in base_model.layers}
-
         if self.encoder_layer_name:
             self.encoder = self.encoder_layers[self.encoder_layer_name]
         else:
