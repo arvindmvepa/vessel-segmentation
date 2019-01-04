@@ -131,14 +131,14 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
                    "incv3": (InceptionV3, "mixed2"), "mbnet": (MobileNet, None), "mbnetv2": (MobileNetV2, None),
                    "nasnet": (NASNetLarge, None), "resnet50": (ResNet50, "conv3_block4_out"),
                    "resnet101": (ResNet101, "conv3_block4_out"), "resnet152": (ResNet152, "conv3_block4_out"),
-                   "resnet50v2": (ResNet50V2, "conv2_block3_out"),
+                   "resnet50v2": (ResNet50V2, "conv3_block3_out"),
                    "resnet101v2": (ResNet101V2, "conv2_block3_out"), "resnet152v2": (ResNet152V2, "conv2_block3_out"),
                    "resnext50": (ResNeXt50, "conv3_block4_out"), "resnext101": (ResNeXt101, "conv3_block4_out"),
                    "vgg16": (VGG16, None), "vgg19": (VGG19, None), "xception": (Xception, "ds3_block")}
     """
     skip_map (based on initial points of downsampling):
     `resnet\d+` - conv1_relu, pool1_pool, conv3_block1_out
-    `resnet\d+v2` - _, pool1_pool, conv2_block1_out
+    `resnet\d+v2` - conv1_conv, pool1_pool, conv2_block3_out
     `resnext\d+` - conv1_relu, pool1_pool, conv3_block3_out
     `densenet*` - 'conv1/relu', pool1, pool2_pool
     `incresv2` - ds1_block, max_pooling2d_1, max_pooling2d_2 
