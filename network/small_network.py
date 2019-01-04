@@ -140,7 +140,7 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
     `resnet\d+` - conv1_relu, pool1_pool, conv3_block1_out
     `resnet\d+v2` - _, pool1_pool, conv2_block1_out
     `resnext\d+` - conv1_relu, pool1_pool, conv3_block3_out
-    `densenet*` - 'conv1/relu', pool1, pool2
+    `densenet*` - 'conv1/relu', pool1, pool2_pool
     `incresv2` - ds1_block, max_pooling2d_1, max_pooling2d_2 
     `incv3` - ds1_block, max_pooling2d_1, max_pooling2d_2
     `xception` - block1_conv1, ds2_block, ds3_block
@@ -175,8 +175,8 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
         print("keras init encoder")
         base_model = self.encoder_model(weights=None, include_top=False, input_tensor=self.keras_inputs,
                                         input_shape=[self.FIT_IMAGE_HEIGHT, self.FIT_IMAGE_WIDTH, 3])
-        for l in base_model.layers:
-            print(l.name)
+        # for l in base_model.layers:
+        # print(l.name)
         self.encoder_layers = {l.name: l.output for l in base_model.layers}
         if self.encoder_layer_name:
             self.encoder = self.encoder_layers[self.encoder_layer_name]
