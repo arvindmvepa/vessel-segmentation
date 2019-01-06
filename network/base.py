@@ -114,7 +114,8 @@ class Network(object):
                             raise ValueError("{} type is not recognized".format(type))
                     self.decoder =  self.decoder[:i+1] + add_layers + self.decoder[i+1:]
                     break
-            raise ValueError("{} does not exist".format(key))
+                elif i == len(self.decoder)-1:
+                    raise ValueError("{} does not exist".format(key))
 
     def remove_decoder_layers(self, remove_decoder_layers_names=(), **kwargs):
         for remove_decoder_layer_name in remove_decoder_layers_names:
@@ -123,7 +124,8 @@ class Network(object):
                     del self.decoder[i]
                     print("{} removed".format(remove_decoder_layer_name))
                     break
-            raise ValueError("{} does not exist".format(remove_decoder_layer_name))
+                elif i == len(self.decoder) - 1:
+                    raise ValueError("{} does not exist".format(remove_decoder_layer_name))
 
     def encode(self, net, center=False, pooling_method="MAX", dp_rate=0.0):
         self.encoder_layers = {}
