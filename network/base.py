@@ -92,7 +92,9 @@ class Network(object):
     def init_decoder(self, **decoder_kwargs):
         raise NotImplementedError("Method Not Implemented")
 
-    def add_decoder_layers(self, add_decoder_layers_map=(), **kwargs):
+    def add_decoder_layers(self, add_decoder_layers_map=None, **kwargs):
+        if add_decoder_layers_map is None:
+            add_decoder_layers_map = {}
         for key, new_layers_kwargs in add_decoder_layers_map.items():
             for i, layer in enumerate(self.decoder):
                 if layer.name == key:
