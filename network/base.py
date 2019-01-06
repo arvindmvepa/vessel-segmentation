@@ -101,7 +101,7 @@ class Network(object):
                     print("New layers added after {}".format(key))
                     add_layers = []
                     for new_layer_kwargs in new_layers_kwargs:
-                        type = new_layers_kwargs.pop("type")
+                        type = new_layer_kwargs.pop("type")
                         if type == "conv":
                             add_layers.append(Conv2d(**new_layer_kwargs))
                         elif type == "pool":
