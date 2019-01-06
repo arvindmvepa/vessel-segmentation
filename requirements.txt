@@ -5,4 +5,5 @@ tensorflow-gpu
 opencv_python
 scikit-image
 statsmodels
+pandas
 git+https://github.com/aleju/imgaug.git

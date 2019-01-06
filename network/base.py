@@ -92,7 +92,7 @@ class Network(object):
     def init_decoder(self, **decoder_kwargs):
         raise NotImplementedError("Method Not Implemented")
 
-    def add_decoder_layers(self, add_decoder_layers_map, **kwargs):
+    def add_decoder_layers(self, add_decoder_layers_map=(), **kwargs):
         for key, new_layers_kwargs in add_decoder_layers_map.items():
             for i, layer in enumerate(self.decoder):
                 if layer.name == key:
@@ -114,7 +114,7 @@ class Network(object):
                     break
             raise ValueError("{} does not exist".format(key))
 
-    def remove_decoder_layers(self, remove_decoder_layers_names, **kwargs):
+    def remove_decoder_layers(self, remove_decoder_layers_names=(), **kwargs):
         for remove_decoder_layer_name in remove_decoder_layers_names:
             for i, layer in enumerate(self.decoder):
                 if layer.name == remove_decoder_layer_name:
