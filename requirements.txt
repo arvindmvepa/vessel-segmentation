@@ -4,5 +4,5 @@ Pillow
 tensorflow-gpu
 opencv_python
 scikit-image
-imgaug
 statsmodels
+git+https://github.com/aleju/imgaug.git
