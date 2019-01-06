@@ -83,8 +83,6 @@ class SmallNetwork(Network):
                              **self.layer_params['conv_4_2']))
         self.encoder = layers
 
-
-
     def init_decoder(self, **kwargs):
         layers = []
         layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,

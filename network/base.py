@@ -8,8 +8,8 @@ from tensorflow.python.training.rmsprop import RMSPropOptimizer
 from tensorflow.python.training.gradient_descent import GradientDescentOptimizer
 
 from utilities.objective_functions import generalised_dice_loss, sensitivity_specificity_loss, cross_entropy, dice
-from layers.conv_ops import Conv2d
-from layers.pool_ops import Pool3d
+from layers.conv_ops import Conv2d, ConvT2d
+from layers.pool_ops import Pool2d, Pool3d, UnPool2d
 
 class Network(object):
 
@@ -46,6 +46,8 @@ class Network(object):
         if encoder_decoder:
             self.init_encoder(**kwargs)
             self.init_decoder(**kwargs)
+            self.add_decoder_layers(**kwargs)
+            self.remove_decoder_layers(**kwargs)
 
             if hasattr(self.encoder, '__len__'):
                 print("Number of Encoder Layers: ", len(self.encoder))
@@ -89,6 +91,37 @@ class Network(object):
 
     def init_decoder(self, **decoder_kwargs):
         raise NotImplementedError("Method Not Implemented")
+
+    def add_decoder_layers(self, add_decoder_layers_map, **kwargs):
+        for key, new_layers_kwargs in add_decoder_layers_map.items():
+            for i, layer in enumerate(self.decoder):
+                if layer.name == key:
+                    print("New layers added after {}".format(key))
+                    add_layers = []
+                    for new_layer_kwargs in new_layers_kwargs:
+                        type = new_layers_kwargs.pop("type")
+                        if type == "conv":
+                            add_layers.append(Conv2d(**new_layer_kwargs))
+                        elif type == "pool":
+                            add_layers.append(Pool2d(**new_layer_kwargs))
+                        elif type == "convt":
+                            add_layers.append(ConvT2d(**new_layer_kwargs))
+                        elif type == "unpool":
+                            add_layers.append(UnPool2d(**new_layer_kwargs))
+                        else:
+                            raise ValueError("{} type is not recognized".format(type))
+                    self.decoder =  self.decoder[:i+1] + add_layers + self.decoder[i+1:]
+                    break
+            raise ValueError("{} does not exist".format(key))
+
+    def remove_decoder_layers(self, remove_decoder_layers_names, **kwargs):
+        for remove_decoder_layer_name in remove_decoder_layers_names:
+            for i, layer in enumerate(self.decoder):
+                if layer.name == remove_decoder_layer_name:
+                    del self.decoder[i]
+                    print("{} removed".format(remove_decoder_layer_name))
+                    break
+            raise ValueError("{} does not exist".format(remove_decoder_layer_name))
 
     def encode(self, net, center=False, pooling_method="MAX", dp_rate=0.0):
         self.encoder_layers = {}
