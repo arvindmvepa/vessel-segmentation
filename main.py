@@ -1,5 +1,5 @@
 from job.dsa import DsaJob
-from job.drive import DriveJob
+from job.drive import DriveJob, DriveCustomJob
 from job.stare import StareJob
 from job.chase import ChaseJob
 from imgaug import augmenters as iaa
@@ -12,10 +12,10 @@ if __name__ == '__main__':
     ### OPTIMIZATION
     op_fun_and_kwargs = ("adam", {})
     tuning_constant = 1.0
-    ss_r = .5
+    ss_r = None
     objective_fn = "wce"
     regularizer_args = None
-    learning_rate_and_kwargs = (.01, {})
+    learning_rate_and_kwargs = (.001, {})
 
     ### LAYER ARGS
     weight_init = "He"
@@ -29,31 +29,24 @@ if __name__ == '__main__':
     gamma = 1.0
 
     ### IMAGE AUGMENTATION
-    seq = iaa.Sequential([
-        iaa.Crop(px=(0, 16), name="Cropper"), # crop images from each side by 0 to 16px (randomly chosen)
-        iaa.Fliplr(0.5, name="Flipper"), # horizontally flip 50% of the images
-        iaa.GaussianBlur(sigma=(0, 3.0), name="GaussianBlur") # blur images with a sigma of 0 to 3.0
-        ])
-    #seq = None
+    seq = None
 
     ### JOB INFO
     Job_cls = DriveJob
-    WRK_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/drive"
-    n_splits = 4
+    WRK_DIR_PATH = "C:\\Users\\arvin\\dev\\vessel-segmentation\\DRIVE"
+    n_splits = 2
 
     ### OUTPUT INFO
-    EXPERIMENTS_DIR_PATH = "/home/ubuntu/new_vessel_segmentation/vessel-segmentation/experiments2"
-    EXPERIMENT_NAME = str((objective_fn,tuning_constant,ss_r if objective_fn=="ss" else None,regularizer_args,op_fun_and_kwargs,
-                           learning_rate_and_kwargs, weight_init, act_fn, act_leak_prob, False if seq is None else True,
-                           hist_eq, clahe_kwargs, per_image_normalization,gamma))
+    EXPERIMENTS_DIR_PATH = "C:\\Users\\arvin\\dev\\vessel-segmentation\\arch_tests"
+
+    EXPERIMENT_NAME = "test"
     OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
     metrics_epoch_freq = 1
-    viz_layer_epoch_freq = 1
+    viz_layer_epoch_freq = None
     n_epochs = 5
 
     job = Job_cls(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
-    job.run_cv(WRK_DIR_PATH=WRK_DIR_PATH, mc=True, val_prop=.1, early_stopping=True, early_stopping_metric="auc",
-               save_model=False, save_sample_test_images=False,
+    job.run_cv(WRK_DIR_PATH=WRK_DIR_PATH, mc=True, val_prop=.1, save_model=False, save_sample_test_images=False,
                metrics_epoch_freq=metrics_epoch_freq, viz_layer_epoch_freq=viz_layer_epoch_freq,
                n_epochs=n_epochs, n_splits=n_splits, objective_fn=objective_fn,
                tuning_constant=tuning_constant, ss_r=ss_r,

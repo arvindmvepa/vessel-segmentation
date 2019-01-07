@@ -1,5 +1,6 @@
 import numpy as np
 from itertools import groupby
+import collections
 
 def find_closest_pos(positions, start_pos=(0,0)):
     min = np.inf
@@ -32,3 +33,12 @@ def remove_duplicates(data):
     '''
     data = sorted(data)
     return [k for k, v in groupby(data)]
+
+
+def update(d, u):
+    for k, v in u.items():
+        if isinstance(v, collections.Mapping):
+            d[k] = update(d.get(k, {}), v)
+        else:
+            d[k] = v
+    return d

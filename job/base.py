@@ -188,10 +188,7 @@ class Job(object):
     
     def train(self, dataset=None, gpu_device=None, early_stopping=False, early_stopping_metric="auc",
               tuning_constant=1.0, metrics_epoch_freq=1, viz_layer_epoch_freq=10, metrics_log="metrics_log.csv",
-              num_image_plots=5, save_model=True, save_sample_test_images=True,debug_net_output=True,objective_fn="wce",
-              weight_map=None, type_weight='Custom', ss_r=.05, regularizer_args=None,
-              learning_rate_and_kwargs=(.001, {}), op_fun_and_kwargs=("adam", {}), weight_init=None, act_fn="lrelu",
-              act_leak_prob=.2, layer_params=None, **kwargs):
+              num_image_plots=5, save_model=True, save_sample_test_images=True,debug_net_output=True, **kwargs):
 
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
 
@@ -207,25 +204,17 @@ class Job(object):
 
         # kwargs are applied to dataset class
         if dataset is None:
-            dataset = self.dataset_cls(early_stopping=early_stopping,**kwargs)
+            dataset = self.dataset_cls(early_stopping=early_stopping, **kwargs)
         pos_weight = dataset.get_tuned_pos_ce_weight(tuning_constant, *dataset.train_data[1:])
 
         # initialize network object
         if gpu_device is not None:
             with tf.device(gpu_device):
-                network = self.network_cls(pos_weight=pos_weight, objective_fn=objective_fn, weight_map=weight_map,
-                                           type_weight=type_weight, r=ss_r, weight_init=weight_init,
-                                           regularizer_args=regularizer_args, act_fn=act_fn, act_leak_prob=act_leak_prob,
-                                           learning_rate_and_kwargs=learning_rate_and_kwargs,
-                                           op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params,
-                                           num_batches_in_epoch = dataset.num_batches_in_epoch())
+                network = self.network_cls(pos_weight=pos_weight, num_batches_in_epoch = dataset.num_batches_in_epoch(),
+                                           **kwargs)
         else:
-            network = self.network_cls(pos_weight=pos_weight, objective_fn=objective_fn, weight_map=weight_map,
-                                       type_weight=type_weight, r=ss_r, weight_init=weight_init,
-                                       regularizer_args=regularizer_args, act_fn=act_fn, act_leak_prob=act_leak_prob,
-                                       learning_rate_and_kwargs=learning_rate_and_kwargs,
-                                       op_fun_and_kwargs=op_fun_and_kwargs, layer_params=layer_params,
-                                       num_batches_in_epoch=dataset.num_batches_in_epoch())
+            network = self.network_cls(pos_weight=pos_weight, num_batches_in_epoch=dataset.num_batches_in_epoch(),
+                                       **kwargs)
 
         # create metrics log file
         metric_log_file_path = os.path.join(self.OUTPUTS_DIR_PATH, metrics_log)
@@ -243,6 +232,7 @@ class Job(object):
         if save_model:
             os.makedirs(os.path.join(self.OUTPUTS_DIR_PATH, 'save', network.description, timestamp))
 
+        viz_layer_outputs_path_test = None
         if viz_layer_epoch_freq is not None:
             viz_layer_outputs_path_train, viz_layer_outputs_path_test = \
                 self.create_viz_dirs(network, timestamp)
@@ -278,6 +268,8 @@ class Job(object):
                     if viz_layer_epoch_freq is not None and debug_net_output:
                         self.save_debug2(batch_data, viz_layer_outputs_path_train)
 
+                    print('training dict')
+                    print(self.get_network_dict(network, batch_data).pop(network.is_training))
                     # train on batch
                     cost, cost_unweighted, layer_outputs, debug1, _, cur_learning_rate = sess.run(
                         [network.cost, network.cost_unweighted, network.layer_outputs, network.debug1,
@@ -293,7 +285,8 @@ class Job(object):
                         self.save_debug3(batch_data,debug1,viz_layer_outputs_path_train)
 
                     # create network visualization output
-                    if (epoch_i + 1) % viz_layer_epoch_freq == 0 and batch_i == dataset.num_batches_in_epoch()-1:
+                    if viz_layer_epoch_freq is not None and (epoch_i + 1) % viz_layer_epoch_freq == 0 and \
+                                    batch_i == dataset.num_batches_in_epoch()-1:
                         self.create_viz_layer_output(layer_outputs, self.decision_threshold,
                                                      viz_layer_outputs_path_train)
 
@@ -337,6 +330,8 @@ class Job(object):
         for i, test_data in enumerate(zip(*dataset.test_data)):
             test_data = dataset.tf_reshape(test_data)
             # get network results on test image
+            print("testing dict")
+            print(self.get_network_dict(network, test_data, False).pop(network.is_training))
             test_cost_, test_cost_unweighted_, segmentation_test_result, layer_outputs = \
                 sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
                           network.layer_outputs],
@@ -355,7 +350,7 @@ class Job(object):
                                                                test_pos_class_frac, *test_data[1:])
             max_thresh_accuracy += thresh_max
 
-            if i == sample_test_image and (epoch_i + 1) % viz_layer_epoch_freq == 0:
+            if viz_layer_epoch_freq is not None and i == sample_test_image and (epoch_i + 1) % viz_layer_epoch_freq == 0:
                 self.create_viz_layer_output(layer_outputs, decision_threshold, viz_layer_outputs_path_test)
 
         # combine test results to produce overall metric scores

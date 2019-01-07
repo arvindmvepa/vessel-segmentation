@@ -25,8 +25,9 @@ class DatasetWMasks(Dataset):
         self.test_images, self.test_masks, self.test_targets = self.test_data
 
 
-    def get_images_from_file(self, DIR_PATH, file_indices=None, hist_eq=None, clahe_kwargs=None,
-                             per_image_normalization=False, gamma=None):
+    def get_images_from_file(self, DIR_PATH, file_indices=None, hist_eq=None, clahe_kwargs=None, gamma=None,
+                             per_image_z_score_norm=False, per_image_zero_center=False,
+                             per_image_zero_center_scale=False):
 
         images = []
         masks = []
@@ -60,8 +61,10 @@ class DatasetWMasks(Dataset):
 
             grn_chnl_arr = cv2.copyMakeBorder(grn_chnl_arr, top_pad, bot_pad, left_pad, right_pad, cv2.BORDER_CONSTANT, 0)
             # apply image pre-processing
-            grn_chnl_arr = preprocessing(grn_chnl_arr, histo_eq=hist_eq, clahe_kwargs=clahe_kwargs,
-                                         per_image_normalization=per_image_normalization, gamma=gamma)
+            grn_chnl_arr = preprocessing(grn_chnl_arr, histo_eq=hist_eq, clahe_kwargs=clahe_kwargs, gamma=gamma,
+                                         per_image_z_score_norm=per_image_z_score_norm,
+                                         per_image_zero_center=per_image_zero_center,
+                                         per_image_zero_center_scale=per_image_zero_center_scale)
             grn_chnl_arr = grn_chnl_arr * 1.0/255.0
             images.append(grn_chnl_arr)
 
@@ -92,7 +95,7 @@ class DatasetWMasks(Dataset):
 
             targets.append(target_arr)
 
-        return np.asarray(images), np.asarray(masks), np.asarray(targets)
+        return images, np.asarray(masks), np.asarray(targets)
 
 
     def next_batch(self):
