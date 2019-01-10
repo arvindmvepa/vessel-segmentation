@@ -8,6 +8,8 @@ from statsmodels import robust
 from copy import deepcopy
 import json
 import os
+from imgaug import augmenters as iaa
+from imgaug import parameters as iap
 
 from utilities.misc import remove_duplicates, copy_jobs, analyze, get_job_kwargs_from_job_opts, get_job_opts
 
@@ -19,8 +21,8 @@ def clean_str(val):
 
 # hyper-parameter ordering corresponding to the file name ordering must be established here
 def get_hyp_opts(all_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regularizer_argss", "op_fun_and_kwargss",
-                                  "learning_rate_and_kwargss","weight_inits","act_fns","act_leak_probs","seqs",
-                                  "hist_eqs","clahe_kwargss","per_image_normalizations","gammas")):
+                             "learning_rate_and_kwargss","weight_inits","act_fns","act_leak_probs","seqs", "hist_eqs",
+                             "clahe_kwargss","per_image_normalizations","gammas","num_epochss")):
 
     # hyper-parameter search space
     tuning_constants = [.5,1.0,1.5,2.0]
@@ -58,13 +60,37 @@ def get_hyp_opts(all_hyps = ("objective_fns", "tuning_constants", "ss_rs", "regu
     per_image_normalizations = [False, True]
     gammas = [1.0,2.0,3.0,6.0]
 
-    seqs = [None]
+    seqs = [iaa.Sequential([iaa.Fliplr(0.5, name="Flipper")]),
+            iaa.Sequential([iaa.GaussianBlur(sigma=(0, 3.0), name="GaussianBlur")]),
+            iaa.Sequential([iaa.Affine(rotate=iap.Choice([0,90,180,270]), mode='constant', cval=0, name="rotateNoInterp")]),
+            iaa.Sequential([iaa.Affine(rotate=(-90, 90), mode='constant', cval=0, name="rotate")]),
+            iaa.Sequential([iaa.Affine(rotate=iap.Choice([0,90,180,270]), mode='constant', cval=0, name="rotateNoInterp"),
+                            iaa.Fliplr(0.5, name="Flipper")]),
+            iaa.Sequential([iaa.Affine(rotate=(-90, 90), mode='constant', cval=0, name="rotate"),
+                            iaa.Fliplr(0.5, name="Flipper")]),
+            iaa.Sequential([iaa.Affine(rotate=(-10, 10), mode='constant', cval=0, name="rotate_small")]),
+            None
+            ]
+    num_epochss = [100,200]
 
     # create dictionary with hyper-parameter name as keys and the corresponding list of hyper-parameter options as
     # values
     all_hyps_opts=dict()
     for hyp in all_hyps:
         hyp_opts = locals()[hyp][:]
+        if hyp == "seqs":
+            hyp_opts_ = []
+            for hyp_opt in hyp_opts:
+                hyp_opt_ = ""
+                if hyp_opt is not None:
+                    for aug in list(hyp_opt):
+                        hyp_opt_ += aug.name
+                else:
+                    hyp_opt_ += str(hyp_opt)
+                hyp_opts_ += [hyp_opt_]
+            hyp_opts = hyp_opts_
+        if hyp == "n_epochss":
+            hyp_opts = [str(hyp_opt) for hyp_opt in hyp_opts]
         #incorporate `None` option if `ss` objective function not used
         if hyp == "ss_rs" or  hyp == "tuning_constants":
             hyp_opts = hyp_opts+[None]
