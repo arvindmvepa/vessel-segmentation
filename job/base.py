@@ -328,8 +328,6 @@ class Job(object):
         for i, test_data in enumerate(zip(*dataset.test_data)):
             test_data = dataset.tf_reshape(test_data)
             # get network results on test image
-            print("testing dict")
-            print(self.get_network_dict(network, test_data, False).pop(network.is_training))
             test_cost_, test_cost_unweighted_, segmentation_test_result, layer_outputs = \
                 sess.run([network.cost, network.cost_unweighted, network.segmentation_result,
                           network.layer_outputs],
