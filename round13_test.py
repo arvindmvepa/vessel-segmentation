@@ -115,6 +115,26 @@ if __name__ == '__main__':
     per_image_zero_center_scale
     zero_center_scale
     z_score_norm
+    layer_params
+        batch_norm
+        act_fn (act_leak_prob)
+        add_to_input
+        concat_to_input
+        dp_rate (override)
+        center (override)
+        dilation
+    center
+    pooling_method
+    unpooling_method
+    last_layer_op (num_prev_last_conv_output_channels)
+    add_decoder_layers_map
+    remove_decoder_layers_names
+    DriveCustomJob
+    - w/o skip connections
+    - w/ skip connections
+
+
+
 
     total_hyper_parameter_combos = list(product(tuning_constants, ss_rs, objective_fns, regularizer_argss, learning_rate_and_kwargss,
                                                 op_fun_and_kwargss, weight_inits, act_fns, act_leak_probs, hist_eqs, clahe_kwargss,
