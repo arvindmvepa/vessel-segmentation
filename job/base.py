@@ -268,8 +268,6 @@ class Job(object):
                     if viz_layer_epoch_freq is not None and debug_net_output:
                         self.save_debug2(batch_data, viz_layer_outputs_path_train)
 
-                    print('training dict')
-                    print(self.get_network_dict(network, batch_data).pop(network.is_training))
                     # train on batch
                     cost, cost_unweighted, layer_outputs, debug1, _, cur_learning_rate = sess.run(
                         [network.cost, network.cost_unweighted, network.layer_outputs, network.debug1,
