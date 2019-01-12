@@ -1,4 +1,4 @@
-from job.drive import DriveJob
+from job.drive import DriveJob, DriveCustomJob
 from itertools import product
 from random import sample
 import os
@@ -108,33 +108,51 @@ if __name__ == '__main__':
             iaa.Sequential([iaa.Affine(rotate=(-135, 135), mode='constant', cval=0, name="rotate135")]),
             iaa.Sequential([iaa.Affine(rotate=(-180, 180), mode='constant', cval=0, name="rotate180")]),
             ]
-
-    zero_center
-    per_image_z_score_norm
-    per_image_zero_center
-    per_image_zero_center_scale
-    zero_center_scale
-    z_score_norm
-    layer_params
-        batch_norm
-        act_fn (act_leak_prob)
-        add_to_input
-        concat_to_input
-        dp_rate (override)
-        center (override)
-        dilation
-    center
-    pooling_method
-    unpooling_method
-    last_layer_op (num_prev_last_conv_output_channels)
-    add_decoder_layers_map
-    remove_decoder_layers_names
-    DriveCustomJob
+    """
+    zero_centers = [True, False]
+    per_image_z_score_norms = [True, False]
+    per_image_zero_centers = [True, False]
+    per_image_zero_center_scales = [True, False]
+    zero_center_scales = [True, False]
+    z_score_norms = [True, False]
+    centers = [True, False]
+    pooling_methods = ["AVG", "MAX"]
+    unpooling_methods = ["bilinear", "nearest_neighbor", "bicubic"]
+    last_layer_op =["AVG", "MAX", "CONV"]
+    num_prev_last_conv_output_channels = [1,5,10,25,50,100]
+    add_decoder_layers_map = "" # one option is to add a lot of decoder layers at the end
+                                # add a conv layer per section
+                                # randomly add a conv layer
+    remove_decoder_layers_names = "" # remove a conv layer per section, other stuff discussed below, randomly remove a conv layer
+    job_clss = [DriveJob, DriveCustomJob]
     - w/o skip connections
+    encoder_model_keys = ["densenet121","incresv2","incv3", "resnet50", "resnet50v2", "resnext50", "xception"]
     - w/ skip connections
+    encoder_model_keys = ["densenet121" "resnet50", "resnet50v2", "resnext50"]
+    # pattern: beg. of pooling layer, beg. of conv. layer
+    batch_norm = [True, False]
+    act_fns = ["relu", "lrelu", "elu", "maxout"]
+        act_leak_prob = [.2, .4, .6, .8]
+    layer_params
+        add_to_input  # all layers, no layers, at the beg. pooling layer, beg. of conv. layer # following pooling layer
+        concat_to_input  # exchange the add patterns with concat
+        dp_rate  # apply 0,.1,.2 uniformly after convolutional layers, maybe apply more after more dense layers (like .5_
+        center (override)  # check for applying center for the last layer or not
+        dilation (with stride)  # symmetric and asymmetric
+            dilation impacts receptive field immediately, subsequent conv layers, only increments by same amount
+            unless you increase the receptive field continuously (same as downsampling)
+            increased stride has a more pronounced impact on receptive field subsequently
+            - options:
+                - remove pooling and use dilated convolutions (consider reducing number of output channels for memory)
+                - remove pooling and use strided convolutions (consider reducing number of output channels for memory)
+                - remove pooling entirely (reduce number of output channels for memory)
+                - try adding dilated convolutions to increase receptive field in general
+                - try merging input from different layers (not possible right now)
+                - (doesn't have to be symmetric)
+    """
 
-
-
+    # may use a json system to save hyper-parameters
+    # may be better than using experiment names
 
     total_hyper_parameter_combos = list(product(tuning_constants, ss_rs, objective_fns, regularizer_argss, learning_rate_and_kwargss,
                                                 op_fun_and_kwargss, weight_inits, act_fns, act_leak_probs, hist_eqs, clahe_kwargss,
@@ -154,7 +172,7 @@ if __name__ == '__main__':
 
         # gpu_device='/gpu:1'
 
-        job = DriveJob(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
+        job = job_cls(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
         job.run_cv(WRK_DIR_PATH=WRK_DIR_PATH, mc=True, val_prop=.10, early_stopping=False, early_stopping_metric="auc",
                    save_model=False, save_sample_test_images=False,
                    metrics_epoch_freq=metrics_epoch_freq, viz_layer_epoch_freq=viz_layer_epoch_freq,
