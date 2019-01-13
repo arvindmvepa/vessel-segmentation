@@ -1,6 +1,7 @@
 import numpy as np
 from itertools import groupby
 import collections
+from itertools import product
 
 def find_closest_pos(positions, start_pos=(0,0)):
     min = np.inf
@@ -27,6 +28,7 @@ def find_class_balance(targets, masks):
     weight = total_neg / total_pos
     return weight, float(total_neg)/float(total_num_pixels), float(total_pos)/float(total_num_pixels)
 
+
 def remove_duplicates(data):
     ''' Remove duplicates from the data (normally a list).
         The data must be sortable and have an equality operator
@@ -42,3 +44,24 @@ def update(d, u):
         else:
             d[k] = v
     return d
+
+
+#https://stackoverflow.com/questions/6027558/flatten-nested-python-dictionaries-compressing-keys
+def flatten(d):
+    items = []
+    for k, v in d.items():
+        if isinstance(v, collections.MutableMapping):
+            items.extend(flatten(v).items())
+        else:
+            items.append((k, v))
+    return dict(items)
+
+
+#https://stackoverflow.com/questions/5228158/cartesian-product-of-a-dictionary-of-lists
+def product_dict(**kwargs):
+    keys = kwargs.keys()
+    vals = kwargs.values()
+    prod_dicts = []
+    for instance in product(*vals):
+        prod_dicts.append(dict(zip(keys, instance)))
+    return prod_dicts

@@ -6,4 +6,5 @@ opencv_python
 scikit-image
 statsmodels
 pandas
+pyyaml
 git+https://github.com/aleju/imgaug.git
