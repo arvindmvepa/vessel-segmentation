@@ -30,8 +30,9 @@ def run_experiment(exp_file_path="exp.yml"):
     for i, params in enumerate(exp_params):
         EXPERIMENT_NAME = exp_base_name+"_"+str(i)
         OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
+        if not os.path.exists(OUTPUTS_DIR_PATH):
+            os.makedirs(OUTPUTS_DIR_PATH)
         params_yml = os.path.join(OUTPUTS_DIR_PATH, "params.yml")
-
         with io.open(params_yml, 'w', encoding='utf8') as outfile:
             yaml.dump(params, outfile, default_flow_style=False, allow_unicode=True)
 
