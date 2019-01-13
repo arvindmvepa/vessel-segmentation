@@ -64,7 +64,7 @@ def generate_params(exp_file="exp.yml"):
             fixed_params[k] = v
 
     # find all the hyper-parameter combinations
-    testing_params = product_dict(testing_params)
+    testing_params = product_dict(**testing_params)
 
     # sample the number of experiments
     if num_files:
