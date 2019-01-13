@@ -17,14 +17,16 @@ job_cls_map = {"DriveJob": DriveJob,
                }
 
 
-def run_experiment(exp_file="exp.yml"):
-    job_cls, job_func, EXPERIMENTS_DIR_PATH, WRK_DIR_PATH, exp_params = generate_params(exp_file=exp_file)
+def run_experiment(exp_file_path="exp.yml"):
+    job_cls, job_func, EXPERIMENTS_DIR_PATH, WRK_DIR_PATH, exp_params = generate_params(exp_file_path=exp_file_path)
     job_cls = job_cls_map[job_cls]
 
+    if not os.path.exists(EXPERIMENTS_DIR_PATH):
+        os.makedirs(EXPERIMENTS_DIR_PATH)
     # save a copy of the exp.yml file to the experiment directory
-    copyfile(exp_file, os.path.join(EXPERIMENTS_DIR_PATH, os.path.basename(exp_file)))
+    copyfile(exp_file_path, os.path.join(EXPERIMENTS_DIR_PATH, os.path.basename(exp_file_path)))
 
-    exp_base_name = os.path.splitext(exp_file)[0]
+    exp_base_name = os.path.splitext(exp_file_path)[0]
     for i, params in enumerate(exp_params):
         EXPERIMENT_NAME = exp_base_name+"_"+str(i)
         OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
@@ -38,11 +40,11 @@ def run_experiment(exp_file="exp.yml"):
         job.job_func(WRK_DIR_PATH=WRK_DIR_PATH, **params)
 
 
-def generate_params(exp_file="exp.yml"):
+def generate_params(exp_file_path="exp.yml"):
     """generate the exp params combinations from the dictionary of mappings, with an optional list of choices for params
     exp"""
 
-    with open(exp_file, 'r') as stream:
+    with open(exp_file_path, 'r') as stream:
         exp = yaml.load(stream)
 
     exp = flatten(exp)
