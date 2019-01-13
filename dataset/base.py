@@ -3,10 +3,13 @@ import numpy as np
 import math
 from math import ceil
 import os
+import collections
 from sklearn.model_selection import train_test_split
-from imgaug import imgaug
+from imgaug import augmenters as iaa
 from utilities.augmentation import apply_image_aug
 from utilities.image_preprocessing import apply_dataset_normalization
+
+aug_map = {"affine": iaa.Affine}
 
 
 class Dataset(object):
@@ -28,8 +31,7 @@ class Dataset(object):
             self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TRAIN_SUBDIR)
         else:
             self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TEST_SUBDIR)
-        self.seq = seq
-
+        self.init_aug(seq)
         self.train_data = self.get_images_from_file(self.TRAIN_DIR_PATH, cv_train_inds, hist_eq=hist_eq,
                                                     clahe_kwargs=clahe_kwargs, gamma=gamma,
                                                     per_image_z_score_norm=per_image_z_score_norm,
@@ -82,6 +84,17 @@ class Dataset(object):
             if len(arr.shape) == 3:
                 reshaped_arrs += [np.reshape(arr, (arr.shape[0], arr.shape[1], arr.shape[2], 1))]
         return tuple(reshaped_arrs)
+
+    def init_aug(self, seq):
+        print("initialize augmentation")
+        if isinstance(seq, collections.Iterable):
+            seq_list = []
+            for aug_key, aug_kwargs in seq:
+                seq_list.append(aug_map(aug_key)(**aug_kwargs))
+            self.seq = iaa.Sequential(seq_list)
+            print("debug, self.seq {}".format(self.seq))
+        else:
+            ValueError("seq has to be an iterable")
 
     def apply_aug(self, *args, **kwargs):
         return apply_image_aug(*args, **kwargs)

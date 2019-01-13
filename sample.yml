@@ -30,4 +30,12 @@ image_preproc:
   clahe_kwargs: null
   per_image_normalization: false
   gamma: 1.0
-  seq: null
+  seq: !!python/tuple
+  - !!python/tuple
+    - affine
+    - rotate: !!python/tuple
+      - -180
+      - 180
+    - cval: 0
+    - mode: constant
+    - name: rotate180
