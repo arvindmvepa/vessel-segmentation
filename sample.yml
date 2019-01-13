@@ -2,6 +2,7 @@ exp:
   job_cls: DriveJob
   WRK_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\DRIVE
   EXPERIMENTS_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\yaml
+  job_func: run_single_model
   n_splits: 2
   metrics_epoch_freq: 1
   viz_layer_epoch_freq: null
