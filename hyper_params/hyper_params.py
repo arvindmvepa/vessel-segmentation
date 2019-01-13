@@ -24,23 +24,19 @@ def run_experiment(job_cls, job_func, EXPERIMENTS_DIR_PATH, WRK_DIR_PATH, exp_fi
 
 
 def generate_hyper_param_dict(exp_file="exp.yml", num_files=None):
-    # generate the yaml file from the dictionary of mappings, with a list of choices
-    # random search option, all combinations option leave it like that
-    # generate the yaml file with the params in a specific order
-    # can order by sub-section, require specific sections with a misc. section
+    """generate the exp params combinations from the dictionary of mappings, with an optional list of choices for
+    hyper-params exp"""
 
     with open(exp_file, 'r') as stream:
         exp = yaml.load(stream)
 
-    # not really necessary
-    # not going to create nested dictionary at this time anyway
     exp = flatten(exp)
     exp_dict = dict()
     hyper_params = dict()
 
     for k,v in exp.items():
         # params that are stored as list will be distributed
-        # tuples, will not be treated this way
+        # tuples, etc. will not be treated this way
         if isinstance(v, list):
             hyper_params[k] = v
         else:
