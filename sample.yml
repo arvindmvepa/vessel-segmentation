@@ -36,6 +36,6 @@ image_preproc:
     - rotate: !!python/tuple
       - -180
       - 180
-    - cval: 0
-    - mode: constant
-    - name: rotate180
+      cval: 0
+      mode: constant
+      name: rotate180
