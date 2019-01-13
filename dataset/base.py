@@ -90,7 +90,7 @@ class Dataset(object):
         if isinstance(seq, collections.Iterable):
             seq_list = []
             for aug_key, aug_kwargs in seq:
-                seq_list.append(aug_map(aug_key)(**aug_kwargs))
+                seq_list.append(aug_map[aug_key](**aug_kwargs))
             self.seq = iaa.Sequential(seq_list)
             print("debug, self.seq {}".format(self.seq))
         else:
