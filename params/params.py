@@ -38,6 +38,7 @@ def run_experiment(exp_file_path="exp.yml"):
 
         job = job_cls(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
         job_func = getattr(job, job_func)
+        print("job params: {}".format(params))
         job_func(WRK_DIR_PATH=WRK_DIR_PATH, **params)
 
 
