@@ -38,6 +38,7 @@ def run_experiment(exp_file_path="exp.yml"):
 
         job = job_cls(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
         job_func = getattr(job, job_func)
+        print("debug 1: {}".format(job_func))
         job.job_func(WRK_DIR_PATH=WRK_DIR_PATH, **params)
 
 
@@ -51,6 +52,7 @@ def generate_params(exp_file_path="exp.yml"):
     exp = flatten(exp)
     job_cls = exp.pop("job_cls")
     job_func = exp.pop("job_func")
+    print("debug 0: {}".format(job_func))
     EXPERIMENTS_DIR_PATH = exp.pop("EXPERIMENTS_DIR_PATH")
     WRK_DIR_PATH = exp.pop("WRK_DIR_PATH")
     num_files = exp.pop("num_files", None)
