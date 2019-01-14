@@ -24,6 +24,7 @@ layer_args:
   weight_init:
   - He
   - Xnormal
+  - default
   act_fn: lrelu
   act_leak_prob: 0.2
 
