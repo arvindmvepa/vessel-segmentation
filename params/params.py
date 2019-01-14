@@ -112,7 +112,7 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
     exp_file_path = os.path.join(EXPERIMENTS_DIR_PATH, exp_file_name)
     exp = load_yaml(exp_file_path)
     exp = flatten(exp)
-    n_metric_intervals = exp.pop("n_epochs")/exp.pop("metrics_epoch_freq")
+    n_metric_intervals = int(exp.pop("n_epochs") // exp.pop("metrics_epoch_freq"))
 
     testing_params = dict()
 
