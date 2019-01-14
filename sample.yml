@@ -1,11 +1,11 @@
 exp:
   job_cls: DriveJob
   WRK_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\DRIVE
-  EXPERIMENTS_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\yaml
+  EXPERIMENTS_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\exp_sample
   job_func: run_single_model
-  n_splits: 2
   metrics_epoch_freq: 1
   viz_layer_epoch_freq: null
+  num_files: 3
 
 optimization:
   op_fun_and_kwargs: !!python/tuple
@@ -18,10 +18,12 @@ optimization:
   learning_rate_and_kwargs: !!python/tuple
   - .001
   - {}
-  n_epochs: 5
+  n_epochs: 2
 
 layer_args:
-  weight_init: He
+  weight_init:
+  - He
+  - Xnormal
   act_fn: lrelu
   act_leak_prob: 0.2
 
