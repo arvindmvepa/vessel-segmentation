@@ -96,6 +96,7 @@ class Dataset(object):
             print("debug, self.seq {}".format(self.seq))
             temp = iaa.Sequential([iaa.Affine(rotate=(-180, 180), mode='constant', cval=0, name="rotate180")])
             print("debug, alternative {}".format(temp))
+            self.seq = temp
         else:
             ValueError("seq has to be an iterable")
 
