@@ -180,8 +180,8 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
         writer = csv.writer(csv_file, delimiter=',')
         writer.writerow([param_name for param_name in sorted(metric_marg_scores[0].keys())]+["mean", mof_metric])
         for i in range(n_metric_intervals):
-            i_mean = np.mean(job_results[i].values())
-            i_mof = mof_func(job_results[i].values())
+            i_mean = np.mean(list(job_results[i].values ()))
+            i_mof = mof_func(list(job_results[i].values()))
             writer.writerow([metric_marg_scores[i][param_name] for param_name in sorted(metric_marg_scores[0].keys())]
                             + [i_mean, i_mof])
 
@@ -192,8 +192,8 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
         writer = csv.writer(csv_file, delimiter=',')
         for i in range(n_metric_intervals):
             ranked_metric_marg_scores = sorted(metric_marg_scores[i].items(), key = lambda x: x[1], reverse=True)
-            i_mean = np.mean(job_results[i].values())
-            i_mof = mof_func(job_results[i].values())
+            i_mean = np.mean(list(job_results[i].values ()))
+            i_mof = mof_func(list(job_results[i].values()))
             writer.writerow([ranked_marg_score[0] for ranked_marg_score in ranked_metric_marg_scores] +
                             ["mean", mof_metric])
             writer.writerow([ranked_marg_score[1] + " % rank {:.1%}".format(float(i)/len(ranked_metric_marg_scores))
@@ -206,8 +206,8 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
         writer = csv.writer(csv_file, delimiter=',')
         for i in range(n_metric_intervals):
             ranked_job_results = sorted(job_results[i].items(), key = lambda x: x[1], reverse=True)
-            i_mean = np.mean(job_results[i].values())
-            i_mof = mof_func(job_results[i].values())
+            i_mean = np.mean(list(job_results[i].values ()))
+            i_mof = mof_func(list(job_results[i].values()))
             writer.writerow([ranked_job_result[0] for ranked_job_result in ranked_job_results] +
                             ["mean", mof_metric])
             writer.writerow([ranked_job_result[1] + " % rank {:.1%}".format(float(i)/len(ranked_job_results))
