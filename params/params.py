@@ -173,6 +173,8 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
             metric_marg_scores[i][param_name] = str(np.round(mean_result, round_arg)) + "+/-" + \
                                                 str(np.round(mof_result, round_arg))
 
+    print('debug metric marg scores" {}'.format(metric_marg_scores))
+
     # create the marginal hyperparameter results file
     hyp_metrics_log = "marg_hyp_log.csv"
     hyp_metrics_log_path = os.path.join(EXPERIMENTS_DIR_PATH, hyp_metrics_log)
