@@ -147,6 +147,12 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
         metric_col = metric_col_map[metric]
         p = re.compile(r'\d+\.\d+')
 
+        with open(JOB_METRICS_PATH) as csv_file1:
+            csv_reader = csv.reader(csv_file1, delimiter=',')
+            print("debug csv: {}".format(JOB_METRICS_PATH))
+            for i, row in enumerate(csv_reader):
+                print(row)
+
         # collect the job and marginal metric results
         with open(JOB_METRICS_PATH) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
