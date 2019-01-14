@@ -107,7 +107,7 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
     glob_regex = os.path.join(EXPERIMENTS_DIR_PATH, "*", params_file_name)
     params_ymls = glob(glob_regex)
     job_results = defaultdict(lambda : defaultdict(float))
-    metric_marg_scores = defaultdict(lambda : defaultdict(lambda : defaultdict(list)))
+    metric_marg_scores = defaultdict(lambda : defaultdict(list))
 
     exp_file_path = os.path.join(EXPERIMENTS_DIR_PATH, exp_file_name)
     exp = load_yaml(exp_file_path)
