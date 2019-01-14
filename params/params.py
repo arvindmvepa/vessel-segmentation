@@ -127,10 +127,8 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
     exp_params = {}
     testing_params_opts = defaultdict(set)
 
-    #job_files = []
     for params_yml in params_ymls:
         JOB_PATH = os.path.dirname(params_yml)
-        #job_files.append(job_dir_path)
         job_name = os.path.split(JOB_PATH)[1]
         params = load_yaml(params_yml)
         exp_params[job_name] = {}
