@@ -147,24 +147,21 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
         metric_col = metric_col_map[metric]
         p = re.compile(r'\d+\.\d+')
 
-        with open(JOB_METRICS_PATH) as csv_file1:
-            csv_reader = csv.reader(csv_file1, delimiter=',')
-            print("debug csv: {}".format(JOB_METRICS_PATH))
-            for i, row in enumerate(csv_reader):
-                print(row)
-
         # collect the job and marginal metric results
         with open(JOB_METRICS_PATH) as csv_file:
             csv_reader = csv.reader(csv_file, delimiter=',')
             next(csv_reader, None)
-            for i, row in enumerate(csv_reader):
-                print("debug row: {}".format(row))
-                metric_result = row[metric_col]
-                metric_result = [float(result) for result in p.findall(metric_result)][0:2]
-                job_results[i][job_name] = metric_result
-                for k,v in exp_params[job_name].items():
-                    param_name = str(k) + "." + str(v)
-                    metric_marg_scores[i][param_name] = metric_marg_scores[i][param_name] + [metric_result[0]]
+            metric_interval = 0
+            for row in csv_reader:
+                if row:
+                    print("debug row: {}".format(row))
+                    metric_result = row[metric_col]
+                    metric_result = [float(result) for result in p.findall(metric_result)][0:2]
+                    job_results[metric_interval][job_name] = metric_result
+                    for k,v in exp_params[job_name].items():
+                        param_name = str(k) + "." + str(v)
+                        metric_marg_scores[metric_interval][param_name] = metric_marg_scores[metric_interval][param_name] + [metric_result[0]]
+                    metric_interval+=1
 
     # combine the marginal metric results
     for i in range(n_metric_intervals):
