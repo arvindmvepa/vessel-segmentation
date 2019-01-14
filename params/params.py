@@ -47,6 +47,7 @@ def run_experiment(exp_file_path="exp.yml"):
             yaml.dump(params, outfile, default_flow_style=False, allow_unicode=True)
 
         job = job_cls(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
+        print("debug 1: {}".format(job_func))
         job_func = getattr(job, job_func)
         print("job params: {}".format(params))
         job_func(WRK_DIR_PATH=WRK_DIR_PATH, **params)
@@ -83,7 +84,7 @@ def generate_params(exp_file_path="exp.yml"):
 
     # update the parameter combinations with the fixed parameters
     params = [update(testing_params_exp, fixed_params) for testing_params_exp in testing_params]
-
+    print("debug 0: {}".format(job_func))
     return job_cls, job_func, EXPERIMENTS_DIR_PATH, WRK_DIR_PATH, params
 
 
