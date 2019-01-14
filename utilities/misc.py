@@ -2,6 +2,7 @@ import numpy as np
 from itertools import groupby
 import collections
 from itertools import product
+import shutil, errno
 
 def find_closest_pos(positions, start_pos=(0,0)):
     min = np.inf
@@ -65,3 +66,13 @@ def product_dict(**kwargs):
     for instance in product(*vals):
         prod_dicts.append(dict(zip(keys, instance)))
     return prod_dicts
+
+
+#https://stackoverflow.com/questions/1994488/copy-file-or-directories-recursively-in-python
+def copy_stuff(src, dst):
+    try:
+        shutil.copytree(src, dst)
+    except OSError as exc: # python >2.5
+        if exc.errno == errno.ENOTDIR:
+            shutil.copy(src, dst)
+        else: raise
