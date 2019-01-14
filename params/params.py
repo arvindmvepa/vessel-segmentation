@@ -129,18 +129,19 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
 
     #job_files = []
     for params_yml in params_ymls:
-        job_dir_path = os.path.dirname(params_yml)
+        JOB_PATH = os.path.dirname(params_yml)
         #job_files.append(job_dir_path)
-        job_name = os.path.split(job_dir_path)[1]
+        job_name = os.path.split(JOB_PATH)[1]
         params = load_yaml(params_yml)
         exp_params[job_name] = {}
         for k in testing_params.keys():
             exp_params[job_name][k] = json.dumps(params[k], sort_keys=True)
             testing_params_opts[k].add(json.dumps(params[k], sort_keys=True))
 
-        JOB_PATH = os.path.join(EXPERIMENTS_DIR_PATH, job_name)
         # get the file with the combined metrics score
         if file_char == "mof" or file_char == "csv":
+            print("debug job list: {}".format(os.listdir(JOB_PATH)))
+            print("debug job list: {}".format([file for file in os.listdir(JOB_PATH) if file_char in file]))
             job_metrics_file = [file for file in os.listdir(JOB_PATH) if file_char in file][0]
         else:
             raise ValueError("file_char {} not recognized".format(file_char))
