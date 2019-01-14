@@ -31,7 +31,8 @@ class Dataset(object):
             self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TRAIN_SUBDIR)
         else:
             self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TEST_SUBDIR)
-        self.init_aug(seq)
+        if seq:
+            self.init_aug(seq)
         self.train_data = self.get_images_from_file(self.TRAIN_DIR_PATH, cv_train_inds, hist_eq=hist_eq,
                                                     clahe_kwargs=clahe_kwargs, gamma=gamma,
                                                     per_image_z_score_norm=per_image_z_score_norm,
