@@ -94,6 +94,8 @@ class Dataset(object):
                 seq_list.append(aug_map[aug_key](**aug_kwargs))
             self.seq = iaa.Sequential(seq_list)
             print("debug, self.seq {}".format(self.seq))
+            temp = iaa.Sequential([iaa.Affine(rotate=(-180, 180), mode='constant', cval=0, name="rotate180")])
+            print("debug, alternative {}".format(temp))
         else:
             ValueError("seq has to be an iterable")
 
