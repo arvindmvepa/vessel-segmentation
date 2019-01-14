@@ -138,8 +138,6 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
 
         # get the file with the combined metrics score
         if file_char == "mof" or file_char == "csv":
-            print("debug job list: {}".format(os.listdir(JOB_PATH)))
-            print("debug job list: {}".format([file for file in os.listdir(JOB_PATH) if file_char in file]))
             job_metrics_file = [file for file in os.listdir(JOB_PATH) if file_char in file][0]
         else:
             raise ValueError("file_char {} not recognized".format(file_char))
@@ -154,6 +152,7 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
             csv_reader = csv.reader(csv_file, delimiter=',')
             next(csv_reader, None)
             for i, row in enumerate(csv_reader):
+                print("debug row: {}".format(row))
                 metric_result = row[metric_col]
                 metric_result = [float(result) for result in p.findall(metric_result)][0:2]
                 job_results[i][job_name] = metric_result
