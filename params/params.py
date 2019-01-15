@@ -106,13 +106,14 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
 
     glob_regex = os.path.join(EXPERIMENTS_DIR_PATH, "*", params_file_name)
     params_ymls = glob(glob_regex)
-    job_results = defaultdict(lambda : defaultdict(float))
-    metric_marg_scores = defaultdict(lambda : defaultdict(list))
 
     exp_file_path = os.path.join(EXPERIMENTS_DIR_PATH, exp_file_name)
     exp = load_yaml(exp_file_path)
     exp = flatten(exp)
     n_metric_intervals = int(exp.pop("n_epochs") // exp.pop("metrics_epoch_freq"))
+
+    metric_marg_scores = [dict() for _ in range(n_metric_intervals)]
+    job_results = [dict() for _ in range(n_metric_intervals)]
 
     testing_params = dict()
 
@@ -122,6 +123,8 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
         # tuples, etc. will not be treated this way
         if isinstance(v, list):
             testing_params[k] = v
+
+    print("debug testing_params: {}".format(testing_params))
 
     # collect the experiment parameters and testing parameters used in the experiment
     exp_params = {}
@@ -156,22 +159,31 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
                 if row:
                     print("debug row: {}".format(row))
                     metric_result = row[metric_col]
+                    print("debug metric result1: {}".format(metric_result))
                     metric_result = [float(result) for result in p.findall(metric_result)][0:2]
-                    job_results[metric_interval][job_name] = metric_result
-                    for k,v in exp_params[job_name].items():
+                    print("debug metric result2: {}".format(metric_result))
+                    job_results[metric_interval][job_name] = metric_result[0]
+                    for k, v in exp_params[job_name].items():
                         param_name = str(k) + "." + str(v)
-                        metric_marg_scores[metric_interval][param_name] = metric_marg_scores[metric_interval][param_name] + [metric_result[0]]
-                    metric_interval+=1
+                        print("debug0 param: {}".format(param_name))
+                        if param_name in metric_marg_scores[metric_interval]:
+                            metric_marg_scores[metric_interval][param_name] = metric_marg_scores[metric_interval][param_name] + [metric_result[0]]
+                        else:
+                            metric_marg_scores[metric_interval][param_name] = [metric_result[0]]
+                    metric_interval += 1
 
+    print("debug testing_params_opts {}".format(testing_params_opts))
     # combine the marginal metric results
     for i in range(n_metric_intervals):
-        for k,v in testing_params_opts.items():
-            param_name = str(k) + "." + str(v)
-            metric_marg_scores_list = metric_marg_scores[i][param_name]
-            mean_result = np.mean(metric_marg_scores_list)
-            mof_result = mof_func(metric_marg_scores_list)
-            metric_marg_scores[i][param_name] = str(np.round(mean_result, round_arg)) + "+/-" + \
-                                                str(np.round(mof_result, round_arg))
+        for k, params_set in testing_params_opts.items():
+            for param in params_set:
+                param_name = str(k) + "." + str(param)
+                print("debug1 param: {}".format(param_name))
+                metric_marg_scores_list = metric_marg_scores[i][param_name]
+                mean_result = np.mean(metric_marg_scores_list)
+                mof_result = mof_func(metric_marg_scores_list)
+                metric_marg_scores[i][param_name] = str(np.round(mean_result, round_arg)) + "+/-" + \
+                                                    str(np.round(mof_result, round_arg))
 
     print('debug metric marg scores" {}'.format(metric_marg_scores))
 
@@ -182,7 +194,7 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
         writer = csv.writer(csv_file, delimiter=',')
         writer.writerow([param_name for param_name in sorted(metric_marg_scores[0].keys())]+["mean", mof_metric])
         for i in range(n_metric_intervals):
-            i_mean = np.mean(list(job_results[i].values ()))
+            i_mean = np.mean(list(job_results[i].values()))
             i_mof = mof_func(list(job_results[i].values()))
             writer.writerow([metric_marg_scores[i][param_name] for param_name in sorted(metric_marg_scores[0].keys())]
                             + [i_mean, i_mof])
@@ -194,7 +206,7 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
         writer = csv.writer(csv_file, delimiter=',')
         for i in range(n_metric_intervals):
             ranked_metric_marg_scores = sorted(metric_marg_scores[i].items(), key = lambda x: x[1], reverse=True)
-            i_mean = np.mean(list(job_results[i].values ()))
+            i_mean = np.mean(list(job_results[i].values()))
             i_mof = mof_func(list(job_results[i].values()))
             writer.writerow([ranked_marg_score[0] for ranked_marg_score in ranked_metric_marg_scores] +
                             ["mean", mof_metric])
@@ -207,12 +219,13 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
     with open(rank_job_log_path, "w") as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
         for i in range(n_metric_intervals):
-            ranked_job_results = sorted(job_results[i].items(), key = lambda x: x[1], reverse=True)
-            i_mean = np.mean(list(job_results[i].values ()))
+            ranked_job_results = sorted(job_results[i].items(), key=lambda x: x[1], reverse=True)
+            i_mean = np.mean(list(job_results[i].values()))
             i_mof = mof_func(list(job_results[i].values()))
+            print("debug ranked job results: {}".format(ranked_job_results))
             writer.writerow([ranked_job_result[0] for ranked_job_result in ranked_job_results] +
                             ["mean", mof_metric])
-            writer.writerow([ranked_job_result[1] + " % rank {:.1%}".format(float(i)/len(ranked_job_results))
+            writer.writerow([str(ranked_job_result[1]) + " % rank {:.1%}".format(float(i)/len(ranked_job_results))
                              for i, ranked_job_result in enumerate(ranked_job_results)] + [i_mean, i_mof])
 
             # filter the job_paths based on the job scores and other criteria
