@@ -24,7 +24,7 @@ job_cls_map = {"DriveJob": DriveJob,
                "DsaJob": DsaJob,
                }
 
-metric_col_map = { "auc": 1}
+metric_col_map = {"auc": 1}
 
 
 def run_experiment(exp_file_path="exp.yml"):
@@ -47,9 +47,7 @@ def run_experiment(exp_file_path="exp.yml"):
             yaml.dump(params, outfile, default_flow_style=False, allow_unicode=True)
 
         job = job_cls(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
-        print("debug 1: {}".format(job_func_str))
         job_func = getattr(job, job_func_str)
-        print("job params: {}".format(params))
         job_func(WRK_DIR_PATH=WRK_DIR_PATH, **params)
 
 
@@ -84,7 +82,6 @@ def generate_params(exp_file_path="exp.yml"):
 
     # update the parameter combinations with the fixed parameters
     params = [update(testing_params_exp, fixed_params) for testing_params_exp in testing_params]
-    print("debug 0: {}".format(job_func_str))
     return job_cls, job_func_str, EXPERIMENTS_DIR_PATH, WRK_DIR_PATH, params
 
 
@@ -94,8 +91,9 @@ def load_yaml(yaml_file_path="params.yml"):
         data = yaml.load(stream)
     return data
 
+
 def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_name="exp.yml",
-                metric="auc", mof_metric="mad", file_char = "mof", round_arg=4, rt_jobs_score=None,
+                metric="auc", mof_metric="mad", file_char="mof", round_arg=4, rt_jobs_score=None,
                 rt_jobs_metric_interval=None):
 
     # define func for measure of fit
@@ -123,8 +121,6 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
         # tuples, etc. will not be treated this way
         if isinstance(v, list):
             testing_params[k] = v
-
-    print("debug testing_params: {}".format(testing_params))
 
     # collect the experiment parameters and testing parameters used in the experiment
     exp_params = {}
@@ -157,35 +153,27 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
             metric_interval = 0
             for row in csv_reader:
                 if row:
-                    print("debug row: {}".format(row))
                     metric_result = row[metric_col]
-                    print("debug metric result1: {}".format(metric_result))
                     metric_result = [float(result) for result in p.findall(metric_result)][0:2]
-                    print("debug metric result2: {}".format(metric_result))
                     job_results[metric_interval][job_name] = metric_result[0]
                     for k, v in exp_params[job_name].items():
                         param_name = str(k) + "." + str(v)
-                        print("debug0 param: {}".format(param_name))
                         if param_name in metric_marg_scores[metric_interval]:
                             metric_marg_scores[metric_interval][param_name] = metric_marg_scores[metric_interval][param_name] + [metric_result[0]]
                         else:
                             metric_marg_scores[metric_interval][param_name] = [metric_result[0]]
                     metric_interval += 1
 
-    print("debug testing_params_opts {}".format(testing_params_opts))
     # combine the marginal metric results
     for i in range(n_metric_intervals):
         for k, params_set in testing_params_opts.items():
             for param in params_set:
                 param_name = str(k) + "." + str(param)
-                print("debug1 param: {}".format(param_name))
                 metric_marg_scores_list = metric_marg_scores[i][param_name]
                 mean_result = np.mean(metric_marg_scores_list)
                 mof_result = mof_func(metric_marg_scores_list)
                 metric_marg_scores[i][param_name] = str(np.round(mean_result, round_arg)) + "+/-" + \
                                                     str(np.round(mof_result, round_arg))
-
-    print('debug metric marg scores" {}'.format(metric_marg_scores))
 
     # create the marginal hyperparameter results file
     hyp_metrics_log = "marg_hyp_log.csv"
@@ -222,7 +210,6 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
             ranked_job_results = sorted(job_results[i].items(), key=lambda x: x[1], reverse=True)
             i_mean = np.mean(list(job_results[i].values()))
             i_mof = mof_func(list(job_results[i].values()))
-            print("debug ranked job results: {}".format(ranked_job_results))
             writer.writerow([ranked_job_result[0] for ranked_job_result in ranked_job_results] +
                             ["mean", mof_metric])
             writer.writerow([str(ranked_job_result[1]) + " % rank {:.1%}".format(float(i)/len(ranked_job_results))
