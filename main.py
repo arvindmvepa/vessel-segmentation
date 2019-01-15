@@ -4,7 +4,14 @@ from job.stare import StareJob
 from job.chase import ChaseJob
 import os
 from params.params import run_experiment, analyze_exp
+from params.misc import copy_exp
 
 if __name__ == '__main__':
     #run_experiment(exp_file_path="sample.yml")
-    analyze_exp(r"C:\Users\arvin\dev\vessel-segmentation\exp_sample", exp_file_name="sample.yml", file_char="csv")
+    EXPERIMENTS_DIR_PATH = r"C:\Users\arvin\dev\vessel-segmentation\exp_sample"
+    TOP_EXPERIMENTS_DIR_PATH = r"C:\Users\arvin\dev\vessel-segmentation\copy_sample"
+    exp_file_name = "sample.yml"
+    jobs = analyze_exp(EXPERIMENTS_DIR_PATH, exp_file_name=exp_file_name, file_char="csv", rt_jobs_score=.93)
+    print(jobs)
+    copy_exp(jobs, EXPERIMENTS_DIR_PATH, TOP_EXPERIMENTS_DIR_PATH, exp_file_name)
+    analyze_exp(TOP_EXPERIMENTS_DIR_PATH, exp_file_name=exp_file_name, file_char="csv")
