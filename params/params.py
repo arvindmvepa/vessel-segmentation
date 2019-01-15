@@ -28,8 +28,7 @@ metric_col_map = {"auc": 1}
 
 
 def run_experiment(exp_file_path="exp.yml"):
-    job_cls, job_func_str, EXPERIMENTS_DIR_PATH, WRK_DIR_PATH, exp_params = generate_params(exp_file_path=exp_file_path)
-    job_cls = job_cls_map[job_cls]
+    job_func_str, EXPERIMENTS_DIR_PATH, WRK_DIR_PATH, exp_params = generate_params(exp_file_path=exp_file_path)
 
     if not os.path.exists(EXPERIMENTS_DIR_PATH):
         os.makedirs(EXPERIMENTS_DIR_PATH)
@@ -46,6 +45,9 @@ def run_experiment(exp_file_path="exp.yml"):
         with io.open(params_yml, 'w', encoding='utf8') as outfile:
             yaml.dump(params, outfile, default_flow_style=False, allow_unicode=True)
 
+        job_cls = params.pop("job_cls")
+        job_cls = job_cls_map[job_cls]
+
         job = job_cls(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
         job_func = getattr(job, job_func_str)
         job_func(WRK_DIR_PATH=WRK_DIR_PATH, **params)
@@ -56,7 +58,6 @@ def generate_params(exp_file_path="exp.yml"):
     exp"""
     exp = load_yaml(exp_file_path)
     exp = flatten(exp)
-    job_cls = exp.pop("job_cls")
     job_func_str = exp.pop("job_func")
     EXPERIMENTS_DIR_PATH = exp.pop("EXPERIMENTS_DIR_PATH")
     WRK_DIR_PATH = exp.pop("WRK_DIR_PATH")
@@ -82,7 +83,7 @@ def generate_params(exp_file_path="exp.yml"):
 
     # update the parameter combinations with the fixed parameters
     params = [update(testing_params_exp, fixed_params) for testing_params_exp in testing_params]
-    return job_cls, job_func_str, EXPERIMENTS_DIR_PATH, WRK_DIR_PATH, params
+    return job_func_str, EXPERIMENTS_DIR_PATH, WRK_DIR_PATH, params
 
 
 def load_yaml(yaml_file_path="params.yml"):
