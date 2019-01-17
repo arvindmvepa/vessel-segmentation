@@ -37,7 +37,7 @@ class Conv2d(Layer):
                 initializer = tf.contrib.layers.variance_scaling_initializer(factor=2.0, mode='FAN_IN', uniform=False)
             elif self.weight_init == 'Xnormal':
                 initializer = tf.contrib.layers.xavier_initializer(uniform=False, seed=None)
-            W = tf.get_variable(('W{}'.format(self.name[-3:])), shape=(self.kernel_size, self.kernel_size,
+            W = tf.get_variable(('W{}'.format(self.name)), shape=(self.kernel_size, self.kernel_size,
                                                                        number_of_input_channels, self.output_channels),
                                 initializer=initializer)
             b = tf.Variable(tf.zeros([self.output_channels]))
@@ -108,7 +108,7 @@ class ConvT2d(Conv2d):
                 initializer = tf.contrib.layers.variance_scaling_initializer(factor=2.0, mode='FAN_IN', uniform=False)
             elif self.weight_init == 'Xnormal':
                 initializer = tf.contrib.layers.xavier_initializer(uniform=False, seed=None)
-            W = tf.get_variable(('W{}'.format(self.name[-3:])), shape=(self.kernel_size, self.kernel_size,
+            W = tf.get_variable(('W{}'.format(self.name)), shape=(self.kernel_size, self.kernel_size,
                                                                        self.output_channels, number_of_input_channels),
                                 initializer=initializer)
             b = tf.Variable(tf.zeros([self.output_channels]))

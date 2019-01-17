@@ -115,7 +115,9 @@ class Network(object):
                 elif i == len(self.decoder)-1:
                     raise ValueError("{} does not exist".format(key))
 
-    def remove_decoder_layers(self, remove_decoder_layers_names=(), **kwargs):
+    def remove_decoder_layers(self, remove_decoder_layers_names=None, **kwargs):
+        if not remove_decoder_layers_names:
+            return
         for remove_decoder_layer_name in remove_decoder_layers_names:
             for i, layer in enumerate(self.decoder):
                 if layer.name == remove_decoder_layer_name:
