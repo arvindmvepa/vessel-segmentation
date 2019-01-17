@@ -32,7 +32,7 @@ class Dataset(object):
         else:
             self.TEST_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TEST_SUBDIR)
         if seq:
-            self.(seq)
+            self.init_aug(seq)
         else:
             self.seq = seq
         self.train_data = self.get_images_from_file(self.TRAIN_DIR_PATH, cv_train_inds, hist_eq=hist_eq,
