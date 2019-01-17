@@ -26,8 +26,8 @@ optimization:
   ss_r: null
   objective_fn: wce
   regularizer_args:
-  - None
-  - None
+  - null
+  - null
   - !!python/tuple
     - L1
     - .00000001
@@ -118,41 +118,41 @@ layer_args:
   - 50
   - 100
   add_decoder_layers_map:
-  - None
-  - None
+  - null
+  - null
   - {up_8: [{type: convt, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true,
              name: convt_8_0_1, act_fn: relu},
-            {type: convt, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: True, name: convt_8_0_2,
+            {type: convt, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true, name: convt_8_0_2,
              act_fn: relu},
-            {type: convt, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: True,
+            {type: convt, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true,
              name: convt_8_0_3, act_fn: relu},
-            {type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: True,
+            {type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true,
              name: convt_8_0_4, act_fn: relu}]}
-  - {up_8: [{type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: True, name: convt_8_0_1,
+  - {up_8: [{type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true, name: convt_8_0_1,
              act_fn: relu},
-            {type: conv, kernel_size: 3, dilation: 1, output_channels: 64, "batch_norm": True, name: convt_8_0_2,
+            {type: conv, kernel_size: 3, dilation: 1, output_channels: 64, "batch_norm": true, name: convt_8_0_2,
              act_fn: relu}]}
-  - {convt_5_2: [{type: conv, kernel_size: 7, dilation: 1, output_channels: 256, batch_norm: batch_norm,
+  - {convt_5_2: [{type: conv, kernel_size: 7, dilation: 1, output_channels: 256, batch_norm: true,
                   act_fn: relu, name: convt_5_2_0}],
-     "convt_6_2": [{type: conv, kernel_size: 3, dilation: 1, output_channels: 128, batch_norm: batch_norm,
+     "convt_6_2": [{type: conv, kernel_size: 3, dilation: 1, output_channels: 128, batch_norm: true,
                     act_fn: relu, name: convt_6_2_0}],
-     "convt_7_1": [{type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: batch_norm,
+     "convt_7_1": [{type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true,
                     act_fn: relu, name: convt_7_1_0}],
      "up_8": [{type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: True, name: convt_8_0_1,
                act_fn: relu}]}
 
   remove_decoder_layers_names:
-  - None
-  - None
+  - null
+  - null
   - !!python/tuple
     - convt_5_1
     - convt_6_1
   layer_params:
   - {convt_8_1: {center: false}}
   - {convt_8_1: {center: false}}
-  - {up_6: {concat_to_input: None},
-     up_7: {concat_to_input: None},
-     up_8: {concat_to_input: None},
+  - {up_6: {concat_to_input: null},
+     up_7: {concat_to_input: null},
+     up_8: {concat_to_input: null},
      convt_8_1: {center: false}}
 
 image_preproc:
