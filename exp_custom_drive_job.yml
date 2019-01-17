@@ -3,7 +3,7 @@ exp:
   WRK_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\DRIVE
   EXPERIMENTS_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\drive_custom_job
   job_func: run_single_model
-  metrics_epoch_freq: 5
+  metrics_epoch_freq: 1
   viz_layer_epoch_freq: null
   num_files: 40
 
@@ -56,7 +56,7 @@ optimization:
   - !!python/tuple
     - .0001
     - {}
-  n_epochs: 100
+  n_epochs: 2
 
 layer_args:
   encoder_model_keys:
