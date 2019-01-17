@@ -75,11 +75,13 @@ def generate_params(exp_file_path="exp.yml"):
             fixed_params[k] = v
 
     # find all the hyper-parameter combinations
-    testing_params = product_dict(**testing_params)
+    testing_params_gen = product_dict(**testing_params)
 
     # sample the number of experiments
     if num_files:
-        testing_params = sample(testing_params, num_files)
+        testing_params = [next(testing_params_gen) for _ in range(num_files)]
+    else:
+        testing_params = list(testing_params_gen)
 
     # update the parameter combinations with the fixed parameters
     params = [update(testing_params_exp, fixed_params) for testing_params_exp in testing_params]

@@ -3,6 +3,7 @@ from itertools import groupby
 import collections
 from itertools import product
 import shutil, errno
+from random import sample
 
 def find_closest_pos(positions, start_pos=(0,0)):
     min = np.inf
@@ -62,10 +63,9 @@ def flatten(d):
 def product_dict(**kwargs):
     keys = kwargs.keys()
     vals = kwargs.values()
-    prod_dicts = []
+    vals = [sample(val, len(val)) for val in vals]
     for instance in product(*vals):
-        prod_dicts.append(dict(zip(keys, instance)))
-    return prod_dicts
+        yield dict(zip(keys, instance))
 
 
 #https://stackoverflow.com/questions/1994488/copy-file-or-directories-recursively-in-python
