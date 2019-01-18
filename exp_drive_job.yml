@@ -1,7 +1,7 @@
 exp:
   job_cls: DriveJob
   WRK_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\DRIVE
-  EXPERIMENTS_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\experiments\sample_drive_exp2
+  EXPERIMENTS_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\experiments\sample_drive_exp3
   job_func: run_single_model
   metrics_epoch_freq: 1
   viz_layer_epoch_freq: null
@@ -63,12 +63,12 @@ layer_args:
   - He
   - Xnormal
   - default
-  act_fns:
+  act_fn:
   - relu
   - lrelu
   - elu
   - maxout
-  act_leak_probs:
+  act_leak_prob:
   - 0.2
   - 0.4
   - 0.6

@@ -1,7 +1,7 @@
 exp:
-  job_cls: DriveCustomJob
+  job_cls: DriveJob
   WRK_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\DRIVE
-  EXPERIMENTS_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\experiments\sample_drive_exp8
+  EXPERIMENTS_DIR_PATH: C:\Users\arvin\dev\vessel-segmentation\experiments\sample_drive_exp6
   job_func: run_single_model
   metrics_epoch_freq: 1
   viz_layer_epoch_freq: null
@@ -59,22 +59,11 @@ optimization:
   n_epochs: 1
 
 layer_args:
-  encoder_model_key:
-  - densenet121
-  - incresv2
-  - incv3
-  - resnet50
-  - resnet50v2
-  - resnext50
-  - xception
   weight_init:
   - He
   - Xnormal
   - default
-  act_fn:
-  - relu
-  - lrelu
-  - elu
+  act_fn: maxout
   act_leak_prob:
   - 0.2
   - 0.4
@@ -149,10 +138,43 @@ layer_args:
   layer_params:
   - {convt_8_1: {center: false}}
   - {convt_8_1: {center: false}}
-  - {up_6: {concat_to_input: null},
-     up_7: {concat_to_input: null},
-     up_8: {concat_to_input: null},
+  - {convt_8_1: {center: false}}
+  - {convt_8_1: {center: false}}
+  - {up_6: {add_to_input: null},
+     up_7: {add_to_input: null},
+     up_8: {add_to_input: null},
      convt_8_1: {center: false}}
+  - {up_6: {add_to_input: null},
+     up_7: {add_to_input: null},
+     up_8: {add_to_input: null},
+     convt_6_1: {add_to_input: conv_3_2},
+     convt_7_1: {add_to_input: conv_2_1},
+     convt_8_1: {add_to_input: conv_1_1, center: false}}
+  - {convt_5_1: {add_to_input: conv_4_2},
+     convt_5_2: {add_to_input: conv_4_1},
+     convt_6_1: {add_to_input: conv_3_2},
+     convt_6_2: {add_to_input: conv_3_1},
+     convt_7_1: {add_to_input: conv_2_1},
+     convt_8_1: {add_to_input: conv_1_1, center: false}}
+  - {up_6: {add_to_input: null, concat_to_input: pool_3},
+     up_7: {add_to_input: null, concat_to_input: pool_2},
+     up_8: {add_to_input: null, concat_to_input: pool_1},
+     convt_8_1: {center: false}}
+  - {up_6: {add_to_input: null},
+     up_7: {add_to_input: null},
+     up_8: {add_to_input: null},
+     convt_6_1: {concat_to_input: conv_3_2},
+     convt_7_1: {concat_to_input: conv_2_1},
+     convt_8_1: {concat_to_input: conv_1_1, center: false}}
+  - {up_6: {add_to_input: null, concat_to_input: pool_3},
+     up_7: {add_to_input: null, concat_to_input: pool_2},
+     up_8: {add_to_input: null, concat_to_input: pool_1},
+     convt_5_1: {concat_to_input: conv_4_2},
+     convt_5_2: {concat_to_input: conv_4_1},
+     convt_6_1: {concat_to_input: conv_3_2},
+     convt_6_2: {concat_to_input: conv_3_1},
+     convt_7_1: {concat_to_input: conv_2_1},
+     convt_8_1: {concat_to_input: conv_1_1, center: false}}
 
 image_preproc:
   hist_eq:
@@ -181,3 +203,9 @@ image_preproc:
   - true
   - false
   - false
+
+# not extensively looking at dilation and some of the layer params due to not coding expanding the parameter space for
+# layer_params
+# probably want to incorporate dependencies
+# have to look at the use cases more carefully
+# also not incorporating per image testing

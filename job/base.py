@@ -224,14 +224,14 @@ class Job(object):
             self.write_to_csv(sorted(self.get_metric_names(self.num_thresh_scores)), metric_log_file_path, mode="w")
 
         # create summary writer
-        summary_writer = tf.summary.FileWriter(
-            '{}/{}/{}-{}'.format(self.OUTPUTS_DIR_PATH, 'logs', network.description,
-                                 timestamp),
-            graph=tf.get_default_graph())
+        summary_writer_dir = os.path.join(self.OUTPUTS_DIR_PATH, 'logs', timestamp)
+        if not os.path.exists(summary_writer_dir):
+            os.makedirs(summary_writer_dir)
+        summary_writer = tf.summary.FileWriter(summary_writer_dir, graph=tf.get_default_graph())
 
         # create directories and subdirectories
         if save_model:
-            os.makedirs(os.path.join(self.OUTPUTS_DIR_PATH, 'save', network.description, timestamp))
+            os.makedirs(os.path.join(self.OUTPUTS_DIR_PATH, 'save', timestamp))
 
         viz_layer_outputs_path_test = None
         if viz_layer_epoch_freq is not None:
@@ -681,7 +681,7 @@ class Job(object):
                                          test_cost=np.nan, test_cost_unweighted=np.nan, **kwargs)
 
     def create_viz_dirs(self, network, timestamp):
-        viz_layer_outputs_path = os.path.join(self.OUTPUTS_DIR_PATH, 'viz_layer_outputs', network.description, timestamp)
+        viz_layer_outputs_path = os.path.join(self.OUTPUTS_DIR_PATH, 'viz_layer_outputs', timestamp)
         os.makedirs(viz_layer_outputs_path)
         viz_layer_outputs_path_train = os.path.join(viz_layer_outputs_path, "train")
         os.makedirs(viz_layer_outputs_path_train)

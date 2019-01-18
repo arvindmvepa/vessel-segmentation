@@ -71,10 +71,7 @@ layer_args:
   - He
   - Xnormal
   - default
-  act_fn:
-  - relu
-  - lrelu
-  - elu
+  act_fn: maxout
   act_leak_prob:
   - 0.2
   - 0.4

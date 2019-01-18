@@ -11,6 +11,7 @@ from statsmodels import robust
 import numpy as np
 import re
 import csv
+import sys
 
 from job.drive import DriveJob, DriveCustomJob
 from job.stare import StareJob
@@ -27,7 +28,7 @@ job_cls_map = {"DriveJob": DriveJob,
 metric_col_map = {"auc": 1}
 
 
-def run_experiment(exp_file_path="exp.yml"):
+def run_experiment(exp_file_path="exp.yml", init_count=0):
     job_func_str, EXPERIMENTS_DIR_PATH, WRK_DIR_PATH, exp_params = generate_params(exp_file_path=exp_file_path)
 
     if not os.path.exists(EXPERIMENTS_DIR_PATH):
@@ -36,7 +37,7 @@ def run_experiment(exp_file_path="exp.yml"):
     copyfile(exp_file_path, os.path.join(EXPERIMENTS_DIR_PATH, os.path.basename(exp_file_path)))
 
     exp_base_name = os.path.splitext(exp_file_path)[0]
-    for i, params in enumerate(exp_params):
+    for i, params in enumerate(exp_params, init_count):
         EXPERIMENT_NAME = exp_base_name+"_"+str(i)
         OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
         if not os.path.exists(OUTPUTS_DIR_PATH):
@@ -52,6 +53,23 @@ def run_experiment(exp_file_path="exp.yml"):
         job_func = getattr(job, job_func_str)
         job_func(WRK_DIR_PATH=WRK_DIR_PATH, **params)
 
+def run_job(JOB_DIR, exp_file_path="exp.yml"):
+    exp = load_yaml(exp_file_path)
+    exp = flatten(exp)
+    job_func_str = exp.pop("job_func")
+    WRK_DIR_PATH = exp.pop("WRK_DIR_PATH")
+
+    params_yml = os.path.join(JOB_DIR, "params.yml")
+    params = load_yaml(params_yml)
+
+    job_cls = exp.pop("job_cls")
+    job_cls = job_cls_map[job_cls]
+
+    job = job_cls(OUTPUTS_DIR_PATH=JOB_DIR)
+    job_func = getattr(job, job_func_str)
+    job_func(WRK_DIR_PATH=WRK_DIR_PATH, **params)
+
+
 
 def generate_params(exp_file_path="exp.yml"):
     """generate the exp params combinations from the dictionary of mappings, with an optional list of choices for params
@@ -66,7 +84,7 @@ def generate_params(exp_file_path="exp.yml"):
     fixed_params = dict()
     testing_params = dict()
 
-    for k,v in exp.items():
+    for k, v in exp.items():
         # params that are stored as list will be distributed
         # tuples, etc. will not be treated this way
         if isinstance(v, list):
@@ -74,14 +92,11 @@ def generate_params(exp_file_path="exp.yml"):
         else:
             fixed_params[k] = v
 
-    # find all the hyper-parameter combinations
-    testing_params_gen = product_dict(**testing_params)
+    if not num_files:
+        raise ValueError("Must set number of tests")
 
-    # sample the number of experiments
-    if num_files:
-        testing_params = [next(testing_params_gen) for _ in range(num_files)]
-    else:
-        testing_params = list(testing_params_gen)
+    # find all the hyper-parameter combinations
+    testing_params = product_dict(num_files=num_files,**testing_params)
 
     # update the parameter combinations with the fixed parameters
     params = [update(testing_params_exp, fixed_params) for testing_params_exp in testing_params]
@@ -90,12 +105,13 @@ def generate_params(exp_file_path="exp.yml"):
 
 def load_yaml(yaml_file_path="params.yml"):
     # load the hyper-params
+    sys.stdout.flush()
     with open(yaml_file_path, 'r') as stream:
         data = yaml.load(stream)
     return data
 
 
-def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_name="exp.yml",
+def analyze_exp(EXPERIMENTS_DIR_PATH=None, params_file_name="params.yml", exp_file_path="exp.yml",
                 metric="auc", mof_metric="mad", file_char="mof", round_arg=4, rt_jobs_score=None,
                 rt_jobs_metric_interval=None):
 
@@ -105,12 +121,15 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
     elif mof_metric == "std":
         mof_func = np.std
 
+    exp = load_yaml(exp_file_path)
+    exp = flatten(exp)
+
+    if EXPERIMENTS_DIR_PATH is None:
+        EXPERIMENTS_DIR_PATH = exp.pop("EXPERIMENTS_DIR_PATH")
+
     glob_regex = os.path.join(EXPERIMENTS_DIR_PATH, "*", params_file_name)
     params_ymls = glob(glob_regex)
 
-    exp_file_path = os.path.join(EXPERIMENTS_DIR_PATH, exp_file_name)
-    exp = load_yaml(exp_file_path)
-    exp = flatten(exp)
     n_metric_intervals = int(exp.pop("n_epochs") // exp.pop("metrics_epoch_freq"))
 
     metric_marg_scores = [dict() for _ in range(n_metric_intervals)]
@@ -129,10 +148,10 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
     exp_params = {}
     testing_params_opts = defaultdict(set)
 
-    for params_yml in params_ymls:
-        JOB_PATH = os.path.dirname(params_yml)
+    for param_yml in params_ymls:
+        JOB_PATH = os.path.dirname(param_yml)
         job_name = os.path.split(JOB_PATH)[1]
-        params = load_yaml(params_yml)
+        params = load_yaml(param_yml)
         exp_params[job_name] = {}
         for k in testing_params.keys():
             exp_params[job_name][k] = json.dumps(params[k], sort_keys=True)
@@ -201,7 +220,7 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
             i_mof = mof_func(list(job_results[i].values()))
             writer.writerow([ranked_marg_score[0] for ranked_marg_score in ranked_metric_marg_scores] +
                             ["mean", mof_metric])
-            writer.writerow([ranked_marg_score[1] + " % rank {:.1%}".format(float(i)/len(ranked_metric_marg_scores))
+            writer.writerow([ranked_marg_score[1] + " rank {:.1%}".format(float(i)/len(ranked_metric_marg_scores))
                              for i, ranked_marg_score in enumerate(ranked_metric_marg_scores)] + [i_mean, i_mof])
 
     rank_job_log = "rank_job_log.csv"
@@ -215,7 +234,7 @@ def analyze_exp(EXPERIMENTS_DIR_PATH, params_file_name="params.yml", exp_file_na
             i_mof = mof_func(list(job_results[i].values()))
             writer.writerow([ranked_job_result[0] for ranked_job_result in ranked_job_results] +
                             ["mean", mof_metric])
-            writer.writerow([str(ranked_job_result[1]) + " % rank {:.1%}".format(float(i)/len(ranked_job_results))
+            writer.writerow([str(ranked_job_result[1]) + " rank {:.1%}".format(float(i)/len(ranked_job_results))
                              for i, ranked_job_result in enumerate(ranked_job_results)] + [i_mean, i_mof])
 
             # filter the job_paths based on the job scores and other criteria

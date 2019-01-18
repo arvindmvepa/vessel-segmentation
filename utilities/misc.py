@@ -4,6 +4,7 @@ import collections
 from itertools import product
 import shutil, errno
 from random import sample
+import json
 
 def find_closest_pos(positions, start_pos=(0,0)):
     min = np.inf
@@ -60,12 +61,26 @@ def flatten(d):
 
 
 #https://stackoverflow.com/questions/5228158/cartesian-product-of-a-dictionary-of-lists
-def product_dict(**kwargs):
+# currently iterates through experiments in order
+def product_dict(num_files=40, **kwargs):
     keys = kwargs.keys()
     vals = kwargs.values()
-    vals = [sample(val, len(val)) for val in vals]
-    for instance in product(*vals):
-        yield dict(zip(keys, instance))
+    product_dts = []
+    product_dts_json = []
+    for _ in range(num_files):
+        not_contained = False
+        while not not_contained:
+            keys_and_vals = sample(list(zip(keys, vals)), len(keys))
+            keys, vals = zip(*keys_and_vals)
+            vals = [sample(val, len(val)) for val in vals]
+            instance = next(product(*vals))
+            product_dt = dict(zip(keys, instance))
+            product_dt_json = json.dumps(product_dt, sort_keys=True)
+            if product_dt_json not in product_dts_json:
+                product_dts.append(product_dt)
+                product_dts_json.append(product_dt_json)
+                not_contained = True
+    return product_dts
 
 
 #https://stackoverflow.com/questions/1994488/copy-file-or-directories-recursively-in-python
