@@ -1,7 +1,7 @@
 exp:
   job_cls: DriveCustomJob
   WRK_DIR_PATH: /root/DRIVE
-  EXPERIMENTS_DIR_PATH: /root/vessel-segmentation1/custom_drive_exp
+  EXPERIMENTS_DIR_PATH: /root/vessel-segmentation2/custom_drive_exp
   job_func: run_single_model
   metrics_epoch_freq: 1
   viz_layer_epoch_freq: null
