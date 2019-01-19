@@ -154,7 +154,7 @@ class SmallNetworkwKerasDecoder(SmallNetwork):
             updated_layer_params["up_7"]["concat_to_input"] = "pool1_pool"
             updated_layer_params["up_6"]["concat_to_input"] = "conv3_block1_out"
         if encoder_model_key == "resnet50v2" or encoder_model_key == "resnet101v2" or encoder_model_key == "resnet152v2":
-            updated_layer_params["up_8"]["concat_to_input"] = "conv1_relu"
+            updated_layer_params["up_8"]["concat_to_input"] = "conv1_conv"
             updated_layer_params["up_7"]["concat_to_input"] = "pool1_pool"
             updated_layer_params["up_6"]["concat_to_input"] = "conv2_block3_out"
         if encoder_model_key == "resnext50" or encoder_model_key == "resnext101" or encoder_model_key == "resnext152":
