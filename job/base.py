@@ -188,7 +188,7 @@ class Job(object):
     
     def train(self, dataset=None, gpu_device=None, early_stopping=False, early_stopping_metric="auc",
               tuning_constant=1.0, metrics_epoch_freq=1, viz_layer_epoch_freq=10, metrics_log="metrics_log.csv",
-              num_image_plots=5, save_model=True, save_sample_test_images=True,debug_net_output=True, **kwargs):
+              num_image_plots=5, save_model=False, save_sample_test_images=True,debug_net_output=True, **kwargs):
 
         print("job params (train): {}".format(kwargs))
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H%M%S")
