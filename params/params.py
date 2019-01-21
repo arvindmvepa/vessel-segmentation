@@ -2,7 +2,6 @@ import yaml
 import io
 from utilities.misc import flatten, product_dict, update
 from shutil import copyfile
-from random import sample
 import os
 from glob import glob
 from collections import defaultdict
@@ -186,12 +185,15 @@ def analyze_exp(EXPERIMENTS_DIR_PATH=None, params_file_name="params.yml", exp_fi
                             metric_marg_scores[metric_interval][param_name] = [metric_result[0]]
                     metric_interval += 1
 
+    param_counts = {}
     # combine the marginal metric results
     for i in range(n_metric_intervals):
         for k, params_set in testing_params_opts.items():
             for param in params_set:
                 param_name = str(k) + "." + str(param)
-                metric_marg_scores_list = metric_marg_scores[i][param_name]
+                metric_marg_scores_list = metric_marg_scores[i].get(param_name, [])
+                if param_name not in param_counts:
+                    param_counts[param_name] = len(metric_marg_scores_list)
                 mean_result = np.mean(metric_marg_scores_list)
                 mof_result = mof_func(metric_marg_scores_list)
                 metric_marg_scores[i][param_name] = str(np.round(mean_result, round_arg)) + "+/-" + \
@@ -202,7 +204,8 @@ def analyze_exp(EXPERIMENTS_DIR_PATH=None, params_file_name="params.yml", exp_fi
     hyp_metrics_log_path = os.path.join(EXPERIMENTS_DIR_PATH, hyp_metrics_log)
     with open(hyp_metrics_log_path, "w") as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
-        writer.writerow([param_name for param_name in sorted(metric_marg_scores[0].keys())]+["mean", mof_metric])
+
+        writer.writerow([str(param_name)+" ("+str(param_counts[param_name])+")" for param_name in sorted(metric_marg_scores[0].keys())]+["mean", mof_metric])
         for i in range(n_metric_intervals):
             i_mean = np.mean(list(job_results[i].values()))
             i_mof = mof_func(list(job_results[i].values()))
