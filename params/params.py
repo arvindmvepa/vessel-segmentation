@@ -17,6 +17,7 @@ from job.stare import StareJob
 from job.chase import ChaseJob
 from job.dsa import DsaJob
 
+
 job_cls_map = {"DriveJob": DriveJob,
                "DriveCustomJob": DriveCustomJob,
                "ChaseJob": ChaseJob,
@@ -37,7 +38,7 @@ def run_experiment(exp_file_path="exp.yml", init_count=0):
 
     exp_base_name = os.path.splitext(exp_file_path)[0]
     for i, params in enumerate(exp_params, init_count):
-        EXPERIMENT_NAME = exp_base_name+"_"+str(i)
+        EXPERIMENT_NAME = exp_base_name + "_" + str(i)
         OUTPUTS_DIR_PATH = os.path.join(EXPERIMENTS_DIR_PATH, EXPERIMENT_NAME)
         if not os.path.exists(OUTPUTS_DIR_PATH):
             os.makedirs(OUTPUTS_DIR_PATH)
@@ -51,6 +52,7 @@ def run_experiment(exp_file_path="exp.yml", init_count=0):
         job = job_cls(OUTPUTS_DIR_PATH=OUTPUTS_DIR_PATH)
         job_func = getattr(job, job_func_str)
         job_func(WRK_DIR_PATH=WRK_DIR_PATH, **params)
+
 
 def run_job(JOB_DIR, exp_file_path="exp.yml"):
     exp = load_yaml(exp_file_path)
@@ -69,7 +71,6 @@ def run_job(JOB_DIR, exp_file_path="exp.yml"):
     job_func(WRK_DIR_PATH=WRK_DIR_PATH, **params)
 
 
-
 def generate_params(exp_file_path="exp.yml"):
     """generate the exp params combinations from the dictionary of mappings, with an optional list of choices for params
     exp"""
@@ -79,7 +80,7 @@ def generate_params(exp_file_path="exp.yml"):
     EXPERIMENTS_DIR_PATH = exp.pop("EXPERIMENTS_DIR_PATH")
     WRK_DIR_PATH = exp.pop("WRK_DIR_PATH")
     num_files = exp.pop("num_files", None)
-    
+
     fixed_params = dict()
     testing_params = dict()
 
@@ -95,7 +96,7 @@ def generate_params(exp_file_path="exp.yml"):
         raise ValueError("Must set number of tests")
 
     # find all the hyper-parameter combinations
-    testing_params = product_dict(num_files=num_files,**testing_params)
+    testing_params = product_dict(num_files=num_files, **testing_params)
 
     # update the parameter combinations with the fixed parameters
     params = [update(testing_params_exp, fixed_params) for testing_params_exp in testing_params]
@@ -113,7 +114,6 @@ def load_yaml(yaml_file_path="params.yml"):
 def analyze_exp(EXPERIMENTS_DIR_PATH=None, params_file_name="params.yml", exp_file_path="exp.yml",
                 metric="auc", mof_metric="mad", file_char="mof", round_arg=4, rt_jobs_score=None,
                 rt_jobs_metric_interval=None):
-
     # define func for measure of fit
     if mof_metric == "mad":
         mof_func = robust.mad
@@ -137,7 +137,7 @@ def analyze_exp(EXPERIMENTS_DIR_PATH=None, params_file_name="params.yml", exp_fi
     testing_params = dict()
 
     # find all the testing parameters
-    for k,v in exp.items():
+    for k, v in exp.items():
         # params that are stored as list will be distributed
         # tuples, etc. will not be treated this way
         if isinstance(v, list):
@@ -180,7 +180,8 @@ def analyze_exp(EXPERIMENTS_DIR_PATH=None, params_file_name="params.yml", exp_fi
                     for k, v in exp_params[job_name].items():
                         param_name = str(k) + "." + str(v)
                         if param_name in metric_marg_scores[metric_interval]:
-                            metric_marg_scores[metric_interval][param_name] = metric_marg_scores[metric_interval][param_name] + [metric_result[0]]
+                            metric_marg_scores[metric_interval][param_name] = metric_marg_scores[metric_interval][
+                                                                                  param_name] + [metric_result[0]]
                         else:
                             metric_marg_scores[metric_interval][param_name] = [metric_result[0]]
                     metric_interval += 1
@@ -205,7 +206,8 @@ def analyze_exp(EXPERIMENTS_DIR_PATH=None, params_file_name="params.yml", exp_fi
     with open(hyp_metrics_log_path, "w") as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
 
-        writer.writerow([str(param_name)+" ("+str(param_counts[param_name])+")" for param_name in sorted(metric_marg_scores[0].keys())]+["mean", mof_metric])
+        writer.writerow([str(param_name) + " (" + str(param_counts[param_name]) + ")" for param_name in
+                         sorted(metric_marg_scores[0].keys())] + ["mean", mof_metric])
         for i in range(n_metric_intervals):
             i_mean = np.mean(list(job_results[i].values()))
             i_mof = mof_func(list(job_results[i].values()))
@@ -218,12 +220,12 @@ def analyze_exp(EXPERIMENTS_DIR_PATH=None, params_file_name="params.yml", exp_fi
     with open(rank_hyp_metrics_log_path, "w") as csv_file:
         writer = csv.writer(csv_file, delimiter=',')
         for i in range(n_metric_intervals):
-            ranked_metric_marg_scores = sorted(metric_marg_scores[i].items(), key = lambda x: x[1], reverse=True)
+            ranked_metric_marg_scores = sorted(metric_marg_scores[i].items(), key=lambda x: x[1], reverse=True)
             i_mean = np.mean(list(job_results[i].values()))
             i_mof = mof_func(list(job_results[i].values()))
             writer.writerow([ranked_marg_score[0] for ranked_marg_score in ranked_metric_marg_scores] +
                             ["mean", mof_metric])
-            writer.writerow([ranked_marg_score[1] + " rank {:.1%}".format(float(i)/len(ranked_metric_marg_scores))
+            writer.writerow([ranked_marg_score[1] + " rank {:.1%}".format(float(i) / len(ranked_metric_marg_scores))
                              for i, ranked_marg_score in enumerate(ranked_metric_marg_scores)] + [i_mean, i_mof])
 
     rank_job_log = "rank_job_log.csv"
@@ -237,7 +239,7 @@ def analyze_exp(EXPERIMENTS_DIR_PATH=None, params_file_name="params.yml", exp_fi
             i_mof = mof_func(list(job_results[i].values()))
             writer.writerow([ranked_job_result[0] for ranked_job_result in ranked_job_results] +
                             ["mean", mof_metric])
-            writer.writerow([str(ranked_job_result[1]) + " rank {:.1%}".format(float(i)/len(ranked_job_results))
+            writer.writerow([str(ranked_job_result[1]) + " rank {:.1%}".format(float(i) / len(ranked_job_results))
                              for i, ranked_job_result in enumerate(ranked_job_results)] + [i_mean, i_mof])
 
             # filter the job_paths based on the job scores and other criteria
@@ -247,11 +249,3 @@ def analyze_exp(EXPERIMENTS_DIR_PATH=None, params_file_name="params.yml", exp_fi
                         if job_name not in rt_jobs:
                             rt_jobs.append(job_name)
     return rt_jobs
-
-
-
-
-
-
-
-
