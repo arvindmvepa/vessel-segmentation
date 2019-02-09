@@ -1,0 +1,217 @@
+exp:
+  job_cls: DriveLargeNetwork
+  WRK_DIR_PATH: /root/DRIVE
+  EXPERIMENTS_DIR_PATH: /root/vessel-segmentation1/drive_exp
+  job_func: run_single_model
+  metrics_epoch_freq: 5
+  viz_layer_epoch_freq: null
+  num_files: 40
+
+optimization:
+  op_fun_and_kwargs:
+  - !!python/tuple
+    - adam
+    - {}
+  - !!python/tuple
+    - rmsprop
+    - {}
+  - !!python/tuple
+    - grad
+    - {}
+  tuning_constant:
+  - .5
+  - 1.0
+  - 1.5
+  - 2.0
+  ss_r: null
+  objective_fn: wce
+  regularizer_args:
+  - null
+  - null
+  - !!python/tuple
+    - L1
+    - .00000001
+  - !!python/tuple
+    - L1
+    - .000001
+  - !!python/tuple
+    - L1
+    - .0001
+  - !!python/tuple
+    - L2
+    - .00000001
+  - !!python/tuple
+    - L2
+    - .000001
+  - !!python/tuple
+    - L2
+    - .0001
+  learning_rate_and_kwargs:
+  - !!python/tuple
+    - .001
+    - {}
+  - !!python/tuple
+    - .01
+    - {}
+  - !!python/tuple
+    - .0001
+    - {}
+  n_epochs: 100
+
+layer_args:
+  weight_init:
+  - He
+  - Xnormal
+  - default
+  act_fn:
+  - relu
+  - lrelu
+  - elu
+  - maxout
+  act_leak_prob:
+  - 0.2
+  - 0.4
+  - 0.6
+  - 0.8
+  batch_norm:
+  - true
+  - false
+  dp_rate:
+  - 0.0
+  - 0.0
+  - 0.2
+  - 0.4
+  - 0.6
+  - 0.8
+  center:
+  - true
+  - false
+  - false
+  - false
+  pooling_method:
+  - AVG
+  - MAX
+  unpooling_method:
+  - bilinear
+  - nearest_neighbor
+  - bicubic
+  last_layer_op:
+  - AVG
+  - MAX
+  - CONV
+  - null
+  - null
+  - null
+  num_prev_last_conv_output_channels:
+  - 1
+  - 5
+  - 10
+  - 25
+  - 50
+  - 100
+  add_decoder_layers_map: null
+  remove_decoder_layers_names:
+  - null
+  - null
+  - null
+  - !!python/tuple
+    - convt_7_1
+    - convt_8_1
+    - convt_9_1
+    - convt_10_1
+  layer_params:
+  - {convt_12_1: {center: false}}
+  - {convt_12_1: {center: false}}
+  - {convt_12_1: {center: false}}
+  - {convt_12_1: {center: false}}
+  - {up_8: {add_to_input: null},
+     up_9: {add_to_input: null},
+     up_10: {add_to_input: null},
+     up_11: {add_to_input: null},
+     up_12: {add_to_input: null},
+     convt_12_1: {center: false}}
+  - {up_8: {add_to_input: null},
+     up_9: {add_to_input: null},
+     up_10: {add_to_input: null},
+     up_11: {add_to_input: null},
+     up_12: {add_to_input: null},
+     convt_8_1: {add_to_input: conv_5_2},
+     convt_9_1: {add_to_input: conv_4_2},
+     convt_10_1: {add_to_input: conv_3_2},
+     convt_11_1: {add_to_input: conv_2_1},
+     convt_12_1: {add_to_input: conv_1_1, center: false}}
+  - {convt_7_1: {add_to_input: conv_6_2},
+     convt_7_2: {add_to_input: conv_6_1},
+     convt_8_1: {add_to_input: conv_5_2},
+     convt_8_2: {add_to_input: conv_5_1},
+     convt_9_1: {add_to_input: conv_4_2},
+     convt_9_2: {add_to_input: conv_4_1},
+     convt_10_1: {add_to_input: conv_3_2},
+     convt_10_2: {add_to_input: conv_3_1},
+     convt_11_1: {add_to_input: conv_2_1},
+     convt_12_1: {add_to_input: conv_1_1, center: false}}
+  - {up_8: {add_to_input: null, concat_to_input: pool_5},
+     up_9: {add_to_input: null, concat_to_input: pool_4},
+     up_10: {add_to_input: null, concat_to_input: pool_3},
+     up_11: {add_to_input: null, concat_to_input: pool_2},
+     up_12: {add_to_input: null, concat_to_input: pool_1},
+     convt_12_1: {center: false}}
+  - {up_8: {add_to_input: null},
+     up_9: {add_to_input: null},
+     up_10: {add_to_input: null},
+     up_11: {add_to_input: null},
+     up_12: {add_to_input: null},
+     convt_8_1: {concat_to_input: conv_5_2},
+     convt_9_1: {concat_to_input: conv_4_2},
+     convt_10_1: {concat_to_input: conv_3_2},
+     convt_11_1: {concat_to_input: conv_2_1},
+     convt_12_1: {concat_to_input: conv_1_1, center: false}}
+  - {up_8: {add_to_input: null, concat_to_input: pool_5},
+     up_9: {add_to_input: null, concat_to_input: pool_4},
+     up_10: {add_to_input: null, concat_to_input: pool_3},
+     up_11: {add_to_input: null, concat_to_input: pool_2},
+     up_12: {add_to_input: null, concat_to_input: pool_1},
+     convt_7_1: {concat_to_input: conv_6_2},
+     convt_7_2: {concat_to_input: conv_6_1},
+     convt_8_1: {concat_to_input: conv_5_2},
+     convt_8_2: {concat_to_input: conv_5_1},
+     convt_9_1: {concat_to_input: conv_4_2},
+     convt_9_2: {concat_to_input: conv_4_1},
+     convt_10_1: {concat_to_input: conv_3_2},
+     convt_10_2: {concat_to_input: conv_3_1},
+     convt_11_1: {concat_to_input: conv_2_1},
+     convt_12_1: {concat_to_input: conv_1_1, center: false}}
+
+image_preproc:
+  hist_eq:
+  - false
+  - true
+  clahe_kwargs: null
+  per_image_normalization:
+  - false
+  - true
+  gamma:
+  - 1.0
+  - 0.5
+  - 2.0
+  - 4.0
+  - 6.0
+  seq: null
+  zero_center:
+  - true
+  - false
+  - false
+  zero_center_scale:
+  - true
+  - false
+  - false
+  z_score_norm:
+  - true
+  - false
+  - false
+
+# not extensively looking at dilation and some of the layer params due to not coding expanding the parameter space for
+# layer_params
+# probably want to incorporate dependencies
+# have to look at the use cases more carefully
+# also not incorporating per image testing
