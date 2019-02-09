@@ -6,7 +6,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 from network.drive import DriveNetwork, DriveLargeNetwork, DriveCustomNetwork
-from dataset.drive import DriveDataset
+from dataset.drive import DriveDataset, DriveLargeDataset
 
 class DriveJob(JobWMasks):
 
@@ -24,6 +24,10 @@ class DriveJob(JobWMasks):
 
 
 class DriveLargeJob(DriveJob):
+
+    @property
+    def dataset_cls(self):
+        return DriveLargeDataset
 
     @property
     def network_cls(self):
