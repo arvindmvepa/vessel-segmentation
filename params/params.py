@@ -12,13 +12,14 @@ import re
 import csv
 import sys
 
-from job.drive import DriveJob, DriveCustomJob
+from job.drive import DriveJob, DriveLargeJob, DriveCustomJob
 from job.stare import StareJob
 from job.chase import ChaseJob
 from job.dsa import DsaJob
 
 
 job_cls_map = {"DriveJob": DriveJob,
+               "DriveLargeJob": DriveLargeJob,
                "DriveCustomJob": DriveCustomJob,
                "ChaseJob": ChaseJob,
                "StareJob": StareJob,
