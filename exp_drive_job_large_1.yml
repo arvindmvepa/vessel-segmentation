@@ -102,12 +102,6 @@ layer_args:
   add_decoder_layers_map:
   - null
   - null
-  - null
-  - null
-  - null
-  - null
-  - null
-  - null
   - {up_12: [{type: convt, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true, name: convt_12_0_1, act_fn: relu},
             {type: convt, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true, name: convt_12_0_2, act_fn: relu},
             {type: convt, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true, name: convt_12_0_3, act_fn: relu},
@@ -121,7 +115,6 @@ layer_args:
      convt_11_1: [{type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true, act_fn: relu, name: convt_11_1_0}],
      up_12: [{type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: True, name: convt_12_0_1, act_fn: relu}]}
   remove_decoder_layers_names:
-  - null
   - null
   - null
   - !!python/tuple
