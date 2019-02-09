@@ -20,8 +20,8 @@ class DriveLargeNetwork(LargeNetwork):
     IMAGE_HEIGHT = 584
     IMAGE_WIDTH = 565
 
-    FIT_IMAGE_HEIGHT = 584
-    FIT_IMAGE_WIDTH = 584
+    FIT_IMAGE_HEIGHT = 608
+    FIT_IMAGE_WIDTH = 608
 
     def __init__(self, mask=True, **kwargs):
         super(DriveLargeNetwork, self).__init__(mask=mask, **kwargs)
