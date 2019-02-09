@@ -24,7 +24,7 @@ class DriveLargeNetwork(LargeNetwork):
     FIT_IMAGE_WIDTH = 584
 
     def __init__(self, mask=True, **kwargs):
-        super(DriveNetwork, self).__init__(mask=mask, **kwargs)
+        super(DriveLargeNetwork, self).__init__(mask=mask, **kwargs)
 
 
 class DriveCustomNetwork(SmallNetworkwKerasDecoder):

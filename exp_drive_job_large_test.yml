@@ -1,5 +1,5 @@
 exp:
-  job_cls: DriveLargeNetwork
+  job_cls: DriveLargeJob
   WRK_DIR_PATH: /root/DRIVE
   EXPERIMENTS_DIR_PATH: /root/vessel-segmentation1/drive_exp
   job_func: run_single_model
