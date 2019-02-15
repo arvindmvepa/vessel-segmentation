@@ -5,11 +5,13 @@ from utilities.layer_ops import get_incoming_shape
 from utilities.activations import lrelu
 
 class Conv2d(Layer):
-    def __init__(self, kernel_size, output_channels, name, batch_norm=True, act_fn="lrelu", act_leak_prob=.2,
-                 add_to_input=None, concat_to_input=None, weight_init=None, dp_rate=None, dilation=1, **kwargs):
+    def __init__(self, kernel_size, output_channels, name, strides=(1,1,1,1), batch_norm=True, act_fn="lrelu",
+                 act_leak_prob=.2, add_to_input=None, concat_to_input=None, weight_init=None, dp_rate=None, dilation=1,
+                 **kwargs):
         super(Conv2d, self).__init__(**kwargs)
         self.kernel_size = kernel_size
         self.output_channels = output_channels
+        self.strides = strides
         self.name = name
         self.batch_norm = batch_norm
         self.act_fn = act_fn
@@ -42,7 +44,7 @@ class Conv2d(Layer):
                                 initializer=initializer)
             b = tf.Variable(tf.zeros([self.output_channels]))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
-        output = tf.nn.atrous_conv2d(input, W, rate=self.dilation, padding='SAME')
+        output = tf.nn.convolution(input, W, padding='SAME', strides=self.strides, rate=self.dilation)
         output = self.apply_dropout(output, dp_rate, is_training)
 
         # apply batch-norm
@@ -115,8 +117,8 @@ class ConvT2d(Conv2d):
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
         # hard-code dimension as `1`, batch size = 1, due to bug
         output = tf.nn.atrous_conv2d_transpose(input, W, tf.stack([1,
-                                                                   self.input_shape[1],
-                                                                   self.input_shape[2],
+                                                                   self.dilation* self.input_shape[1],
+                                                                   self.dilation* self.input_shape[2],
                                                                    self.output_channels]),
                                                rate=self.dilation, padding='SAME')
         output = self.apply_dropout(output, dp_rate)
