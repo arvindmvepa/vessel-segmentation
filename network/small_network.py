@@ -74,7 +74,7 @@ class SmallNetwork(Network):
 
 
     def init_encoder(self, ds_layer="pool", **kwargs):
-        if ds_layer != "pool" or ds_layer != "conv":
+        if ds_layer != "pool" and ds_layer != "conv":
             raise ValueError("Down-sampling layer type {} does not exist".format(ds_layer))
         layers = []
         layers.append(Conv2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
@@ -107,7 +107,7 @@ class SmallNetwork(Network):
         self.encoder = layers
 
     def init_decoder(self, us_layer="unpool", **kwargs):
-        if us_layer != "unpool" or us_layer != "convt":
+        if us_layer != "unpool" and us_layer != "convt":
             raise ValueError("Up-sampling layer type {} does not exist".format(us_layer))
         layers = []
         layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
