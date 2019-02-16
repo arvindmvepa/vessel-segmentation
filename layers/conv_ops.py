@@ -44,7 +44,8 @@ class Conv2d(Layer):
                                 initializer=initializer)
             b = tf.Variable(tf.zeros([self.output_channels]))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
-        output = tf.nn.convolution(input, W, padding='SAME', strides=self.strides, dilation_rate=self.dilation)
+        output = tf.nn.conv2d(input, W, padding='SAME', strides=self.strides,
+                              dilations=[1, self.dilation, self.dilation, 1])
         output = self.apply_dropout(output, dp_rate, is_training)
 
         # apply batch-norm
