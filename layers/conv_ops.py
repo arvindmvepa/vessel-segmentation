@@ -119,8 +119,8 @@ class ConvT2d(Conv2d):
         # hard-code dimension as `1`, batch size = 1, due to bug
         if self.dilation == 1:
             output = tf.nn.conv2d_transpose(input, W, tf.stack([1,
-                                                                self.input_shape[1], #self.input_shape[1]*self.strides[1],
-                                                                self.input_shape[2], #self.input_shape[2]*self.strides[2],
+                                                                self.input_shape[1]*self.strides[1],
+                                                                self.input_shape[2]*self.strides[2],
                                                                 self.output_channels]),
                                             strides=self.strides, padding='SAME')
         else:

@@ -117,7 +117,7 @@ class SmallNetwork(Network):
         if us_layer == "unpool":
             layers.append(UnPool2d(**self.layer_params['up_6']))
         elif us_layer == "convt":
-            layers.append(Conv2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
+            layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                                  **self.layer_params['convt_6_0']))
         layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               **self.layer_params['convt_6_1']))
@@ -126,14 +126,14 @@ class SmallNetwork(Network):
         if us_layer == "unpool":
             layers.append(UnPool2d(**self.layer_params['up_7']))
         elif us_layer == "convt":
-            layers.append(Conv2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
+            layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                                  **self.layer_params['convt_7_0']))
         layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               **self.layer_params['convt_7_1']))
         if us_layer == "unpool":
             layers.append(UnPool2d(**self.layer_params['up_8']))
         elif us_layer == "convt":
-            layers.append(Conv2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
+            layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                                  **self.layer_params['convt_8_0']))
         layers.append(ConvT2d(weight_init=self.weight_init, **self.layer_params['convt_8_1']))
         self.decoder = layers
