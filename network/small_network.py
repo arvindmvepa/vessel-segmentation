@@ -59,12 +59,12 @@ class SmallNetwork(Network):
                                            "batch_norm": batch_norm, "name": "convt_6_2"},
                              "up_7": {"kernel_size": 2, "add_to_input": "pool_2", "name": "up_7"},
                              "convt_7_0": {"kernel_size": 3, "dilation": 2, "output_channels": 128,
-                                           "batch_norm": batch_norm, "name": "convt_7_1"},
+                                           "batch_norm": batch_norm, "name": "convt_7_0"},
                              "convt_7_1": {"kernel_size": 3, "dilation": 1, "output_channels": 64,
                                            "batch_norm": batch_norm, "name": "convt_7_1"},
                              "up_8": {"kernel_size": 2, "add_to_input": "pool_1", "name": "up_8"},
                              "convt_8_0": {"kernel_size": 3, "dilation": 2, "output_channels": 64,
-                                           "batch_norm": batch_norm, "name": "convt_8_1"},
+                                           "batch_norm": batch_norm, "name": "convt_8_0"},
                              "convt_8_1": {"kernel_size": 3, "dilation": 1, "output_channels": 1,
                                            "batch_norm": batch_norm, "name": "convt_8_1", "act_fn": None}}
         if layer_params:
