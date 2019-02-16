@@ -44,7 +44,7 @@ class Conv2d(Layer):
                                 initializer=initializer)
             b = tf.Variable(tf.zeros([self.output_channels]))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
-        output = tf.nn.convolution(input, W, padding='SAME', strides=self.strides, rate=self.dilation)
+        output = tf.nn.convolution(input, W, padding='SAME', strides=self.strides, dilation_rate=self.dilation)
         output = self.apply_dropout(output, dp_rate, is_training)
 
         # apply batch-norm
@@ -116,11 +116,18 @@ class ConvT2d(Conv2d):
             b = tf.Variable(tf.zeros([self.output_channels]))
         tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
         # hard-code dimension as `1`, batch size = 1, due to bug
-        output = tf.nn.atrous_conv2d_transpose(input, W, tf.stack([1,
-                                                                   self.dilation* self.input_shape[1],
-                                                                   self.dilation* self.input_shape[2],
-                                                                   self.output_channels]),
-                                               rate=self.dilation, padding='SAME')
+        if self.dilation == 1:
+            output = tf.nn.conv2d_transpose(input, W, tf.stack([1,
+                                                                self.input_shape[1]*self.strides[1],
+                                                                self.input_shape[2]*self.strides[2],
+                                                                self.output_channels]),
+                                            strides=self.strides, padding='SAME')
+        else:
+            output = tf.nn.atrous_conv2d_transpose(input, W, tf.stack([1,
+                                                                       self.input_shape[1],
+                                                                       self.input_shape[2],
+                                                                       self.output_channels]),
+                                                   rate=self.dilation, padding='SAME')
         output = self.apply_dropout(output, dp_rate)
         # apply batch-norm
         if self.batch_norm:
