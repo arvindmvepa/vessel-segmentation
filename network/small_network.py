@@ -25,6 +25,8 @@ class SmallNetwork(Network):
         self.weight_init = weight_init
         self.act_fn = act_fn
         self.act_leak_prob = act_leak_prob
+        self.ds_layer = kwargs.get("ds_layer", "pool")
+        self.us_layer = kwargs.get("us_layer", "unpool")
         self.layer_params = {"conv_1_1":{"kernel_size":3, "dilation": 1 , "output_channels":64, "batch_norm": batch_norm,
                                          "name": "conv_1_1"},
                              "pool_1": {"kernel_size":2, "name": "pool_1"},
@@ -50,21 +52,21 @@ class SmallNetwork(Network):
                                            "batch_norm": batch_norm, "name": "convt_5_1"},
                              "convt_5_2": {"kernel_size": 7, "dilation": 1, "output_channels": 256,
                                            "batch_norm": batch_norm, "name": "convt_5_2"},
-                             "up_6": {"kernel_size": 2, "add_to_input": "pool_3", "name": "up_6"},
+                             "up_6": {"kernel_size": 2, "add_to_input": "pool_3" if self.ds_layer == "pool" else "conv_4_0", "name": "up_6"},
                              "convt_6_0": {"kernel_size": 3, "strides": (1,2,2,1), "output_channels": 256,
-                                           "batch_norm": batch_norm, "name": "convt_6_0"},
+                                           "batch_norm": batch_norm, "add_to_input": "pool_3" if self.ds_layer == "pool" else "conv_4_0", "name": "convt_6_0"},
                              "convt_6_1": {"kernel_size": 3, "dilation": 1, "output_channels": 256,
                                            "batch_norm": batch_norm, "name": "convt_6_1"},
                              "convt_6_2": {"kernel_size": 3, "dilation": 1, "output_channels": 128,
                                            "batch_norm": batch_norm, "name": "convt_6_2"},
-                             "up_7": {"kernel_size": 2, "add_to_input": "pool_2", "name": "up_7"},
+                             "up_7": {"kernel_size": 2, "add_to_input": "pool_2" if self.ds_layer == "pool" else "conv_3_0", "name": "up_7"},
                              "convt_7_0": {"kernel_size": 3, "strides": (1,2,2,1), "output_channels": 128,
-                                           "batch_norm": batch_norm, "name": "convt_7_0"},
+                                           "batch_norm": batch_norm, "add_to_input": "pool_2" if self.ds_layer == "pool" else "conv_3_0", "name": "convt_7_0"},
                              "convt_7_1": {"kernel_size": 3, "dilation": 1, "output_channels": 64,
                                            "batch_norm": batch_norm, "name": "convt_7_1"},
-                             "up_8": {"kernel_size": 2, "add_to_input": "pool_1", "name": "up_8"},
+                             "up_8": {"kernel_size": 2, "add_to_input": "pool_1" if self.ds_layer == "pool" else "conv_2_0",  "name": "up_8"},
                              "convt_8_0": {"kernel_size": 3, "strides": (1,2,2,1), "output_channels": 64,
-                                           "batch_norm": batch_norm, "name": "convt_8_0"},
+                                           "batch_norm": batch_norm, "add_to_input": "pool_1" if self.ds_layer == "pool" else "conv_2_0", "name": "convt_8_0"},
                              "convt_8_1": {"kernel_size": 3, "dilation": 1, "output_channels": 1,
                                            "batch_norm": batch_norm, "name": "convt_8_1", "act_fn": None}}
         if layer_params:
@@ -73,31 +75,31 @@ class SmallNetwork(Network):
         super(SmallNetwork, self).__init__(weight_init=weight_init, **kwargs)
 
 
-    def init_encoder(self, ds_layer="pool", **kwargs):
-        if ds_layer != "pool" and ds_layer != "conv":
-            raise ValueError("Down-sampling layer type {} does not exist".format(ds_layer))
+    def init_encoder(self, **kwargs):
+        if self.ds_layer != "pool" and self.ds_layer != "conv":
+            raise ValueError("Down-sampling layer type {} does not exist".format(self.ds_layer))
         layers = []
         layers.append(Conv2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              **self.layer_params["conv_1_1"]))
-        if ds_layer == "pool":
+        if self.ds_layer == "pool":
             layers.append(Pool2d(**self.layer_params['pool_1']))
-        elif ds_layer == "conv":
+        elif self.ds_layer == "conv":
             layers.append(Conv2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                                  **self.layer_params['conv_2_0']))
         layers.append(Conv2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              **self.layer_params['conv_2_1']))
-        if ds_layer == "pool":
+        if self.ds_layer == "pool":
             layers.append(Pool2d(**self.layer_params['pool_2']))
-        elif ds_layer == "conv":
+        elif self.ds_layer == "conv":
             layers.append(Conv2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                                  **self.layer_params['conv_3_0']))
         layers.append(Conv2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              **self.layer_params['conv_3_1']))
         layers.append(Conv2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                              **self.layer_params['conv_3_2']))
-        if ds_layer == "pool":
+        if self.ds_layer == "pool":
             layers.append(Pool2d(**self.layer_params['pool_3']))
-        elif ds_layer == "conv":
+        elif self.ds_layer == "conv":
             layers.append(Conv2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                                  **self.layer_params['conv_4_0']))
         layers.append(Conv2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
@@ -106,33 +108,34 @@ class SmallNetwork(Network):
                              **self.layer_params['conv_4_2']))
         self.encoder = layers
 
-    def init_decoder(self, us_layer="unpool", **kwargs):
-        if us_layer != "unpool" and us_layer != "convt":
-            raise ValueError("Up-sampling layer type {} does not exist".format(us_layer))
+    def init_decoder(self, **kwargs):
+        if self.us_layer != "unpool" and self.us_layer != "convt":
+            raise ValueError("Up-sampling layer type {} does not exist".format(self.us_layer))
         layers = []
         layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               **self.layer_params['convt_5_1']))
         layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               **self.layer_params['convt_5_2']))
-        if us_layer == "unpool":
+
+        if self.us_layer == "unpool":
             layers.append(UnPool2d(**self.layer_params['up_6']))
-        elif us_layer == "convt":
+        elif self.us_layer == "convt":
             layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                                  **self.layer_params['convt_6_0']))
         layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               **self.layer_params['convt_6_1']))
         layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               **self.layer_params['convt_6_2']))
-        if us_layer == "unpool":
+        if self.us_layer == "unpool":
             layers.append(UnPool2d(**self.layer_params['up_7']))
-        elif us_layer == "convt":
+        elif self.us_layer == "convt":
             layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                                  **self.layer_params['convt_7_0']))
         layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                               **self.layer_params['convt_7_1']))
-        if us_layer == "unpool":
+        if self.us_layer == "unpool":
             layers.append(UnPool2d(**self.layer_params['up_8']))
-        elif us_layer == "convt":
+        elif self.us_layer == "convt":
             layers.append(ConvT2d(weight_init=self.weight_init, act_fn=self.act_fn, act_leak_prob=self.act_leak_prob,
                                  **self.layer_params['convt_8_0']))
         layers.append(ConvT2d(weight_init=self.weight_init, **self.layer_params['convt_8_1']))
