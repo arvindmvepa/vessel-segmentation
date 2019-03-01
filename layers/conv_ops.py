@@ -25,6 +25,8 @@ class Conv2d(Layer):
 
     def create_layer(self, input, include_w_input=None, is_training=True, center=False, dp_rate=0.0, **kwargs):
         print("name: {}".format(self.name))
+        print("add to input: {}".format(self.add_to_input))
+        print("concat to input: {}".format(self.concat_to_input))
         if self.add_to_input:
             input = tf.add(input, include_w_input)
             print("add to input: {}".format(self.add_to_input))
