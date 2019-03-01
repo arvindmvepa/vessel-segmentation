@@ -25,8 +25,6 @@ class Conv2d(Layer):
 
     def create_layer(self, input, include_w_input=None, is_training=True, center=False, dp_rate=0.0, **kwargs):
         print("name: {}".format(self.name))
-        print("add to input: {}".format(self.add_to_input))
-        print("concat to input: {}".format(self.concat_to_input))
         if self.add_to_input:
             input = tf.add(input, include_w_input)
             print("add to input: {}".format(self.add_to_input))
@@ -103,8 +101,10 @@ class ConvT2d(Conv2d):
         print("name: {}".format(self.name))
         if self.add_to_input:
             input = tf.add(input, include_w_input)
+            print("add to input: {}".format(self.add_to_input))
         if self.concat_to_input:
             input = tf.concat([input, include_w_input],axis=-1)
+            print("concat to input: {}".format(self.concat_to_input))
         self.input_shape = get_incoming_shape(input)
         print(self.input_shape)
         number_of_input_channels = self.input_shape[3]
