@@ -1,4 +1,5 @@
 import tensorflow as tf
+import tensorlayer as tl
 
 from layers.base import Layer
 from utilities.layer_ops import get_incoming_shape
@@ -37,7 +38,7 @@ class Conv2d(Layer):
                 initializer = tf.contrib.layers.variance_scaling_initializer(factor=2.0, mode='FAN_IN', uniform=False)
             elif self.weight_init == 'Xnormal':
                 initializer = tf.contrib.layers.xavier_initializer(uniform=False, seed=None)
-            W = tf.get_variable(('W{}'.format(self.name[-3:])), shape=(self.kernel_size, self.kernel_size,
+            W = tf.get_variable(('W{}'.format(self.name)), shape=(self.kernel_size, self.kernel_size,
                                                                        number_of_input_channels, self.output_channels),
                                 initializer=initializer)
             b = tf.Variable(tf.zeros([self.output_channels]))
@@ -90,7 +91,6 @@ class Conv2d(Layer):
     def get_description(self):
         return "C{},{},{}".format(self.kernel_size, self.output_channels, self.dilation)
 
-
 class ConvT2d(Conv2d):
     def create_layer(self, input, include_w_input=None, is_training=True, center=False, dp_rate=0.0, **kwargs):
         print("name: {}".format(self.name))
@@ -108,7 +108,7 @@ class ConvT2d(Conv2d):
                 initializer = tf.contrib.layers.variance_scaling_initializer(factor=2.0, mode='FAN_IN', uniform=False)
             elif self.weight_init == 'Xnormal':
                 initializer = tf.contrib.layers.xavier_initializer(uniform=False, seed=None)
-            W = tf.get_variable(('W{}'.format(self.name[-3:])), shape=(self.kernel_size, self.kernel_size,
+            W = tf.get_variable(('W{}'.format(self.name)), shape=(self.kernel_size, self.kernel_size,
                                                                        self.output_channels, number_of_input_channels),
                                 initializer=initializer)
             b = tf.Variable(tf.zeros([self.output_channels]))
@@ -128,4 +128,53 @@ class ConvT2d(Conv2d):
         output = tf.add(tf.contrib.layers.batch_norm(output), b)
         output = self.get_act_values(output)
         output = self.zero_center_output(output, center)
+
         return output
+
+
+class DeformableConv2d(Layer):
+    def __init__(self, prev_layer, offset_layer=None, n_filter=32, filter_size=(3, 3), act_fn=None, name='deformable_conv_2d',
+            weight_init=None, bias_init=None, **kwargs):
+        super(DeformableConv2d, self).__init__(**kwargs)
+        self.prev_layer = prev_layer
+        self.offset_layer = offset_layer
+        self.n_filter = n_filter
+        self.filter_size = filter_size
+        self.act_fn = act_fn
+        self.name = name
+        self.weight_init = weight_init
+        self.bias_init = bias_init
+        print("name: {}".format(self.name))
+
+    def create_layer(self, input, **kwargs):
+        print("name: {}".format(self.name))
+        self.input_shape = get_incoming_shape(input)
+        print(self.input_shape)
+        number_of_input_channels = self.input_shape[3]
+        self.number_of_input_channels = number_of_input_channels
+        with tf.variable_scope('dfconv', reuse=False):
+            if self.weight_init == 'He':
+                self.weight_init = tf.contrib.layers.variance_scaling_initializer(factor=2.0, mode='FAN_IN', uniform=False)
+            elif self.weight_init == 'Xnormal':
+                self.weight_init = tf.contrib.layers.xavier_initializer(uniform=False, seed=None)
+        #tf.add_to_collection(tf.GraphKeys.REGULARIZATION_LOSSES, W)
+        output = tl.layers.DeformableConv2d(net, self.prev_layer, self.offset_layer, self.n_filter, self.filter_size, self.act_fn, self.name, self.weight_init)
+        output = self.get_act_values(output)
+        return output
+
+    def get_act_values(self, input):
+        if self.act_fn == "relu":
+            return tf.nn.relu(input)
+        elif self.act_fn == "lrelu":
+           return lrelu(input)
+        elif self.act_fn == "elu":
+            return tf.nn.elu(input)
+        elif self.act_fn == "maxout":
+            return tf.contrib.layers.maxout(input, self.input_shape[3])
+        elif self.act_fn is None:
+            return input
+        else:
+            raise ValueError("Activation function {} not recognized".format(self.act_fn))
+
+    def get_description(self):
+        return "DfConV{},{},{}".format(self.prev_layer, self.n_filter, self.filter_size, self.act_fn)
