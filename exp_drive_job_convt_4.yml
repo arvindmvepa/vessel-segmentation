@@ -5,7 +5,7 @@ exp:
   job_func: run_single_model
   metrics_epoch_freq: 5
   viz_layer_epoch_freq: null
-  num_files: 40
+  num_files: 160
 
 optimization:
   op_fun_and_kwargs:
