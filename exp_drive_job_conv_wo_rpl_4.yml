@@ -1,0 +1,151 @@
+exp:
+  job_cls: DriveJob
+  WRK_DIR_PATH: /root/DRIVE
+  EXPERIMENTS_DIR_PATH: /root/vessel-segmentation1/drive_conv_exp_4
+  job_func: run_single_model
+  metrics_epoch_freq: 5
+  viz_layer_epoch_freq: null
+  num_files: 160
+
+data:
+  w_replacement: false
+  shuffle: true
+
+optimization:
+  op_fun_and_kwargs:
+  - !!python/tuple
+    - adam
+    - {}
+  - !!python/tuple
+    - rmsprop
+    - {}
+  tuning_constant:
+  - .5
+  - 1.0
+  - 1.5
+  - 2.0
+  ss_r: null
+  objective_fn: wce
+  regularizer_args:
+  - null
+  - null
+  - !!python/tuple
+    - L1
+    - .00000001
+  - !!python/tuple
+    - L1
+    - .000001
+  - !!python/tuple
+    - L2
+    - .00000001
+  - !!python/tuple
+    - L2
+    - .000001
+  - !!python/tuple
+    - L2
+    - .0001
+  learning_rate_and_kwargs:
+  - !!python/tuple
+    - .001
+    - {}
+  - !!python/tuple
+    - .01
+    - {}
+  n_epochs: 100
+
+layer_args:
+  weight_init:
+  - He
+  - Xnormal
+  - default
+  act_fn:
+  - relu
+  - lrelu
+  - elu
+  act_leak_prob: 0.2
+  batch_norm:
+  - true
+  - false
+  dp_rate: 0.0
+  center:
+  - true
+  - false
+  - false
+  - false
+  pooling_method: MAX
+  unpooling_method:
+  - bilinear
+  ds_layer: conv
+  last_layer_op:
+  - AVG
+  - MAX
+  - CONV
+  num_prev_last_conv_output_channels:
+  - 50
+  - 100
+  add_decoder_layers_map:
+  - {up_8: [{type: convt, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true,
+             name: convt_8_0_1, act_fn: relu},
+            {type: convt, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true, name: convt_8_0_2,
+             act_fn: relu},
+            {type: convt, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true,
+             name: convt_8_0_3, act_fn: relu},
+            {type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true,
+             name: convt_8_0_4, act_fn: relu}]}
+  - {up_8: [{type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true, name: convt_8_0_1,
+             act_fn: relu},
+            {type: conv, kernel_size: 3, dilation: 1, output_channels: 64, "batch_norm": true, name: convt_8_0_2,
+             act_fn: relu}]}
+  - {convt_5_2: [{type: conv, kernel_size: 7, dilation: 1, output_channels: 256, batch_norm: true,
+                  act_fn: relu, name: convt_5_2_0}],
+     "convt_6_2": [{type: conv, kernel_size: 3, dilation: 1, output_channels: 128, batch_norm: true,
+                    act_fn: relu, name: convt_6_2_0}],
+     "convt_7_1": [{type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: true,
+                    act_fn: relu, name: convt_7_1_0}],
+     "up_8": [{type: conv, kernel_size: 3, dilation: 1, output_channels: 64, batch_norm: True, name: convt_8_0_1,
+               act_fn: relu}]}
+
+  remove_decoder_layers_names:
+  - null
+  - null
+  - !!python/tuple
+    - convt_5_1
+    - convt_6_1
+  layer_params:
+  - {convt_5_1: {add_to_input: conv_4_2},
+     convt_5_2: {add_to_input: conv_4_1},
+     convt_6_1: {add_to_input: conv_3_2},
+     convt_6_2: {add_to_input: conv_3_1},
+     convt_7_1: {add_to_input: conv_2_1},
+     convt_8_1: {add_to_input: conv_1_1, center: false}}
+  - {up_6: {add_to_input: null, concat_to_input: conv_4_0},
+     up_7: {add_to_input: null, concat_to_input: conv_3_0},
+     up_8: {add_to_input: null, concat_to_input: conv_2_0},
+     convt_5_1: {concat_to_input: conv_4_2},
+     convt_5_2: {concat_to_input: conv_4_1},
+     convt_6_1: {concat_to_input: conv_3_2},
+     convt_6_2: {concat_to_input: conv_3_1},
+     convt_7_1: {concat_to_input: conv_2_1},
+     convt_8_1: {concat_to_input: conv_1_1, center: false}}
+
+
+image_preproc:
+  hist_eq: false
+  clahe_kwargs: null
+  per_image_normalization:
+  - false
+  - true
+  gamma:
+  - 1.0
+  - 0.5
+  - 2.0
+  seq: null
+  zero_center:
+  - true
+  - false
+  zero_center_scale:
+  - true
+  - false
+  z_score_norm:
+  - true
+  - false

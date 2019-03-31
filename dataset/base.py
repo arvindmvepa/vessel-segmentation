@@ -5,6 +5,7 @@ from math import ceil
 import os
 import collections
 from sklearn.model_selection import train_test_split
+import random
 from imgaug import augmenters as iaa
 from utilities.augmentation import apply_image_aug
 from utilities.image_preprocessing import apply_dataset_normalization
@@ -17,14 +18,15 @@ class Dataset(object):
     IMAGES_DIR = "images"
 
     def __init__(self, batch_size=1, WRK_DIR_PATH =".", TRAIN_SUBDIR="train", TEST_SUBDIR="test", early_stopping=False,
-                 early_stopping_val_prop = .1, sgd = True, cv_train_inds = None, cv_test_inds = None, seq = None,
-                 hist_eq=None, clahe_kwargs=None, gamma=None, zero_center=False, per_image_z_score_norm=False,
-                 per_image_zero_center=False, per_image_zero_center_scale=False, zero_center_scale=False,
-                 z_score_norm=False, **kwargs):
+                 early_stopping_val_prop=.1, w_replacement=True, shuffle=False, cv_train_inds=None,
+                 cv_test_inds=None, seq=None, hist_eq=None, clahe_kwargs=None, gamma=None, zero_center=False,
+                 per_image_z_score_norm=False, per_image_zero_center=False, per_image_zero_center_scale=False,
+                 zero_center_scale=False, z_score_norm=False, **kwargs):
 
         self.WRK_DIR_PATH = WRK_DIR_PATH
         self.batch_size = batch_size
-        self.sgd = sgd
+        self.w_replacement = w_replacement
+        self.shuffle = shuffle
 
         self.TRAIN_DIR_PATH = os.path.join(self.WRK_DIR_PATH, TRAIN_SUBDIR)
         if cv_test_inds is not None:
@@ -107,6 +109,8 @@ class Dataset(object):
 
     def reset_batch_pointer(self):
         self.pointer = 0
+        if self.shuffle:
+            random.shuffle(self.train_data)
 
     def next_batch(self):
         raise NotImplementedError("Method Not Implemented")

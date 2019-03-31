@@ -103,11 +103,11 @@ class DatasetWMasks(Dataset):
         masks = []
         targets = []
 
-        if self.sgd:
+        if self.w_replacement:
             samples = np.random.choice(len(self.train_images), self.batch_size)
 
         for i in range(self.batch_size):
-            if self.sgd:
+            if self.w_replacement:
                 images.append(np.array(self.train_images[samples[i]]))
                 masks.append(np.array(self.train_masks[samples[i]]))
                 targets.append(np.array(self.train_targets[samples[i]]))
